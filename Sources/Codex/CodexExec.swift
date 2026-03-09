@@ -60,7 +60,8 @@ struct CodexExec: Sendable {
                 try await stdout
                 return try await stderr
             } catch {
-                return try await stderr
+                _ = try? await stderr
+                throw error
             }
         }
 

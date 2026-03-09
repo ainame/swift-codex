@@ -68,9 +68,7 @@ public actor CodexThread {
             let task = Task {
                 let schemaFile = try await OutputSchemaFileFactory.make(schema: options.outputSchema)
                 defer {
-                    Task {
-                        await schemaFile.cleanup()
-                    }
+                    schemaFile.cleanup()
                 }
 
                 let args = self.makeExecArgs(input: input, outputSchemaPath: schemaFile.schemaPath)

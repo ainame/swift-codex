@@ -2,7 +2,7 @@ import Foundation
 
 struct OutputSchemaFile: Sendable {
     var schemaPath: String?
-    var cleanup: @Sendable () async -> Void
+    var cleanup: @Sendable () -> Void
 }
 
 enum OutputSchemaFileFactory {
