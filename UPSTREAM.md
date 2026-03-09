@@ -6,18 +6,20 @@ This repository ports the TypeScript SDK from the [`openai/codex`](https://githu
 
 - Upstream repository: `openai/codex`
 - Upstream SDK path: `sdk/typescript`
+- Vendored upstream checkout: `vendor/openai-codex`
+- Vendored upstream commit: `c1defcc98cf9c6b9001e86d8d13e5b5ec9488510`
 - Reference commit SHA: not yet recorded
 - Reference commit URL: not yet recorded
 - Last reviewed date: not yet recorded
 
-The exact upstream commit that the current Swift implementation was originally based on was not recorded before this file was added. Do not replace the placeholder values above unless you have verified the commit being referenced.
+The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The exact upstream commit that the current Swift implementation was originally based on was not recorded before this file was added. Do not replace the reference commit placeholders unless you have verified the port basis being referenced.
 
 ## How To Keep This In Sync
 
 When porting new behavior from the TypeScript SDK or validating parity against upstream:
 
 1. Identify the upstream `openai/codex` commit you are using as the basis for the change.
-2. Review the relevant files under `sdk/typescript` at that commit.
+2. Start from the vendored checkout in `vendor/openai-codex`, fetch the latest upstream remote state there, and review the relevant files under `sdk/typescript` at the chosen commit.
 3. Update this file with:
    - the exact commit SHA
    - a GitHub commit URL
@@ -33,6 +35,7 @@ Use this section for ongoing maintenance notes. Add dated entries newest first.
 
 ### Unreleased
 
+- Vendored checkout: `vendor/openai-codex` at `c1defcc98cf9c6b9001e86d8d13e5b5ec9488510`
 - Reference commit: not yet recorded
 - Reviewed upstream files: none recorded
 - Intentional deviations: none recorded

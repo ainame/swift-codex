@@ -16,9 +16,11 @@ This repository tracks the TypeScript SDK in [`openai/codex/sdk/typescript`](htt
 
 - Upstream repository: `openai/codex`
 - Upstream SDK path: `sdk/typescript`
+- Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
+- Vendored upstream commit: `c1defcc98cf9c6b9001e86d8d13e5b5ec9488510`
 - Current recorded reference: not yet recorded in this repository's history
 
-Use [`UPSTREAM.md`](UPSTREAM.md) to record the exact upstream commit SHA, the parts of the SDK reviewed or ported, and any intentional Swift-specific deviations whenever sync work is done.
+Use [`UPSTREAM.md`](UPSTREAM.md) to distinguish the vendored upstream checkout from the exact commit SHA the Swift port has been reviewed or synced against.
 
 ## License
 
