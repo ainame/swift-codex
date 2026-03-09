@@ -1,0 +1,12 @@
+swift-codex
+Copyright 2026 ainame
+
+This project includes code and ideas derived from the OpenAI Codex project:
+
+OpenAI Codex
+Copyright 2025 OpenAI
+
+This repository ports functionality from the TypeScript SDK in:
+https://github.com/openai/codex/tree/main/sdk/typescript
+
+This project is distributed under the Apache License, Version 2.0. See LICENSE.

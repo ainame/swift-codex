@@ -4,6 +4,12 @@ Swift SDK for the [`codex`](https://github.com/openai/codex) CLI.
 
 This project ports the TypeScript Codex SDK in [`openai/codex/sdk/typescript`](https://github.com/openai/codex/tree/main/sdk/typescript) to Swift. It stays intentionally thin: it spawns the `codex` CLI with `swift-subprocess`, exchanges JSONL events over stdin/stdout, and exposes a Swift-first API for threads, turns, and streamed events.
 
+## Attribution
+
+This project derives part of its design and implementation from the OpenAI Codex repository, especially the TypeScript SDK in [`openai/codex/sdk/typescript`](https://github.com/openai/codex/tree/main/sdk/typescript), which is licensed under Apache License 2.0.
+
+See [`NOTICE`](NOTICE) and [`LICENSE`](LICENSE) for attribution and license details.
+
 ## Status
 
 Current implementation includes:
