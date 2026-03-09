@@ -12,6 +12,7 @@ These instructions apply to the entire repository.
 - This repository is Apache License 2.0 licensed.
 - Treat the project as a derivative port of `openai/codex` where applicable.
 - Preserve upstream attribution in [`NOTICE`](NOTICE) and keep [`LICENSE`](LICENSE) consistent with Apache License 2.0.
+- Preserve upstream reference tracking in [`UPSTREAM.md`](UPSTREAM.md).
 - When importing or closely porting upstream material, do not remove applicable attribution or notice requirements.
 - If new third-party derived material is added, update [`NOTICE`](NOTICE) when needed.
 
@@ -27,6 +28,13 @@ These instructions apply to the entire repository.
 - Model MCP payloads generically unless stronger typing is required by a concrete use case.
 - Keep config override serialization compatible with Codex CLI `--config key=value` behavior.
 - Preserve important CLI argument ordering when behavior depends on it.
+
+## Upstream Sync
+- Record the exact `openai/codex` commit SHA used for any sync or parity work in [`UPSTREAM.md`](UPSTREAM.md).
+- Treat `sdk/typescript` as the primary upstream source unless the change clearly depends on another upstream path.
+- When syncing with upstream, update [`UPSTREAM.md`](UPSTREAM.md) with the commit SHA, commit URL, review date, reviewed files or features, and intentional Swift-specific deviations.
+- Update [`README.md`](README.md) when the recorded upstream basis changes the documented status, supported features, or scope.
+- Do not claim a new upstream basis unless you verified the referenced commit against the implemented Swift behavior.
 
 ## Verification
 - Run `swift build` or `swift test` when changes are in a verifiable state.

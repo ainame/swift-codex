@@ -8,7 +8,17 @@ This project ports the TypeScript Codex SDK in [`openai/codex/sdk/typescript`](h
 
 This project derives part of its design and implementation from the OpenAI Codex repository, especially the TypeScript SDK in [`openai/codex/sdk/typescript`](https://github.com/openai/codex/tree/main/sdk/typescript), which is licensed under Apache License 2.0.
 
-See [`NOTICE`](NOTICE) and [`LICENSE`](LICENSE) for attribution and license details.
+See [`NOTICE`](NOTICE), [`LICENSE`](LICENSE), and [`UPSTREAM.md`](UPSTREAM.md) for attribution and upstream reference details.
+
+## Upstream Reference
+
+This repository tracks the TypeScript SDK in [`openai/codex/sdk/typescript`](https://github.com/openai/codex/tree/main/sdk/typescript) by repository commit, not by the moving `main` branch alone.
+
+- Upstream repository: `openai/codex`
+- Upstream SDK path: `sdk/typescript`
+- Current recorded reference: not yet recorded in this repository's history
+
+Use [`UPSTREAM.md`](UPSTREAM.md) to record the exact upstream commit SHA, the parts of the SDK reviewed or ported, and any intentional Swift-specific deviations whenever sync work is done.
 
 ## License
 
