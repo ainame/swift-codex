@@ -10,6 +10,12 @@ This project derives part of its design and implementation from the OpenAI Codex
 
 See [`NOTICE`](NOTICE) and [`LICENSE`](LICENSE) for attribution and license details.
 
+## License
+
+This repository is licensed under Apache License 2.0.
+
+Because this project ports functionality from the OpenAI Codex repository, it preserves Apache-2.0 licensing and repository-level attribution via [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+
 ## Status
 
 Current implementation includes:

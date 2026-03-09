@@ -4,9 +4,16 @@
 These instructions apply to the entire repository.
 
 ## Project Goals
-- Port the TypeScript Codex SDK from `../../openai/codex/sdk/typescript` to Swift.
+- Port the TypeScript Codex SDK from `https://github.com/openai/codex/tree/main/sdk/typescript` to Swift.
 - Preserve TypeScript SDK behavior where practical while keeping the Swift API usable and idiomatic.
 - Keep the Swift package focused on wrapping the `codex` CLI rather than reimplementing agent behavior.
+
+## License and Attribution
+- This repository is Apache License 2.0 licensed.
+- Treat the project as a derivative port of `openai/codex` where applicable.
+- Preserve upstream attribution in [`NOTICE`](NOTICE) and keep [`LICENSE`](LICENSE) consistent with Apache License 2.0.
+- When importing or closely porting upstream material, do not remove applicable attribution or notice requirements.
+- If new third-party derived material is added, update [`NOTICE`](NOTICE) when needed.
 
 ## Dependencies
 - Use `swift-subprocess` for subprocess execution.
