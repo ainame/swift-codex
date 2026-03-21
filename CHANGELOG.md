@@ -16,12 +16,14 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Changed
 
+- Updated the vendored [`openai/codex`](vendor/openai-codex) submodule to `06e06ab173a7912de1661f6678eaf8d1c04da170`.
+- Passed `baseURL` via `--config openai_base_url=...` instead of `OPENAI_BASE_URL` to match the current TypeScript SDK behavior when callers provide a custom environment override.
 - Documented that the installation snippet uses version `0.0.1` in [`README.md`](README.md).
 - Documented that upstream reference tracking should use an exact `openai/codex` commit instead of the moving `main` branch.
 
 ### Upstream Basis
 
 - Swift package version: `0.0.1`
-- Vendored upstream checkout: `vendor/openai-codex` at `c1defcc98cf9c6b9001e86d8d13e5b5ec9488510`
-- Upstream TypeScript SDK basis: not yet recorded
-- Notes: historical upstream basis was not recorded before `UPSTREAM.md` and this changelog were added.
+- Vendored upstream checkout: `vendor/openai-codex` at `06e06ab173a7912de1661f6678eaf8d1c04da170`
+- Upstream TypeScript SDK basis: `3293538e128e02ca24d5e9913af986ac68405b00`
+- Notes: latest reviewed SDK behavior includes the `openai_base_url` config override parity update; earlier historical basis before this sync remains unrecorded.

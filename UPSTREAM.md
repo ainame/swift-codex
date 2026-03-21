@@ -7,10 +7,10 @@ This repository ports the TypeScript SDK from the [`openai/codex`](https://githu
 - Upstream repository: `openai/codex`
 - Upstream SDK path: `sdk/typescript`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `c1defcc98cf9c6b9001e86d8d13e5b5ec9488510`
-- Reference commit SHA: not yet recorded
-- Reference commit URL: not yet recorded
-- Last reviewed date: not yet recorded
+- Vendored upstream commit: `06e06ab173a7912de1661f6678eaf8d1c04da170`
+- Reference commit SHA: `3293538e128e02ca24d5e9913af986ac68405b00`
+- Reference commit URL: `https://github.com/openai/codex/commit/3293538e128e02ca24d5e9913af986ac68405b00`
+- Last reviewed date: `2026-03-21`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The exact upstream commit that the current Swift implementation was originally based on was not recorded before this file was added. Do not replace the reference commit placeholders unless you have verified the port basis being referenced.
 
@@ -35,7 +35,19 @@ Use this section for ongoing maintenance notes. Add dated entries newest first.
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `c1defcc98cf9c6b9001e86d8d13e5b5ec9488510`
-- Reference commit: not yet recorded
-- Reviewed upstream files: none recorded
-- Intentional deviations: none recorded
+- Vendored checkout: `vendor/openai-codex` at `06e06ab173a7912de1661f6678eaf8d1c04da170`
+- Reference commit: `3293538e128e02ca24d5e9913af986ac68405b00`
+- Reviewed upstream files:
+  - `sdk/typescript/src/exec.ts`
+  - `sdk/typescript/tests/exec.test.ts`
+  - `sdk/typescript/tests/run.test.ts`
+  - `sdk/typescript/tests/setupCodexHome.ts`
+  - `sdk/typescript/tests/testCodex.ts`
+  - `sdk/typescript/README.md`
+- Reviewed upstream features:
+  - `baseUrl` now maps to `--config openai_base_url=...` rather than `OPENAI_BASE_URL`
+  - explicit environment overrides must remain isolated from the host environment except for required SDK variables
+  - resume arguments must continue to precede image arguments
+- Intentional deviations:
+  - Swift uses task cancellation rather than exposing an `AbortSignal`-style turn option
+  - Swift keeps CLI discovery `PATH`-based or explicitly overridden instead of npm package resolution
