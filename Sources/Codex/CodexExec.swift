@@ -79,6 +79,13 @@ struct CodexExec: Sendable {
             }
         }
 
+        if let baseURL = args.baseURL {
+            let override = try CodexConfigSerializer.serialize(["openai_base_url": .string(baseURL)])
+            if let baseURLOverride = override.first {
+                commandArgs.append(contentsOf: ["--config", baseURLOverride])
+            }
+        }
+
         if let model = args.model {
             commandArgs.append(contentsOf: ["--model", model])
         }
@@ -136,9 +143,6 @@ struct CodexExec: Sendable {
         var environment = environmentOverride ?? ProcessInfo.processInfo.environment
         if environment[Self.internalOriginatorEnvironmentKey] == nil {
             environment[Self.internalOriginatorEnvironmentKey] = Self.swiftSDKOriginator
-        }
-        if let baseURL {
-            environment["OPENAI_BASE_URL"] = baseURL
         }
         if let apiKey {
             environment["CODEX_API_KEY"] = apiKey

@@ -159,6 +159,10 @@ let codex = Codex(options: CodexOptions(
 ))
 ```
 
+When `baseURL` is set, the SDK passes it through `--config openai_base_url=...`. A custom
+`environment` map stays isolated except for required SDK variables such as `CODEX_API_KEY`
+and `CODEX_INTERNAL_ORIGINATOR_OVERRIDE`.
+
 Thread options:
 
 ```swift

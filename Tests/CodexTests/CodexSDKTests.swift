@@ -197,11 +197,13 @@ struct CodexSDKTests {
         _ = try await thread.run("From PATH")
 
         let env = try stub.environment(forInvocation: 0)
+        let args = try stub.arguments(forInvocation: 0)
         #expect(env["CUSTOM_ENV"] == "custom")
         #expect(env["CODEX_ENV_SHOULD_NOT_LEAK"] == "")
-        #expect(env["OPENAI_BASE_URL"] == "https://example.test")
+        #expect(env["OPENAI_BASE_URL"] == "")
         #expect(env["CODEX_API_KEY"] == "test-key")
         #expect(env["CODEX_INTERNAL_ORIGINATOR_OVERRIDE"] == "codex_sdk_swift")
+        #expect(collectConfigValues(args: args, key: "openai_base_url") == [#"openai_base_url="https:\/\/example.test""#])
     }
 
     @Test
