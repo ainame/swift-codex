@@ -55,7 +55,9 @@ struct CodexExec: Sendable {
             }()
 
             do {
-                _ = try await standardInput.write(Data(args.input.utf8))
+                // Write via the String overload to avoid the Data/DispatchData no-copy path,
+                // which can corrupt prompt bytes before the child process reads stdin.
+                _ = try await standardInput.write(args.input, using: UTF8.self)
                 try await standardInput.finish()
                 try await stdout
                 return try await stderr
