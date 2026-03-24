@@ -1,7 +1,5 @@
 import Foundation
 
-public typealias CodexConfig = AppServerConfig
-
 enum CodexConfigSerializer {
     static func serialize(_ object: JSONObject) throws -> [String] {
         var overrides: [String] = []

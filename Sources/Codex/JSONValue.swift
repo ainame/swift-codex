@@ -84,3 +84,73 @@ extension JSONValue: ExpressibleByStringLiteral,
 }
 
 public typealias JSONObject = [String: JSONValue]
+
+extension JSONObject {
+    func stringValue(forKey key: String) -> String? {
+        self[key]?.stringValue
+    }
+
+    func objectValue(forKey key: String) -> JSONObject? {
+        self[key]?.objectValue
+    }
+
+    func arrayValue(forKey key: String) -> [JSONValue]? {
+        self[key]?.arrayValue
+    }
+
+    func boolValue(forKey key: String) -> Bool? {
+        self[key]?.boolValue
+    }
+
+    func intValue(forKey key: String) -> Int? {
+        self[key]?.intValue
+    }
+
+    func doubleValue(forKey key: String) -> Double? {
+        self[key]?.doubleValue
+    }
+}
+
+extension JSONValue {
+    var objectValue: JSONObject? {
+        guard case .object(let value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    var arrayValue: [JSONValue]? {
+        guard case .array(let value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    var stringValue: String? {
+        guard case .string(let value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    var boolValue: Bool? {
+        guard case .bool(let value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    var intValue: Int? {
+        guard case .number(let value) = self, value.rounded(.towardZero) == value else {
+            return nil
+        }
+        return Int(value)
+    }
+
+    var doubleValue: Double? {
+        guard case .number(let value) = self else {
+            return nil
+        }
+        return value
+    }
+}

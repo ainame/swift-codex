@@ -55,137 +55,35 @@ public struct FileChangeApprovalRequest: Sendable, Hashable, Codable {
     }
 }
 
-public enum AppServerInputItem: Sendable, Hashable, Codable {
-    case text(String)
-    case image(url: String)
-    case localImage(path: String)
-    case skill(name: String, path: String)
-    case mention(name: String, path: String)
+public enum ServerRequest: Sendable, Hashable, Codable {
+    case commandApproval(CommandApprovalRequest)
+    case fileChangeApproval(FileChangeApprovalRequest)
+    case unknown(method: String, params: JSONObject?)
 }
 
-public struct AppServerThreadOptions: Sendable, Hashable, Codable {
-    public var approvalPolicy: AppServerV2.AskForApproval?
-    public var approvalsReviewer: AppServerV2.ApprovalsReviewer?
-    public var baseInstructions: String?
-    public var config: JSONObject?
-    public var cwd: String?
-    public var developerInstructions: String?
-    public var ephemeral: Bool?
-    public var model: String?
-    public var modelProvider: String?
-    public var personality: AppServerV2.Personality?
-    public var sandbox: AppServerV2.SandboxMode?
-    public var serviceName: String?
-    public var serviceTier: AppServerV2.ServiceTier?
+public enum ServerRequestResult: Sendable, Hashable, Codable {
+    case approval(ApprovalDecision)
+    case json(JSONObject)
 
-    public init(
-        approvalPolicy: AppServerV2.AskForApproval? = nil,
-        approvalsReviewer: AppServerV2.ApprovalsReviewer? = nil,
-        baseInstructions: String? = nil,
-        config: JSONObject? = nil,
-        cwd: String? = nil,
-        developerInstructions: String? = nil,
-        ephemeral: Bool? = nil,
-        model: String? = nil,
-        modelProvider: String? = nil,
-        personality: AppServerV2.Personality? = nil,
-        sandbox: AppServerV2.SandboxMode? = nil,
-        serviceName: String? = nil,
-        serviceTier: AppServerV2.ServiceTier? = nil
-    ) {
-        self.approvalPolicy = approvalPolicy
-        self.approvalsReviewer = approvalsReviewer
-        self.baseInstructions = baseInstructions
-        self.config = config
-        self.cwd = cwd
-        self.developerInstructions = developerInstructions
-        self.ephemeral = ephemeral
-        self.model = model
-        self.modelProvider = modelProvider
-        self.personality = personality
-        self.sandbox = sandbox
-        self.serviceName = serviceName
-        self.serviceTier = serviceTier
+    var jsonObject: JSONObject {
+        switch self {
+        case .approval(let decision):
+            return ["decision": .string(decision == .approve ? "accept" : "decline")]
+        case .json(let object):
+            return object
+        }
     }
 }
 
-public struct AppServerThreadListOptions: Sendable, Hashable, Codable {
-    public var archived: Bool?
-    public var cursor: String?
-    public var cwd: String?
-    public var limit: Int?
-    public var modelProviders: [String]?
-    public var searchTerm: String?
-    public var sortKey: AppServerV2.ThreadSortKey?
-    public var sourceKinds: [AppServerV2.ThreadSourceKind]?
-
-    public init(
-        archived: Bool? = nil,
-        cursor: String? = nil,
-        cwd: String? = nil,
-        limit: Int? = nil,
-        modelProviders: [String]? = nil,
-        searchTerm: String? = nil,
-        sortKey: AppServerV2.ThreadSortKey? = nil,
-        sourceKinds: [AppServerV2.ThreadSourceKind]? = nil
-    ) {
-        self.archived = archived
-        self.cursor = cursor
-        self.cwd = cwd
-        self.limit = limit
-        self.modelProviders = modelProviders
-        self.searchTerm = searchTerm
-        self.sortKey = sortKey
-        self.sourceKinds = sourceKinds
-    }
-}
-
-public struct AppServerTurnOptions: Sendable, Hashable, Codable {
-    public var approvalPolicy: AppServerV2.AskForApproval?
-    public var approvalsReviewer: AppServerV2.ApprovalsReviewer?
-    public var cwd: String?
-    public var effort: AppServerV2.ReasoningEffort?
-    public var model: String?
-    public var outputSchema: JSONObject?
-    public var personality: AppServerV2.Personality?
-    public var sandboxPolicy: AppServerV2.SandboxPolicy?
-    public var serviceTier: AppServerV2.ServiceTier?
-    public var summary: AppServerV2.ReasoningSummary?
-
-    public init(
-        approvalPolicy: AppServerV2.AskForApproval? = nil,
-        approvalsReviewer: AppServerV2.ApprovalsReviewer? = nil,
-        cwd: String? = nil,
-        effort: AppServerV2.ReasoningEffort? = nil,
-        model: String? = nil,
-        outputSchema: JSONObject? = nil,
-        personality: AppServerV2.Personality? = nil,
-        sandboxPolicy: AppServerV2.SandboxPolicy? = nil,
-        serviceTier: AppServerV2.ServiceTier? = nil,
-        summary: AppServerV2.ReasoningSummary? = nil
-    ) {
-        self.approvalPolicy = approvalPolicy
-        self.approvalsReviewer = approvalsReviewer
-        self.cwd = cwd
-        self.effort = effort
-        self.model = model
-        self.outputSchema = outputSchema
-        self.personality = personality
-        self.sandboxPolicy = sandboxPolicy
-        self.serviceTier = serviceTier
-        self.summary = summary
-    }
-}
-
-public struct AppServerRunResult: Sendable, Hashable, Codable {
+public struct RunResult: Sendable, Hashable, Codable {
     public var finalResponse: String?
-    public var items: [AppServerV2.ThreadItem]
-    public var usage: AppServerV2.ThreadTokenUsage?
+    public var items: [ThreadItem]
+    public var usage: ThreadTokenUsage?
 
     public init(
         finalResponse: String?,
-        items: [AppServerV2.ThreadItem],
-        usage: AppServerV2.ThreadTokenUsage?
+        items: [ThreadItem],
+        usage: ThreadTokenUsage?
     ) {
         self.finalResponse = finalResponse
         self.items = items
@@ -193,27 +91,8 @@ public struct AppServerRunResult: Sendable, Hashable, Codable {
     }
 }
 
-public enum AppServerError: Error, Sendable, Hashable {
-    case transportClosed
-    case transportClosedWithStderrTail(String)
-    case invalidResponseLine(String)
-    case invalidResponse(String)
-    case invalidRequestID
-    case missingMetadata
-    case parseError(message: String, data: JSONValue?)
-    case invalidRequest(message: String, data: JSONValue?)
-    case methodNotFound(message: String, data: JSONValue?)
-    case invalidParams(message: String, data: JSONValue?)
-    case internalRPC(message: String, data: JSONValue?)
-    case serverBusy(message: String, data: JSONValue?)
-    case retryLimitExceeded(message: String, data: JSONValue?)
-    case jsonRPCError(code: Int, message: String, data: JSONValue?)
-    case concurrentTurnConsumer(activeTurnID: String, requestedTurnID: String)
-    case turnFailed(String)
-}
-
-public struct AppServerConfig: Sendable {
-    public typealias ServerRequestHandler = @Sendable (String, JSONObject?) async -> JSONObject
+public struct CodexConfig: Sendable {
+    public typealias ServerRequestHandler = @Sendable (ServerRequest) async -> ServerRequestResult
     public typealias CommandApprovalHandler = @Sendable (CommandApprovalRequest) async -> ApprovalDecision
     public typealias FileChangeApprovalHandler = @Sendable (FileChangeApprovalRequest) async -> ApprovalDecision
 
@@ -259,22 +138,43 @@ public struct AppServerConfig: Sendable {
     }
 }
 
-public actor AppServerClient {
-    private let config: AppServerConfig
-    private let transport: AppServerTransport
-    private var initializePayload: AppServerV2.InitializeResponse?
+public struct CodexNotification: Sendable, Hashable, Codable {
+    public var method: String
+    public var payload: CodexNotificationPayload
+    public var rawParams: JSONValue
+
+    init(method: String, params: JSONValue) {
+        self.method = method
+        self.rawParams = params
+        self.payload = (try? CodexNotificationPayload(method: method, params: params))
+            ?? .unknown(method: method, rawJSON: params)
+    }
+
+    public var threadID: String? {
+        payload.threadID
+    }
+
+    public var turnID: String? {
+        payload.turnID
+    }
+}
+
+public actor CodexRPCClient {
+    private let config: CodexConfig
+    private let transport: CodexRPCTransport
+    private var initializePayload: InitializeResponse?
     private var activeTurnConsumer: String?
 
-    public init(config: AppServerConfig = .init()) {
+    public init(config: CodexConfig = .init()) {
         self.config = config
-        self.transport = AppServerTransport(config: config)
+        self.transport = CodexRPCTransport(config: config)
     }
 
     public func start() async throws {
         try await transport.startProcess()
     }
 
-    public func initialize() async throws -> AppServerV2.InitializeResponse {
+    public func initialize() async throws -> InitializeResponse {
         if let initializePayload {
             return initializePayload
         }
@@ -292,7 +192,7 @@ public actor AppServerClient {
                     "experimentalApi": .bool(config.experimentalAPI),
                 ]),
             ],
-            responseType: AppServerV2.InitializeResponse.self
+            responseType: InitializeResponse.self
         )
         let normalized = try normalizedInitializePayload(payload)
         try await notify("initialized")
@@ -300,7 +200,7 @@ public actor AppServerClient {
         return normalized
     }
 
-    public func metadata() -> AppServerV2.InitializeResponse? {
+    public func metadata() -> InitializeResponse? {
         initializePayload
     }
 
@@ -325,13 +225,13 @@ public actor AppServerClient {
         try await transport.notify(method: method, params: params)
     }
 
-    public func nextNotification() async throws -> AppServerNotification {
+    public func nextNotification() async throws -> CodexNotification {
         try await transport.nextNotification()
     }
 
     public func acquireTurnConsumer(turnID: String) throws {
         if let activeTurnConsumer {
-            throw AppServerError.concurrentTurnConsumer(
+            throw CodexError.concurrentTurnConsumer(
                 activeTurnID: activeTurnConsumer,
                 requestedTurnID: turnID
             )
@@ -346,81 +246,81 @@ public actor AppServerClient {
         activeTurnConsumer = nil
     }
 
-    public func threadStart(options: AppServerThreadOptions = .init()) async throws -> AppServerV2.ThreadStartResponse {
-        try await request("thread/start", params: makeThreadStartParams(options), responseType: AppServerV2.ThreadStartResponse.self)
+    public func threadStart(options: ThreadOptions = .init()) async throws -> ThreadStartResponse {
+        try await request("thread/start", params: makeThreadStartParams(options), responseType: ThreadStartResponse.self)
     }
 
-    public func threadResume(threadID: String, options: AppServerThreadOptions = .init()) async throws -> AppServerV2.ThreadResumeResponse {
+    public func threadResume(threadID: String, options: ThreadOptions = .init()) async throws -> ThreadResumeResponse {
         var params = makeThreadStartParams(options)
         params["threadId"] = .string(threadID)
-        return try await request("thread/resume", params: params, responseType: AppServerV2.ThreadResumeResponse.self)
+        return try await request("thread/resume", params: params, responseType: ThreadResumeResponse.self)
     }
 
-    public func threadList(options: AppServerThreadListOptions = .init()) async throws -> AppServerV2.ThreadListResponse {
-        try await request("thread/list", params: makeThreadListParams(options), responseType: AppServerV2.ThreadListResponse.self)
+    public func threadList(options: ThreadListOptions = .init()) async throws -> ThreadListResponse {
+        try await request("thread/list", params: makeThreadListParams(options), responseType: ThreadListResponse.self)
     }
 
-    public func threadRead(threadID: String, includeTurns: Bool = false) async throws -> AppServerV2.ThreadReadResponse {
+    public func threadRead(threadID: String, includeTurns: Bool = false) async throws -> ThreadReadResponse {
         try await request(
             "thread/read",
             params: [
                 "threadId": .string(threadID),
                 "includeTurns": .bool(includeTurns),
             ],
-            responseType: AppServerV2.ThreadReadResponse.self
+            responseType: ThreadReadResponse.self
         )
     }
 
-    public func threadFork(threadID: String, options: AppServerThreadOptions = .init()) async throws -> AppServerV2.ThreadForkResponse {
+    public func threadFork(threadID: String, options: ThreadOptions = .init()) async throws -> ThreadForkResponse {
         var params = makeThreadStartParams(options)
         params["threadId"] = .string(threadID)
-        return try await request("thread/fork", params: params, responseType: AppServerV2.ThreadForkResponse.self)
+        return try await request("thread/fork", params: params, responseType: ThreadForkResponse.self)
     }
 
-    public func threadArchive(threadID: String) async throws -> AppServerV2.ThreadArchiveResponse {
-        try await request("thread/archive", params: ["threadId": .string(threadID)], responseType: AppServerV2.ThreadArchiveResponse.self)
+    public func threadArchive(threadID: String) async throws -> ThreadArchiveResponse {
+        try await request("thread/archive", params: ["threadId": .string(threadID)], responseType: ThreadArchiveResponse.self)
     }
 
-    public func threadUnarchive(threadID: String) async throws -> AppServerV2.ThreadUnarchiveResponse {
-        try await request("thread/unarchive", params: ["threadId": .string(threadID)], responseType: AppServerV2.ThreadUnarchiveResponse.self)
+    public func threadUnarchive(threadID: String) async throws -> ThreadUnarchiveResponse {
+        try await request("thread/unarchive", params: ["threadId": .string(threadID)], responseType: ThreadUnarchiveResponse.self)
     }
 
-    public func threadSetName(threadID: String, name: String) async throws -> AppServerV2.ThreadSetNameResponse {
+    public func threadSetName(threadID: String, name: String) async throws -> ThreadSetNameResponse {
         try await request(
             "thread/name/set",
             params: [
                 "threadId": .string(threadID),
                 "name": .string(name),
             ],
-            responseType: AppServerV2.ThreadSetNameResponse.self
+            responseType: ThreadSetNameResponse.self
         )
     }
 
-    public func threadCompact(threadID: String) async throws -> AppServerV2.ThreadCompactStartResponse {
+    public func threadCompact(threadID: String) async throws -> ThreadCompactStartResponse {
         try await request(
             "thread/compact/start",
             params: ["threadId": .string(threadID)],
-            responseType: AppServerV2.ThreadCompactStartResponse.self
+            responseType: ThreadCompactStartResponse.self
         )
     }
 
     public func turnStart(
         threadID: String,
-        input: [AppServerInputItem],
-        options: AppServerTurnOptions = .init()
-    ) async throws -> AppServerV2.TurnStartResponse {
+        input: [InputItem],
+        options: TurnOptions = .init()
+    ) async throws -> TurnStartResponse {
         try await request(
             "turn/start",
             params: makeTurnStartParams(threadID: threadID, input: input, options: options),
-            responseType: AppServerV2.TurnStartResponse.self
+            responseType: TurnStartResponse.self
         )
     }
 
     public func turnSteer(
         threadID: String,
         expectedTurnID: String,
-        input: [AppServerInputItem]
-    ) async throws -> AppServerV2.TurnSteerResponse {
+        input: [InputItem]
+    ) async throws -> TurnSteerResponse {
         try await request(
             "turn/steer",
             params: [
@@ -428,36 +328,36 @@ public actor AppServerClient {
                 "expectedTurnId": .string(expectedTurnID),
                 "input": .array(input.map(\.jsonValue)),
             ],
-            responseType: AppServerV2.TurnSteerResponse.self
+            responseType: TurnSteerResponse.self
         )
     }
 
-    public func turnInterrupt(threadID: String, turnID: String) async throws -> AppServerV2.TurnInterruptResponse {
+    public func turnInterrupt(threadID: String, turnID: String) async throws -> TurnInterruptResponse {
         try await request(
             "turn/interrupt",
             params: [
                 "threadId": .string(threadID),
                 "turnId": .string(turnID),
             ],
-            responseType: AppServerV2.TurnInterruptResponse.self
+            responseType: TurnInterruptResponse.self
         )
     }
 
-    public func modelList(includeHidden: Bool = false) async throws -> AppServerV2.ModelListResponse {
+    public func modelList(includeHidden: Bool = false) async throws -> ModelListResponse {
         try await request(
             "model/list",
             params: ["includeHidden": .bool(includeHidden)],
-            responseType: AppServerV2.ModelListResponse.self
+            responseType: ModelListResponse.self
         )
     }
 
-    private func makeThreadStartParams(_ options: AppServerThreadOptions) -> JSONObject {
+    private func makeThreadStartParams(_ options: ThreadOptions) -> JSONObject {
         var params: JSONObject = [:]
         if let approvalPolicy = options.approvalPolicy {
-            params["approvalPolicy"] = approvalPolicy.jsonValue
+            params["approvalPolicy"] = approvalPolicy.rawJSON
         }
         if let approvalsReviewer = options.approvalsReviewer {
-            params["approvalsReviewer"] = .string(approvalsReviewer.rawValue)
+            params["approvalsReviewer"] = approvalsReviewer.rawJSON
         }
         if let baseInstructions = options.baseInstructions {
             params["baseInstructions"] = .string(baseInstructions)
@@ -481,21 +381,21 @@ public actor AppServerClient {
             params["modelProvider"] = .string(modelProvider)
         }
         if let personality = options.personality {
-            params["personality"] = .string(personality.rawValue)
+            params["personality"] = personality.rawJSON
         }
         if let sandbox = options.sandbox {
-            params["sandbox"] = .string(sandbox.rawValue)
+            params["sandbox"] = sandbox.rawJSON
         }
         if let serviceName = options.serviceName {
             params["serviceName"] = .string(serviceName)
         }
         if let serviceTier = options.serviceTier {
-            params["serviceTier"] = .string(serviceTier.rawValue)
+            params["serviceTier"] = serviceTier.rawJSON
         }
         return params
     }
 
-    private func makeThreadListParams(_ options: AppServerThreadListOptions) -> JSONObject {
+    private func makeThreadListParams(_ options: ThreadListOptions) -> JSONObject {
         var params: JSONObject = [:]
         if let archived = options.archived {
             params["archived"] = .bool(archived)
@@ -516,30 +416,30 @@ public actor AppServerClient {
             params["searchTerm"] = .string(searchTerm)
         }
         if let sortKey = options.sortKey {
-            params["sortKey"] = .string(sortKey.rawValue)
+            params["sortKey"] = sortKey.rawJSON
         }
         if let sourceKinds = options.sourceKinds {
-            params["sourceKinds"] = .array(sourceKinds.map { .string($0.rawValue) })
+            params["sourceKinds"] = .array(sourceKinds.map(\.rawJSON))
         }
         return params
     }
 
-    private func makeTurnStartParams(threadID: String, input: [AppServerInputItem], options: AppServerTurnOptions) -> JSONObject {
+    private func makeTurnStartParams(threadID: String, input: [InputItem], options: TurnOptions) -> JSONObject {
         var params: JSONObject = [
             "threadId": .string(threadID),
             "input": .array(input.map(\.jsonValue)),
         ]
         if let approvalPolicy = options.approvalPolicy {
-            params["approvalPolicy"] = approvalPolicy.jsonValue
+            params["approvalPolicy"] = approvalPolicy.rawJSON
         }
         if let approvalsReviewer = options.approvalsReviewer {
-            params["approvalsReviewer"] = .string(approvalsReviewer.rawValue)
+            params["approvalsReviewer"] = approvalsReviewer.rawJSON
         }
         if let cwd = options.cwd {
             params["cwd"] = .string(cwd)
         }
         if let effort = options.effort {
-            params["effort"] = .string(effort.rawValue)
+            params["effort"] = effort.rawJSON
         }
         if let model = options.model {
             params["model"] = .string(model)
@@ -548,16 +448,16 @@ public actor AppServerClient {
             params["outputSchema"] = .object(outputSchema)
         }
         if let personality = options.personality {
-            params["personality"] = .string(personality.rawValue)
+            params["personality"] = personality.rawJSON
         }
         if let sandboxPolicy = options.sandboxPolicy {
-            params["sandboxPolicy"] = sandboxPolicy.jsonValue
+            params["sandboxPolicy"] = sandboxPolicy.rawJSON
         }
         if let serviceTier = options.serviceTier {
-            params["serviceTier"] = .string(serviceTier.rawValue)
+            params["serviceTier"] = serviceTier.rawJSON
         }
         if let summary = options.summary {
-            params["summary"] = .string(summary.rawValue)
+            params["summary"] = summary.rawJSON
         }
         return params
     }
@@ -576,12 +476,12 @@ public actor AppServerClient {
     }
 }
 
-public actor AppServerCodex {
-    private let client: AppServerClient
-    private let initializePayload: AppServerV2.InitializeResponse
+public actor Codex {
+    private let client: CodexRPCClient
+    private let initializePayload: InitializeResponse
 
-    public init(config: AppServerConfig = .init()) async throws {
-        let client = AppServerClient(config: config)
+    public init(config: CodexConfig = .init()) async throws {
+        let client = CodexRPCClient(config: config)
         self.client = client
         self.initializePayload = try await client.initialize()
     }
@@ -593,7 +493,7 @@ public actor AppServerCodex {
         }
     }
 
-    public func metadata() -> AppServerV2.InitializeResponse {
+    public func metadata() -> InitializeResponse {
         initializePayload
     }
 
@@ -601,87 +501,75 @@ public actor AppServerCodex {
         await client.close()
     }
 
-    public func startThread(options: AppServerThreadOptions = .init()) async throws -> AppServerThread {
+    public func startThread(options: ThreadOptions = .init()) async throws -> CodexThread {
         let response = try await client.threadStart(options: options)
-        guard let threadID = response.thread?.id else {
-            throw AppServerError.invalidResponse("thread/start response missing thread id")
-        }
-        return AppServerThread(client: client, id: threadID)
+        return CodexThread(client: client, id: response.thread.id)
     }
 
-    public func resumeThread(id: String, options: AppServerThreadOptions = .init()) async throws -> AppServerThread {
+    public func resumeThread(id: String, options: ThreadOptions = .init()) async throws -> CodexThread {
         let response = try await client.threadResume(threadID: id, options: options)
-        guard let threadID = response.thread?.id else {
-            throw AppServerError.invalidResponse("thread/resume response missing thread id")
-        }
-        return AppServerThread(client: client, id: threadID)
+        return CodexThread(client: client, id: response.thread.id)
     }
 
-    public func forkThread(id: String, options: AppServerThreadOptions = .init()) async throws -> AppServerThread {
+    public func forkThread(id: String, options: ThreadOptions = .init()) async throws -> CodexThread {
         let response = try await client.threadFork(threadID: id, options: options)
-        guard let threadID = response.thread?.id else {
-            throw AppServerError.invalidResponse("thread/fork response missing thread id")
-        }
-        return AppServerThread(client: client, id: threadID)
+        return CodexThread(client: client, id: response.thread.id)
     }
 
-    public func listThreads(options: AppServerThreadListOptions = .init()) async throws -> AppServerV2.ThreadListResponse {
+    public func listThreads(options: ThreadListOptions = .init()) async throws -> ThreadListResponse {
         try await client.threadList(options: options)
     }
 
-    public func archiveThread(id: String) async throws -> AppServerV2.ThreadArchiveResponse {
+    public func archiveThread(id: String) async throws -> ThreadArchiveResponse {
         try await client.threadArchive(threadID: id)
     }
 
-    public func unarchiveThread(id: String) async throws -> AppServerThread {
+    public func unarchiveThread(id: String) async throws -> CodexThread {
         let response = try await client.threadUnarchive(threadID: id)
-        guard let threadID = response.thread?.id else {
-            throw AppServerError.invalidResponse("thread/unarchive response missing thread id")
-        }
-        return AppServerThread(client: client, id: threadID)
+        return CodexThread(client: client, id: response.thread.id)
     }
 
-    public func models(includeHidden: Bool = false) async throws -> AppServerV2.ModelListResponse {
+    public func models(includeHidden: Bool = false) async throws -> ModelListResponse {
         try await client.modelList(includeHidden: includeHidden)
     }
 }
 
-public struct AppServerThread: Sendable {
-    private let client: AppServerClient
+public struct CodexThread: Sendable {
+    private let client: CodexRPCClient
     public let id: String
 
-    init(client: AppServerClient, id: String) {
+    init(client: CodexRPCClient, id: String) {
         self.client = client
         self.id = id
     }
 
-    public func run(_ input: String, options: AppServerTurnOptions = .init()) async throws -> AppServerRunResult {
+    public func run(_ input: String, options: TurnOptions = .init()) async throws -> RunResult {
         try await run(.text(input), options: options)
     }
 
-    public func run(_ input: AppServerInputItem, options: AppServerTurnOptions = .init()) async throws -> AppServerRunResult {
+    public func run(_ input: InputItem, options: TurnOptions = .init()) async throws -> RunResult {
         try await run([input], options: options)
     }
 
-    public func run(_ input: [AppServerInputItem], options: AppServerTurnOptions = .init()) async throws -> AppServerRunResult {
+    public func run(_ input: [InputItem], options: TurnOptions = .init()) async throws -> RunResult {
         let handle = try await turn(input, options: options)
         let stream = try await handle.stream()
-        var completedTurn: AppServerV2.Turn?
-        var usage: AppServerV2.ThreadTokenUsage?
-        var items: [AppServerV2.ThreadItem] = []
+        var completedTurn: Turn?
+        var usage: ThreadTokenUsage?
+        var items: [ThreadItem] = []
 
         for try await notification in stream {
             switch notification.payload {
             case .itemCompleted(let payload):
-                if payload.turnID == handle.id, let item = payload.item {
-                    items.append(item)
+                if payload.turnId == handle.id {
+                    items.append(payload.item)
                 }
             case .threadTokenUsageUpdated(let payload):
-                if payload.turnID == handle.id {
+                if payload.turnId == handle.id {
                     usage = payload.tokenUsage
                 }
             case .turnCompleted(let payload):
-                if payload.turn?.id == handle.id {
+                if payload.turn.id == handle.id {
                     completedTurn = payload.turn
                 }
             default:
@@ -690,76 +578,73 @@ public struct AppServerThread: Sendable {
         }
 
         guard let completedTurn else {
-            throw AppServerError.invalidResponse("turn completed event not received")
+            throw CodexError.invalidResponse("turn completed event not received")
         }
         if completedTurn.status == .failed {
-            throw AppServerError.turnFailed(completedTurn.error?.message ?? "turn failed")
+            throw CodexError.turnFailed(completedTurn.error?.message ?? "turn failed")
         }
 
-        return AppServerRunResult(
+        return RunResult(
             finalResponse: finalAssistantResponse(from: items),
             items: items,
             usage: usage
         )
     }
 
-    public func turn(_ input: String, options: AppServerTurnOptions = .init()) async throws -> AppServerTurnHandle {
+    public func turn(_ input: String, options: TurnOptions = .init()) async throws -> CodexTurnHandle {
         try await turn([.text(input)], options: options)
     }
 
-    public func turn(_ input: AppServerInputItem, options: AppServerTurnOptions = .init()) async throws -> AppServerTurnHandle {
+    public func turn(_ input: InputItem, options: TurnOptions = .init()) async throws -> CodexTurnHandle {
         try await turn([input], options: options)
     }
 
-    public func turn(_ input: [AppServerInputItem], options: AppServerTurnOptions = .init()) async throws -> AppServerTurnHandle {
+    public func turn(_ input: [InputItem], options: TurnOptions = .init()) async throws -> CodexTurnHandle {
         let response = try await client.turnStart(threadID: id, input: input, options: options)
-        guard let turnID = response.turn?.id else {
-            throw AppServerError.invalidResponse("turn/start response missing turn id")
-        }
-        return AppServerTurnHandle(client: client, threadID: id, id: turnID)
+        return CodexTurnHandle(client: client, threadID: id, id: response.turn.id)
     }
 
-    public func read(includeTurns: Bool = false) async throws -> AppServerV2.ThreadReadResponse {
+    public func read(includeTurns: Bool = false) async throws -> ThreadReadResponse {
         try await client.threadRead(threadID: id, includeTurns: includeTurns)
     }
 
-    public func setName(_ name: String) async throws -> AppServerV2.ThreadSetNameResponse {
+    public func setName(_ name: String) async throws -> ThreadSetNameResponse {
         try await client.threadSetName(threadID: id, name: name)
     }
 
-    public func compact() async throws -> AppServerV2.ThreadCompactStartResponse {
+    public func compact() async throws -> ThreadCompactStartResponse {
         try await client.threadCompact(threadID: id)
     }
 }
 
-public struct AppServerTurnHandle: Sendable {
-    private let client: AppServerClient
+public struct CodexTurnHandle: Sendable {
+    private let client: CodexRPCClient
     private let threadID: String
     public let id: String
 
-    init(client: AppServerClient, threadID: String, id: String) {
+    init(client: CodexRPCClient, threadID: String, id: String) {
         self.client = client
         self.threadID = threadID
         self.id = id
     }
 
-    public func steer(_ input: String) async throws -> AppServerV2.TurnSteerResponse {
+    public func steer(_ input: String) async throws -> TurnSteerResponse {
         try await steer(.text(input))
     }
 
-    public func steer(_ input: AppServerInputItem) async throws -> AppServerV2.TurnSteerResponse {
+    public func steer(_ input: InputItem) async throws -> TurnSteerResponse {
         try await client.turnSteer(threadID: threadID, expectedTurnID: id, input: [input])
     }
 
-    public func steer(_ input: [AppServerInputItem]) async throws -> AppServerV2.TurnSteerResponse {
+    public func steer(_ input: [InputItem]) async throws -> TurnSteerResponse {
         try await client.turnSteer(threadID: threadID, expectedTurnID: id, input: input)
     }
 
-    public func interrupt() async throws -> AppServerV2.TurnInterruptResponse {
+    public func interrupt() async throws -> TurnInterruptResponse {
         try await client.turnInterrupt(threadID: threadID, turnID: id)
     }
 
-    public func stream() async throws -> AsyncThrowingStream<AppServerNotification, Error> {
+    public func stream() async throws -> AsyncThrowingStream<CodexNotification, Error> {
         try await client.acquireTurnConsumer(turnID: id)
         return AsyncThrowingStream { continuation in
             let task = Task {
@@ -769,7 +654,7 @@ public struct AppServerTurnHandle: Sendable {
                         continuation.yield(notification)
                         if notification.method == "turn/completed",
                            case .turnCompleted(let payload) = notification.payload,
-                           payload.turn?.id == id {
+                           payload.turn.id == id {
                             continuation.finish()
                             break
                         }
@@ -788,30 +673,30 @@ public struct AppServerTurnHandle: Sendable {
         }
     }
 
-    public func run() async throws -> AppServerV2.Turn {
+    public func run() async throws -> Turn {
         let stream = try await stream()
-        var completedTurn: AppServerV2.Turn?
+        var completedTurn: Turn?
         for try await notification in stream {
-            if case .turnCompleted(let payload) = notification.payload, payload.turn?.id == id {
+            if case .turnCompleted(let payload) = notification.payload, payload.turn.id == id {
                 completedTurn = payload.turn
             }
         }
         guard let completedTurn else {
-            throw AppServerError.invalidResponse("turn completed event not received")
+            throw CodexError.invalidResponse("turn completed event not received")
         }
         return completedTurn
     }
 }
 
 public func isRetryableError(_ error: any Error) -> Bool {
-    guard let error = error as? AppServerError else {
+    guard let error = error as? CodexError else {
         return false
     }
     switch error {
     case .serverBusy, .retryLimitExceeded:
         return true
     case .jsonRPCError(_, _, let data):
-        return AppServerErrorMapper.isServerOverloaded(data)
+        return CodexRPCErrorMapper.isServerOverloaded(data)
     default:
         return false
     }
@@ -844,14 +729,10 @@ public func retryOnOverload<T: Sendable>(
 }
 
 private func decodeResponse<T: Decodable>(_ type: T.Type, from value: JSONValue) throws -> T {
-    if let modelType = T.self as? any AppServerV2ValueModel.Type {
-        return modelType.init(jsonValue: value) as! T
-    }
-    let data = try JSONEncoder().encode(value)
-    return try JSONDecoder().decode(T.self, from: data)
+    try decodeJSONValue(T.self, from: value)
 }
 
-private func normalizedInitializePayload(_ payload: AppServerV2.InitializeResponse) throws -> AppServerV2.InitializeResponse {
+private func normalizedInitializePayload(_ payload: InitializeResponse) throws -> InitializeResponse {
     let userAgent = payload.userAgent?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     var serverName = payload.serverInfo?.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     var serverVersion = payload.serverInfo?.version?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -867,16 +748,16 @@ private func normalizedInitializePayload(_ payload: AppServerV2.InitializeRespon
     }
 
     guard !userAgent.isEmpty, !serverName.isEmpty, !serverVersion.isEmpty else {
-        throw AppServerError.missingMetadata
+        throw CodexError.missingMetadata
     }
 
-    var object = payload.jsonObject ?? [:]
-    object["userAgent"] = .string(userAgent)
-    object["serverInfo"] = .object([
-        "name": .string(serverName),
-        "version": .string(serverVersion),
-    ])
-    return AppServerV2.InitializeResponse(jsonValue: .object(object))
+    return InitializeResponse(
+        serverInfo: ServerInfo(name: serverName, version: serverVersion),
+        userAgent: userAgent,
+        platformFamily: payload.platformFamily,
+        platformOs: payload.platformOs,
+        additionalFields: payload.additionalFields
+    )
 }
 
 private func splitUserAgent(_ userAgent: String) -> (name: String?, version: String?) {
@@ -899,25 +780,25 @@ private func splitUserAgent(_ userAgent: String) -> (name: String?, version: Str
     return (raw, nil)
 }
 
-private func finalAssistantResponse(from items: [AppServerV2.ThreadItem]) -> String? {
+private func finalAssistantResponse(from items: [ThreadItem]) -> String? {
     var lastUnknownPhase: String?
 
     for item in items.reversed() {
-        guard item.type == "agentMessage" else {
+        guard case .agentMessage(let message) = item else {
             continue
         }
-        if item.phase == "final_answer" {
-            return item.text
+        if message.phase == .finalAnswer {
+            return message.text
         }
-        if item.phase == nil, lastUnknownPhase == nil {
-            lastUnknownPhase = item.text
+        if message.phase == nil, lastUnknownPhase == nil {
+            lastUnknownPhase = message.text
         }
     }
 
     return lastUnknownPhase
 }
 
-private extension AppServerInputItem {
+private extension InputItem {
     var jsonValue: JSONValue {
         switch self {
         case .text(let text):

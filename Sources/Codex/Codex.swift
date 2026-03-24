@@ -1,9 +1,7 @@
-public typealias Codex = AppServerCodex
-public typealias CodexThread = AppServerThread
-public typealias CodexTurnHandle = AppServerTurnHandle
-public typealias CodexRPCClient = AppServerClient
-public typealias ThreadListOptions = AppServerThreadListOptions
-public typealias RunResult = AppServerRunResult
-public typealias UserInput = AppServerInputItem
-public typealias CodexNotification = AppServerNotification
-public typealias CodexNotificationPayload = AppServerNotificationPayload
+public enum InputItem: Sendable, Hashable, Codable {
+    case text(String)
+    case image(url: String)
+    case localImage(path: String)
+    case skill(name: String, path: String)
+    case mention(name: String, path: String)
+}

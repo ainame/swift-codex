@@ -1,28 +1,76 @@
-public enum ApprovalMode: String, Sendable, Hashable, Codable {
-    case never
-    case onRequest = "on-request"
-    case onFailure = "on-failure"
-    case untrusted
+public struct ThreadOptions: Sendable, Hashable, Codable {
+    public var approvalPolicy: AskForApproval?
+    public var approvalsReviewer: ApprovalsReviewer?
+    public var baseInstructions: String?
+    public var config: JSONObject?
+    public var cwd: String?
+    public var developerInstructions: String?
+    public var ephemeral: Bool?
+    public var model: String?
+    public var modelProvider: String?
+    public var personality: Personality?
+    public var sandbox: SandboxMode?
+    public var serviceName: String?
+    public var serviceTier: ServiceTier?
+
+    public init(
+        approvalPolicy: AskForApproval? = nil,
+        approvalsReviewer: ApprovalsReviewer? = nil,
+        baseInstructions: String? = nil,
+        config: JSONObject? = nil,
+        cwd: String? = nil,
+        developerInstructions: String? = nil,
+        ephemeral: Bool? = nil,
+        model: String? = nil,
+        modelProvider: String? = nil,
+        personality: Personality? = nil,
+        sandbox: SandboxMode? = nil,
+        serviceName: String? = nil,
+        serviceTier: ServiceTier? = nil
+    ) {
+        self.approvalPolicy = approvalPolicy
+        self.approvalsReviewer = approvalsReviewer
+        self.baseInstructions = baseInstructions
+        self.config = config
+        self.cwd = cwd
+        self.developerInstructions = developerInstructions
+        self.ephemeral = ephemeral
+        self.model = model
+        self.modelProvider = modelProvider
+        self.personality = personality
+        self.sandbox = sandbox
+        self.serviceName = serviceName
+        self.serviceTier = serviceTier
+    }
 }
 
-public enum SandboxMode: String, Sendable, Hashable, Codable {
-    case readOnly = "read-only"
-    case workspaceWrite = "workspace-write"
-    case dangerFullAccess = "danger-full-access"
-}
+public struct ThreadListOptions: Sendable, Hashable, Codable {
+    public var archived: Bool?
+    public var cursor: String?
+    public var cwd: String?
+    public var limit: Int?
+    public var modelProviders: [String]?
+    public var searchTerm: String?
+    public var sortKey: ThreadSortKey?
+    public var sourceKinds: [ThreadSourceKind]?
 
-public enum ModelReasoningEffort: String, Sendable, Hashable, Codable {
-    case minimal
-    case low
-    case medium
-    case high
-    case xhigh
+    public init(
+        archived: Bool? = nil,
+        cursor: String? = nil,
+        cwd: String? = nil,
+        limit: Int? = nil,
+        modelProviders: [String]? = nil,
+        searchTerm: String? = nil,
+        sortKey: ThreadSortKey? = nil,
+        sourceKinds: [ThreadSourceKind]? = nil
+    ) {
+        self.archived = archived
+        self.cursor = cursor
+        self.cwd = cwd
+        self.limit = limit
+        self.modelProviders = modelProviders
+        self.searchTerm = searchTerm
+        self.sortKey = sortKey
+        self.sourceKinds = sourceKinds
+    }
 }
-
-public enum WebSearchMode: String, Sendable, Hashable, Codable {
-    case disabled
-    case cached
-    case live
-}
-
-public typealias ThreadOptions = AppServerThreadOptions
