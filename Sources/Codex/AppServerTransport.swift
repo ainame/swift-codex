@@ -1,20 +1,20 @@
 import Foundation
 
-actor AppServerTransport {
-    private let config: AppServerConfig
-    private let exec: AppServerExec
+actor CodexRPCTransport {
+    private let config: CodexConfig
+    private let exec: CodexRPCExec
     private var outboundContinuation: AsyncStream<String>.Continuation?
     private var runTask: Task<Void, Never>?
     private var requestCounter = 0
     private var pendingRequests: [String: CheckedContinuation<JSONValue, Error>] = [:]
-    private var pendingNotifications: [AppServerNotification] = []
-    private var pendingNotificationContinuations: [CheckedContinuation<AppServerNotification, Error>] = []
+    private var pendingNotifications: [CodexNotification] = []
+    private var pendingNotificationContinuations: [CheckedContinuation<CodexNotification, Error>] = []
     private var terminalError: Error?
     private var stderrTail: [String] = []
 
-    init(config: AppServerConfig) {
+    init(config: CodexConfig) {
         self.config = config
-        self.exec = AppServerExec(
+        self.exec = CodexRPCExec(
             executablePathOverride: config.codexPathOverride,
             environmentOverride: config.environment,
             configOverrides: config.config,
@@ -34,7 +34,7 @@ actor AppServerTransport {
         let exec = self.exec
         runTask = Task {
             do {
-                try await exec.runAppServer(
+                try await exec.runRPCServer(
                     outgoingMessages: streamPair.stream,
                     onStdoutLine: { [weak self] line in
                         guard let self else { return }
@@ -102,7 +102,7 @@ actor AppServerTransport {
         )
     }
 
-    func nextNotification() async throws -> AppServerNotification {
+    func nextNotification() async throws -> CodexNotification {
         if !pendingNotifications.isEmpty {
             return pendingNotifications.removeFirst()
         }
@@ -121,7 +121,7 @@ actor AppServerTransport {
         }
         let data = try JSONEncoder().encode(payload)
         guard let line = String(data: data, encoding: .utf8) else {
-            throw AppServerError.invalidResponse("Failed to encode JSON-RPC payload")
+            throw CodexError.invalidResponse("Failed to encode JSON-RPC payload")
         }
         continuation.yield(line)
     }
@@ -138,7 +138,7 @@ actor AppServerTransport {
         }
     }
 
-    private func makeTransportClosedError() -> AppServerError {
+    private func makeTransportClosedError() -> CodexError {
         let stderrTail = stderrTailText()
         guard !stderrTail.isEmpty else {
             return .transportClosed
@@ -192,13 +192,13 @@ actor AppServerTransport {
             }
 
             guard let requestID = message.stringValue(forKey: "id") else {
-                throw AppServerError.invalidRequestID
+            throw CodexError.invalidRequestID
             }
 
             if let errorPayload = message["error"] {
                 let error = try decode(JSONRPCErrorPayload.self, from: errorPayload)
                 pendingRequests.removeValue(forKey: requestID)?.resume(
-                    throwing: AppServerErrorMapper.map(code: error.code, message: error.message, data: error.data)
+                    throwing: CodexRPCErrorMapper.map(code: error.code, message: error.message, data: error.data)
                 )
                 return
             }
@@ -214,14 +214,15 @@ actor AppServerTransport {
         try send(
             .object([
                 "id": .string(requestID),
-                "result": .object(result),
+                "result": .object(result.jsonObject),
             ])
         )
     }
 
-    private func makeServerRequestResult(method: String, params: JSONObject?) async -> JSONObject {
+    private func makeServerRequestResult(method: String, params: JSONObject?) async -> ServerRequestResult {
         if let serverRequestHandler = config.serverRequestHandler {
-            return await serverRequestHandler(method, params)
+            let request = makeServerRequest(method: method, params: params)
+            return await serverRequestHandler(request)
         }
 
         switch method {
@@ -236,7 +237,7 @@ actor AppServerTransport {
                 reason: params?.stringValue(forKey: "reason")
             )
             let decision = await config.commandApprovalHandler(request)
-            return ["decision": .string(decision == .approve ? "accept" : "decline")]
+            return .approval(decision)
         case "item/fileChange/requestApproval":
             let request = FileChangeApprovalRequest(
                 threadID: params?.stringValue(forKey: "threadId") ?? "",
@@ -246,20 +247,49 @@ actor AppServerTransport {
                 grantRoot: params?.stringValue(forKey: "grantRoot")
             )
             let decision = await config.fileChangeApprovalHandler(request)
-            return ["decision": .string(decision == .approve ? "accept" : "decline")]
+            return .approval(decision)
         default:
-            return [:]
+            return .json([:])
         }
     }
 
     private func handleNotification(method: String, params: JSONValue) {
-        let notification = AppServerNotification(method: method, params: params)
+        let notification = CodexNotification(method: method, params: params)
         if !pendingNotificationContinuations.isEmpty {
             let continuation = pendingNotificationContinuations.removeFirst()
             continuation.resume(returning: notification)
             return
         }
         pendingNotifications.append(notification)
+    }
+
+    private func makeServerRequest(method: String, params: JSONObject?) -> ServerRequest {
+        switch method {
+        case "item/commandExecution/requestApproval":
+            return .commandApproval(
+                CommandApprovalRequest(
+                    threadID: params?.stringValue(forKey: "threadId") ?? "",
+                    turnID: params?.stringValue(forKey: "turnId") ?? "",
+                    itemID: params?.stringValue(forKey: "itemId") ?? "",
+                    approvalID: params?.stringValue(forKey: "approvalId"),
+                    command: params?.stringValue(forKey: "command"),
+                    workingDirectory: params?.stringValue(forKey: "cwd"),
+                    reason: params?.stringValue(forKey: "reason")
+                )
+            )
+        case "item/fileChange/requestApproval":
+            return .fileChangeApproval(
+                FileChangeApprovalRequest(
+                    threadID: params?.stringValue(forKey: "threadId") ?? "",
+                    turnID: params?.stringValue(forKey: "turnId") ?? "",
+                    itemID: params?.stringValue(forKey: "itemId") ?? "",
+                    reason: params?.stringValue(forKey: "reason"),
+                    grantRoot: params?.stringValue(forKey: "grantRoot")
+                )
+            )
+        default:
+            return .unknown(method: method, params: params)
+        }
     }
 
     private func decode<T: Decodable>(_ type: T.Type, from value: JSONValue) throws -> T {
@@ -274,8 +304,8 @@ private struct JSONRPCErrorPayload: Decodable {
     var data: JSONValue?
 }
 
-enum AppServerErrorMapper {
-    static func map(code: Int, message: String, data: JSONValue?) -> AppServerError {
+enum CodexRPCErrorMapper {
+    static func map(code: Int, message: String, data: JSONValue?) -> CodexError {
         switch code {
         case -32700:
             return .parseError(message: message, data: data)

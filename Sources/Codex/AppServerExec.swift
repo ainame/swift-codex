@@ -6,7 +6,7 @@ import System
 import SystemPackage
 #endif
 
-struct AppServerExec: Sendable {
+struct CodexRPCExec: Sendable {
     private static let internalOriginatorEnvironmentKey = "CODEX_INTERNAL_ORIGINATOR_OVERRIDE"
     private static let swiftSDKOriginator = "codex_sdk_swift"
     private static let appServerPreferredBufferSize = 1
@@ -17,7 +17,7 @@ struct AppServerExec: Sendable {
     var baseURL: String?
     var apiKey: String?
 
-    func runAppServer(
+    func runRPCServer(
         outgoingMessages: AsyncStream<String>,
         onStdoutLine: @escaping @Sendable (String) async -> Void,
         onStderrLine: @escaping @Sendable (String) async -> Void

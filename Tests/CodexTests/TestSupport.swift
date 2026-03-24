@@ -1,4 +1,9 @@
-import Foundation
+import struct Foundation.Data
+import class Foundation.FileManager
+import class Foundation.JSONDecoder
+import class Foundation.JSONEncoder
+import struct Foundation.URL
+import struct Foundation.UUID
 @testable import Codex
 
 struct CodexStub {
@@ -36,9 +41,13 @@ struct CodexStub {
           printf 'PATH=%s\\n' "${PATH-}"
         } > "$state_dir/$idx.env"
 
-        if [ "${1-}" = "app-server" ]; then
-          app_server_script="$state_dir/$idx.appserver.py"
-          /bin/cat > "$app_server_script" <<'PY'
+        if [ "${1-}" != "app-server" ]; then
+          printf 'unexpected invocation: %s\\n' "$*" >&2
+          exit 64
+        fi
+
+        app_server_script="$state_dir/$idx.appserver.py"
+        /bin/cat > "$app_server_script" <<'PY'
         import json
         import os
         import sys
@@ -54,7 +63,7 @@ struct CodexStub {
 
         initialize_result = scenario.get("initializeResult", {
             "serverInfo": {"name": "codex", "version": "test"},
-            "userAgent": "codex/test"
+            "userAgent": "codex/test",
         })
         initialize_close_stderr = scenario.get("initializeCloseStderr", [])
         thread_start_responses = scenario.get("threadStartResponses", [])
@@ -98,6 +107,11 @@ struct CodexStub {
             sys.stdout.write("\\n")
             sys.stdout.flush()
 
+        def response_at(entries, index, default):
+            if index < len(entries):
+                return entries[index]
+            return default
+
         for raw_line in sys.stdin:
             if not raw_line:
                 break
@@ -117,63 +131,66 @@ struct CodexStub {
                 write_message({"id": request_id, "result": initialize_result})
                 continue
 
+            if method == "initialized":
+                continue
+
             if method == "thread/start":
-                response = thread_start_responses[thread_start_index]
+                response = response_at(thread_start_responses, thread_start_index, {})
                 thread_start_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "thread/resume":
-                response = thread_resume_responses[thread_resume_index]
+                response = response_at(thread_resume_responses, thread_resume_index, {})
                 thread_resume_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "thread/list":
-                response = thread_list_responses[thread_list_index]
+                response = response_at(thread_list_responses, thread_list_index, {"data": []})
                 thread_list_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "thread/read":
-                response = thread_read_responses[thread_read_index]
+                response = response_at(thread_read_responses, thread_read_index, {})
                 thread_read_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "thread/fork":
-                response = thread_fork_responses[thread_fork_index]
+                response = response_at(thread_fork_responses, thread_fork_index, {})
                 thread_fork_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "thread/archive":
-                response = thread_archive_responses[thread_archive_index]
+                response = response_at(thread_archive_responses, thread_archive_index, {})
                 thread_archive_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "thread/unarchive":
-                response = thread_unarchive_responses[thread_unarchive_index]
+                response = response_at(thread_unarchive_responses, thread_unarchive_index, {})
                 thread_unarchive_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "thread/name/set":
-                response = thread_set_name_responses[thread_set_name_index]
+                response = response_at(thread_set_name_responses, thread_set_name_index, {})
                 thread_set_name_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "thread/compact/start":
-                response = thread_compact_responses[thread_compact_index]
+                response = response_at(thread_compact_responses, thread_compact_index, {})
                 thread_compact_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "turn/start":
-                response = turn_start_responses[turn_start_index]
-                sequence = turn_start_sequences[turn_start_index]
+                response = response_at(turn_start_responses, turn_start_index, {})
+                sequence = response_at(turn_start_sequences, turn_start_index, [])
                 turn_start_index += 1
                 write_message({"id": request_id, "result": response})
                 for step in sequence:
@@ -193,19 +210,19 @@ struct CodexStub {
                 continue
 
             if method == "turn/steer":
-                response = turn_steer_responses[turn_steer_index]
+                response = response_at(turn_steer_responses, turn_steer_index, {})
                 turn_steer_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "turn/interrupt":
-                response = turn_interrupt_responses[turn_interrupt_index]
+                response = response_at(turn_interrupt_responses, turn_interrupt_index, {})
                 turn_interrupt_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
             if method == "model/list":
-                response = model_list_responses[model_list_index]
+                response = response_at(model_list_responses, model_list_index, {"data": []})
                 model_list_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
@@ -219,35 +236,7 @@ struct CodexStub {
                     }
                 })
         PY
-          /usr/bin/env python3 "$app_server_script" "$state_dir" "$idx"
-          exit 0
-        fi
-
-        /bin/cat > "$state_dir/$idx.stdin"
-
-        delay="0"
-        if [ -f "$state_dir/$idx.delay" ]; then
-          delay=$(/bin/cat "$state_dir/$idx.delay")
-        fi
-
-        if [ -f "$state_dir/$idx.output" ]; then
-          while IFS= read -r line || [ -n "$line" ]; do
-            printf '%s\\n' "$line"
-            if [ "$delay" != "0" ]; then
-              /bin/sleep "$delay"
-            fi
-          done < "$state_dir/$idx.output"
-        fi
-
-        if [ -f "$state_dir/$idx.stderr" ]; then
-          /bin/cat "$state_dir/$idx.stderr" >&2
-        fi
-
-        exit_code=0
-        if [ -f "$state_dir/$idx.exit" ]; then
-          exit_code=$(/bin/cat "$state_dir/$idx.exit")
-        fi
-        exit "$exit_code"
+        /usr/bin/env python3 "$app_server_script" "$state_dir" "$idx"
         """
 
         try script.write(to: executableURL, atomically: true, encoding: .utf8)
@@ -258,53 +247,29 @@ struct CodexStub {
         try? FileManager.default.removeItem(at: rootURL)
     }
 
-    func configureInvocation(
-        _ index: Int,
-        outputLines: [String],
-        exitCode: Int = 0,
-        stderr: String = "",
-        delaySeconds: Double = 0
-    ) throws {
-        let outputURL = rootURL.appendingPathComponent("\(index).output")
-        try outputLines.joined(separator: "\n").write(to: outputURL, atomically: true, encoding: .utf8)
-        try String(exitCode).write(
-            to: rootURL.appendingPathComponent("\(index).exit"),
-            atomically: true,
-            encoding: .utf8
-        )
-        try stderr.write(
-            to: rootURL.appendingPathComponent("\(index).stderr"),
-            atomically: true,
-            encoding: .utf8
-        )
-        try String(delaySeconds).write(
-            to: rootURL.appendingPathComponent("\(index).delay"),
-            atomically: true,
-            encoding: .utf8
-        )
-    }
-
-    func explicitOptions(
+    func makeConfig(
         baseURL: String? = "https://example.test",
         apiKey: String? = "test-key",
         config: JSONObject? = nil,
-        environment: [String: String]? = nil
-    ) -> CodexOptions {
+        environment: [String: String]? = nil,
+        serverRequestHandler: CodexConfig.ServerRequestHandler? = nil
+    ) -> CodexConfig {
         var env = environment ?? [:]
         env["CODEX_TEST_STATE_DIR"] = rootURL.path()
-        return CodexOptions(
+        return CodexConfig(
             codexPathOverride: executableURL.path(),
             baseURL: baseURL,
             apiKey: apiKey,
             config: config,
-            environment: env
+            environment: env,
+            serverRequestHandler: serverRequestHandler
         )
     }
 
-    func pathLookupOptions(environment: [String: String]) -> CodexOptions {
+    func makePathLookupConfig(environment: [String: String]) -> CodexConfig {
         var env = environment
         env["CODEX_TEST_STATE_DIR"] = rootURL.path()
-        return CodexOptions(
+        return CodexConfig(
             baseURL: "https://example.test",
             apiKey: "test-key",
             environment: env
@@ -314,10 +279,6 @@ struct CodexStub {
     func arguments(forInvocation index: Int) throws -> [String] {
         let text = try String(contentsOf: rootURL.appendingPathComponent("\(index).args"), encoding: .utf8)
         return text.split(separator: "\n").map(String.init)
-    }
-
-    func input(forInvocation index: Int) throws -> String {
-        try String(contentsOf: rootURL.appendingPathComponent("\(index).stdin"), encoding: .utf8)
     }
 
     func environment(forInvocation index: Int) throws -> [String: String] {
@@ -441,152 +402,161 @@ enum AppServerScriptStep: Encodable {
 
 func appServerInitializeResult(
     userAgent: String = "codex/test",
-    serverName: String = "codex",
-    serverVersion: String = "test"
+    serverName: String? = "codex",
+    serverVersion: String? = "test"
 ) -> JSONObject {
-    [
-        "userAgent": .string(userAgent),
-        "serverInfo": .object([
-            "name": .string(serverName),
-            "version": .string(serverVersion),
-        ]),
-    ]
+    jsonObject(
+        InitializeResponse(
+            serverInfo: serverName == nil && serverVersion == nil ? nil : ServerInfo(name: serverName, version: serverVersion),
+            userAgent: userAgent,
+            platformFamily: "macOS",
+            platformOs: "Darwin"
+        )
+    )
 }
 
-func appServerThreadResponse(id: String) -> JSONObject {
-    [
-        "thread": .object([
-            "id": .string(id),
-        ]),
-    ]
+func appServerThreadStartResponse(id: String) -> JSONObject {
+    jsonObject(
+        ThreadStartResponse(
+            approvalPolicy: .never,
+            approvalsReviewer: .user,
+            cwd: "/tmp/project",
+            model: "gpt-5",
+            modelProvider: "openai",
+            sandbox: .workspaceWrite(
+                WorkspaceWriteSandboxPolicy(
+                    networkAccess: true,
+                    type: .workspaceWrite
+                )
+            ),
+            thread: makeThread(id: id)
+        )
+    )
 }
 
-func appServerTurnResponse(id: String) -> JSONObject {
-    [
-        "turn": .object([
-            "id": .string(id),
-        ]),
-    ]
+func appServerThreadResumeResponse(id: String) -> JSONObject {
+    jsonObject(
+        ThreadResumeResponse(
+            approvalPolicy: .never,
+            approvalsReviewer: .user,
+            cwd: "/tmp/project",
+            model: "gpt-5",
+            modelProvider: "openai",
+            sandbox: .workspaceWrite(
+                WorkspaceWriteSandboxPolicy(
+                    networkAccess: true,
+                    type: .workspaceWrite
+                )
+            ),
+            thread: makeThread(id: id)
+        )
+    )
+}
+
+func appServerThreadForkResponse(id: String) -> JSONObject {
+    jsonObject(
+        ThreadForkResponse(
+            approvalPolicy: .never,
+            approvalsReviewer: .user,
+            cwd: "/tmp/project",
+            model: "gpt-5",
+            modelProvider: "openai",
+            sandbox: .workspaceWrite(
+                WorkspaceWriteSandboxPolicy(
+                    networkAccess: true,
+                    type: .workspaceWrite
+                )
+            ),
+            thread: makeThread(id: id)
+        )
+    )
+}
+
+func appServerThreadUnarchiveResponse(id: String) -> JSONObject {
+    jsonObject(ThreadUnarchiveResponse(thread: makeThread(id: id)))
+}
+
+func appServerThreadListResponse(threads: [Thread], nextCursor: String? = nil) -> JSONObject {
+    jsonObject(ThreadListResponse(data: threads, nextCursor: nextCursor))
+}
+
+func appServerThreadReadResponse(thread: Thread) -> JSONObject {
+    jsonObject(ThreadReadResponse(thread: thread))
+}
+
+func appServerTurnStartResponse(id: String, status: TurnStatus = .inProgress) -> JSONObject {
+    jsonObject(TurnStartResponse(turn: makeTurn(id: id, status: status)))
+}
+
+func appServerTurnSteerResponse(turnID: String) -> JSONObject {
+    jsonObject(TurnSteerResponse(turnId: turnID))
 }
 
 func appServerEmptyResponse() -> JSONObject {
     [:]
 }
 
-func appServerThreadObject(id: String, turns: [JSONObject] = []) -> JSONObject {
-    [
-        "id": .string(id),
-        "turns": .array(turns.map(JSONValue.object)),
-    ]
-}
-
-func appServerThreadListResponse(threads: [JSONObject], nextCursor: String? = nil) -> JSONObject {
-    var result: JSONObject = [
-        "threads": .array(threads.map(JSONValue.object)),
-    ]
-    if let nextCursor {
-        result["nextCursor"] = .string(nextCursor)
-    }
-    return result
-}
-
-func appServerThreadReadResponse(thread: JSONObject) -> JSONObject {
-    [
-        "thread": .object(thread),
-    ]
-}
-
-func appServerTurnObject(id: String, status: String = "completed", items: [JSONObject] = [], error: JSONObject? = nil) -> JSONObject {
-    var turn: JSONObject = [
-        "id": .string(id),
-        "status": .string(status),
-        "items": .array(items.map(JSONValue.object)),
-    ]
-    if let error {
-        turn["error"] = .object(error)
-    }
-    return turn
-}
-
-func appServerTurnSteerResponse(turnID: String) -> JSONObject {
-    [
-        "turnId": .string(turnID),
-    ]
-}
-
-func appServerThreadTokenUsageUpdated(threadID: String, turnID: String) -> JSONObject {
-    [
-        "threadId": .string(threadID),
-        "turnId": .string(turnID),
-        "tokenUsage": .object([
-            "last": .object([
-                "inputTokens": .number(1),
-                "outputTokens": .number(2),
-                "cachedInputTokens": .number(0),
-            ]),
-            "total": .object([
-                "inputTokens": .number(1),
-                "outputTokens": .number(2),
-                "cachedInputTokens": .number(0),
-            ]),
-        ]),
-    ]
+func appServerModelListResponse(models: [Model]) -> JSONObject {
+    jsonObject(ModelListResponse(data: models))
 }
 
 func appServerThreadStarted(threadID: String) -> JSONObject {
-    [
-        "thread": .object([
-            "id": .string(threadID),
-        ]),
-    ]
+    jsonObject(ThreadStartedNotification(thread: makeThread(id: threadID)))
 }
 
 func appServerTurnStarted(threadID: String, turnID: String) -> JSONObject {
-    [
-        "threadId": .string(threadID),
-        "turn": .object([
-            "id": .string(turnID),
-        ]),
-    ]
+    jsonObject(
+        TurnStartedNotification(
+            threadId: threadID,
+            turn: makeTurn(id: turnID, status: .inProgress)
+        )
+    )
 }
 
-func appServerTurnCompleted(threadID: String, turnID: String) -> JSONObject {
-    [
-        "threadId": .string(threadID),
-        "turn": .object([
-            "id": .string(turnID),
-        ]),
-    ]
+func appServerTurnCompleted(
+    threadID: String,
+    turnID: String,
+    status: TurnStatus = .completed,
+    items: [ThreadItem] = [],
+    error: TurnError? = nil
+) -> JSONObject {
+    jsonObject(
+        TurnCompletedNotification(
+            threadId: threadID,
+            turn: makeTurn(id: turnID, status: status, items: items, error: error)
+        )
+    )
 }
 
-func appServerErrorNotification(threadID: String, turnID: String, message: String) -> JSONObject {
-    [
-        "threadId": .string(threadID),
-        "turnId": .string(turnID),
-        "error": .object([
-            "message": .string(message),
-        ]),
-    ]
+func appServerThreadTokenUsageUpdated(threadID: String, turnID: String) -> JSONObject {
+    jsonObject(
+        ThreadTokenUsageUpdatedNotification(
+            threadId: threadID,
+            tokenUsage: makeThreadTokenUsage(),
+            turnId: turnID
+        )
+    )
 }
 
-func appServerItemNotification(threadID: String, turnID: String, item: JSONObject) -> JSONObject {
-    [
-        "threadId": .string(threadID),
-        "turnId": .string(turnID),
-        "item": .object(item),
-    ]
+func appServerItemCompleted(threadID: String, turnID: String, item: ThreadItem) -> JSONObject {
+    jsonObject(
+        ItemCompletedNotification(
+            item: item,
+            threadId: threadID,
+            turnId: turnID
+        )
+    )
 }
 
-func appServerAgentMessageItem(id: String = "msg_1", text: String, phase: String? = nil) -> JSONObject {
-    var item: JSONObject = [
-        "id": .string(id),
-        "type": .string("agentMessage"),
-        "text": .string(text),
-    ]
-    if let phase {
-        item["phase"] = .string(phase)
-    }
-    return item
+func appServerAgentMessageItem(id: String = "msg_1", text: String, phase: MessagePhase? = nil) -> ThreadItem {
+    .agentMessage(
+        AgentMessageThreadItem(
+            id: id,
+            phase: phase,
+            text: text,
+            type: .agentMessage
+        )
+    )
 }
 
 func appServerCommandApprovalParams(
@@ -631,6 +601,85 @@ func appServerFileChangeApprovalParams(
     return params
 }
 
+func makeThread(
+    id: String,
+    turns: [Turn] = [],
+    source: SessionSource = .appServer,
+    status: ThreadStatus = .idle(IdleThreadStatus(type: .idle))
+) -> Thread {
+    Thread(
+        cliVersion: "0.0.0-test",
+        createdAt: 1,
+        cwd: "/tmp/project",
+        ephemeral: false,
+        id: id,
+        modelProvider: "openai",
+        preview: "preview",
+        source: source,
+        status: status,
+        turns: turns,
+        updatedAt: 2
+    )
+}
+
+func makeTurn(
+    id: String,
+    status: TurnStatus = .completed,
+    items: [ThreadItem] = [],
+    error: TurnError? = nil
+) -> Turn {
+    Turn(
+        error: error,
+        id: id,
+        items: items,
+        status: status
+    )
+}
+
+func makeThreadTokenUsage() -> ThreadTokenUsage {
+    ThreadTokenUsage(
+        last: TokenUsageBreakdown(
+            cachedInputTokens: 0,
+            inputTokens: 1,
+            outputTokens: 2,
+            reasoningOutputTokens: 0,
+            totalTokens: 3
+        ),
+        total: TokenUsageBreakdown(
+            cachedInputTokens: 0,
+            inputTokens: 1,
+            outputTokens: 2,
+            reasoningOutputTokens: 0,
+            totalTokens: 3
+        )
+    )
+}
+
+func makeModel(id: String, hidden: Bool = false) -> Model {
+    Model(
+        defaultReasoningEffort: .medium,
+        description: "Test model",
+        displayName: id,
+        hidden: hidden,
+        id: id,
+        isDefault: true,
+        model: id,
+        supportedReasoningEfforts: [
+            ReasoningEffortOption(
+                description: "Medium",
+                reasoningEffort: .medium
+            )
+        ]
+    )
+}
+
+func jsonObject<T: RawJSONRepresentable>(_ value: T) -> JSONObject {
+    guard let object = value.rawJSON.objectValue else {
+        fatalError("Expected \(T.self) to encode as a JSON object")
+    }
+    return object
+}
+
 private func decodeJSONLines(at url: URL) throws -> [JSONObject] {
     guard FileManager.default.fileExists(atPath: url.path()) else {
         return []
@@ -641,28 +690,4 @@ private func decodeJSONLines(at url: URL) throws -> [JSONObject] {
         .map { line in
             try JSONDecoder().decode(JSONObject.self, from: Data(line.utf8))
         }
-}
-
-func threadStarted(_ id: String) -> String {
-    #"{"type":"thread.started","thread_id":"\#(id)"}"#
-}
-
-func turnStarted() -> String {
-    #"{"type":"turn.started"}"#
-}
-
-func assistantMessage(id: String = "msg_1", text: String) -> String {
-    #"{"type":"item.completed","item":{"id":"\#(id)","type":"agent_message","text":"\#(text)"}}"#
-}
-
-func reasoningMessage(id: String = "rsn_1", text: String) -> String {
-    #"{"type":"item.completed","item":{"id":"\#(id)","type":"reasoning","text":"\#(text)"}}"#
-}
-
-func turnCompleted() -> String {
-    #"{"type":"turn.completed","usage":{"input_tokens":42,"cached_input_tokens":12,"output_tokens":5}}"#
-}
-
-func turnFailed(_ message: String) -> String {
-    #"{"type":"turn.failed","error":{"message":"\#(message)"}}"#
 }

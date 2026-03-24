@@ -1,242 +1,151 @@
-import Foundation
+import Darwin
 import Testing
 @testable import Codex
 
 @Suite(.serialized)
 struct CodexSDKTests {
     @Test
-    func runReturnsBufferedResultAndThreadID() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureInvocation(0, outputLines: [
-            threadStarted("thread_1"),
-            turnStarted(),
-            reasoningMessage(text: "Inspecting"),
-            assistantMessage(text: "Hi!"),
-            turnCompleted(),
-        ])
+    func typedModelsPreserveAdditionalFieldsAndRoundTrip() throws {
+        var raw = jsonObject(makeThread(id: "thread_extra"))
+        raw["futureField"] = JSONValue.string("future")
 
-        let client = Codex(options: stub.explicitOptions())
-        let thread = client.startThread()
-        let result = try await thread.run("Hello, world!")
-
-        #expect(await thread.id == "thread_1")
-        #expect(result.finalResponse == "Hi!")
-        #expect(result.usage == Usage(inputTokens: 42, cachedInputTokens: 12, outputTokens: 5))
-        #expect(result.items.count == 2)
-        #expect(Array(try stub.arguments(forInvocation: 0).prefix(2)) == ["exec", "--experimental-json"])
+        let decoded = try decodeJSONValue(Thread.self, from: .object(raw))
+        #expect(decoded.additionalFields["futureField"] == JSONValue.string("future"))
+        #expect(decoded.rawJSON.objectValue?["futureField"] == JSONValue.string("future"))
     }
 
     @Test
-    func runStreamedYieldsTypedEventsInOrder() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureInvocation(0, outputLines: [
-            threadStarted("thread_stream"),
-            turnStarted(),
-            assistantMessage(text: "Streaming"),
-            turnCompleted(),
-        ])
-
-        let client = Codex(options: stub.explicitOptions())
-        let thread = client.startThread()
-        let stream = await thread.runStreamed("Describe")
-
-        var events: [ThreadEvent] = []
-        for try await event in stream {
-            events.append(event)
-        }
-
-        #expect(events.count == 4)
-        #expect(await thread.id == "thread_stream")
-        if case .threadStarted(let started) = try #require(events.first) {
-            #expect(started.threadID == "thread_stream")
+    func unionModelsDecodeUnknownFallback() throws {
+        let unknownItem = try decodeJSONValue(ThreadItem.self, from: .number(1))
+        if case .unknown(let rawJSON) = unknownItem {
+            #expect(rawJSON == .number(1))
         } else {
-            Issue.record("First event should be thread.started")
+            Issue.record("Expected ThreadItem.unknown")
+        }
+
+        let unknownStatus = try decodeJSONValue(ThreadStatus.self, from: .number(2))
+        if case .unknown(let rawJSON) = unknownStatus {
+            #expect(rawJSON == .number(2))
+        } else {
+            Issue.record("Expected ThreadStatus.unknown")
+        }
+
+        let unknownSource = try decodeJSONValue(
+            SessionSource.self,
+            from: .object([
+                "mystery": .string("source"),
+            ])
+        )
+        if case .unknown(let rawJSON) = unknownSource {
+            #expect(rawJSON.objectValue?["mystery"] == .string("source"))
+        } else {
+            Issue.record("Expected SessionSource.unknown")
+        }
+
+        let unknownPhase = try decodeJSONValue(MessagePhase.self, from: .string("side_channel"))
+        if case .unknown(let rawJSON) = unknownPhase {
+            #expect(rawJSON == .string("side_channel"))
+        } else {
+            Issue.record("Expected MessagePhase.unknown")
         }
     }
 
     @Test
-    func structuredInputImagesAndResumeAreForwarded() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureInvocation(0, outputLines: [
-            threadStarted("resume_me"),
-            turnStarted(),
-            assistantMessage(text: "First"),
-            turnCompleted(),
-        ])
-        try stub.configureInvocation(1, outputLines: [
-            turnStarted(),
-            assistantMessage(text: "Second"),
-            turnCompleted(),
-        ])
+    func unknownNotificationFallbackStillExtractsMetadata() {
+        let notification = CodexNotification(
+            method: "future/event",
+            params: .object([
+                "threadId": .string("thread_future"),
+                "turn": .object([
+                    "id": .string("turn_future"),
+                ]),
+            ])
+        )
 
-        let client = Codex(options: stub.explicitOptions())
-        let thread = client.startThread(options: ThreadOptions(
-            model: "gpt-test",
-            sandboxMode: .workspaceWrite,
-            additionalDirectories: ["../backend", "/tmp/shared"]
-        ))
-
-        let firstInput: [UserInput] = [
-            .text("Describe file changes"),
-            .text("Focus on tests"),
-            .localImage(path: "/tmp/one.png"),
-            .localImage(path: "/tmp/two.jpg"),
-        ]
-        _ = try await thread.run(firstInput)
-        let secondInput: [UserInput] = [
-            .text("Continue"),
-            .localImage(path: "/tmp/three.png"),
-        ]
-        _ = try await thread.run(secondInput)
-
-        #expect(try stub.input(forInvocation: 0) == "Describe file changes\n\nFocus on tests")
-        let firstArgs = try stub.arguments(forInvocation: 0)
-        #expect(firstArgs.contains("--model"))
-        #expect(firstArgs.contains("gpt-test"))
-        #expect(firstArgs.contains("--sandbox"))
-        #expect(firstArgs.contains("workspace-write"))
-        #expect(firstArgs.filter { $0 == "--add-dir" }.count == 2)
-
-        let imageIndices = firstArgs.enumerated().compactMap { index, value in
-            value == "--image" ? index : nil
+        #expect(notification.threadID == "thread_future")
+        #expect(notification.turnID == "turn_future")
+        if case .unknown(let method, let rawJSON) = notification.payload {
+            #expect(method == "future/event")
+            #expect(rawJSON.objectValue?["threadId"] == .string("thread_future"))
+        } else {
+            Issue.record("Expected unknown payload")
         }
-        #expect(imageIndices.count == 2)
-        #expect(firstArgs[imageIndices[0] + 1] == "/tmp/one.png")
-        #expect(firstArgs[imageIndices[1] + 1] == "/tmp/two.jpg")
-
-        let secondArgs = try stub.arguments(forInvocation: 1)
-        let resumeIndex = try #require(secondArgs.firstIndex(of: "resume"))
-        #expect(secondArgs[resumeIndex + 1] == "resume_me")
-        let resumedImageIndex = try #require(secondArgs.firstIndex(of: "--image"))
-        #expect(resumeIndex < resumedImageIndex)
-        #expect(secondArgs[resumedImageIndex + 1] == "/tmp/three.png")
     }
 
     @Test
-    func configOverridesThreadFlagsSchemaAndWorkingDirectoryAreApplied() async throws {
+    func retryOnOverloadRetriesUntilSuccess() async throws {
+        actor AttemptCounter {
+            var value = 0
+
+            func next() -> Int {
+                value += 1
+                return value
+            }
+
+            func current() -> Int {
+                value
+            }
+        }
+
+        let attempts = AttemptCounter()
+
+        let value = try await retryOnOverload(
+            maxAttempts: 3,
+            initialDelaySeconds: 0,
+            maxDelaySeconds: 0
+        ) {
+            let attempt = await attempts.next()
+            if attempt < 3 {
+                throw CodexError.serverBusy(message: "busy", data: nil)
+            }
+            return "ok"
+        }
+
+        #expect(value == "ok")
+        #expect(await attempts.current() == 3)
+    }
+
+    @Test
+    func pathLookupAndConfigSerializationUseRPCTransport() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
-        try stub.configureInvocation(0, outputLines: [
-            threadStarted("thread_cfg"),
-            assistantMessage(text: "Configured"),
-            turnCompleted(),
-        ])
-
-        let workingDirectory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("swift-codex-working-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: workingDirectory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: workingDirectory) }
-
-        let client = Codex(options: stub.explicitOptions(config: [
-            "approval_policy": "never",
-            "sandbox_workspace_write": ["network_access": true],
-            "retry_budget": 3,
-            "tool_rules": ["allow": ["git status", "git diff"]],
-        ]))
-
-        let thread = client.startThread(options: ThreadOptions(
-            workingDirectory: workingDirectory.path(),
-            skipGitRepoCheck: true,
-            modelReasoningEffort: .high,
-            networkAccessEnabled: true,
-            webSearchMode: .cached,
-            approvalPolicy: .onRequest
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadStartResponses: [appServerThreadStartResponse(id: "thread_env")]
         ))
-        let schema: JSONObject = [
-            "type": "object",
-            "properties": [
-                "answer": ["type": "string"],
-            ],
-            "required": ["answer"],
-            "additionalProperties": false,
-        ]
-        _ = try await thread.run("Configured", options: TurnOptions(outputSchema: schema))
-
-        let args = try stub.arguments(forInvocation: 0)
-        let approvalValues = collectConfigValues(args: args, key: "approval_policy")
-        #expect(approvalValues == [#"approval_policy="never""#, #"approval_policy="on-request""#])
-        #expect(args.contains("--skip-git-repo-check"))
-        #expect(args.contains("--cd"))
-        #expect(args.contains(workingDirectory.path()))
-        #expect(args.contains("--output-schema"))
-        #expect(args.contains(#"model_reasoning_effort="high""#))
-        #expect(args.contains("sandbox_workspace_write.network_access=true"))
-        #expect(args.contains(#"web_search="cached""#))
-        let actualWorkingDirectory = try URL(fileURLWithPath: stub.workingDirectory(forInvocation: 0))
-            .resolvingSymlinksInPath()
-            .path()
-        let expectedWorkingDirectory = workingDirectory.resolvingSymlinksInPath().path()
-        #expect(actualWorkingDirectory == expectedWorkingDirectory)
-
-        let schemaIndex = try #require(args.firstIndex(of: "--output-schema"))
-        let schemaPath = args[schemaIndex + 1]
-        #expect(!FileManager.default.fileExists(atPath: schemaPath))
-    }
-
-    @Test
-    func environmentOverrideAndPathLookupWork() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureInvocation(0, outputLines: [
-            threadStarted("thread_env"),
-            assistantMessage(text: "Env"),
-            turnCompleted(),
-        ])
         setenv("CODEX_ENV_SHOULD_NOT_LEAK", "leak", 1)
         defer { unsetenv("CODEX_ENV_SHOULD_NOT_LEAK") }
 
         let environment = [
-            "PATH": stub.rootURL.path(),
+            "PATH": "\(stub.rootURL.path()):/usr/bin:/bin:/usr/sbin:/sbin",
             "CUSTOM_ENV": "custom",
         ]
-        let client = Codex(options: stub.pathLookupOptions(environment: environment))
-        let thread = client.startThread()
-        _ = try await thread.run("From PATH")
+
+        let codex = try await Codex(config: stub.makePathLookupConfig(environment: environment))
+        _ = try await codex.startThread(options: ThreadOptions(
+            approvalPolicy: .onRequest,
+            config: [
+                "custom_override": .string("enabled"),
+            ],
+            cwd: "/tmp/workspace",
+            model: "gpt-test",
+            sandbox: .workspaceWrite
+        ))
 
         let env = try stub.environment(forInvocation: 0)
         let args = try stub.arguments(forInvocation: 0)
+        let messages = try stub.appServerMessages(forInvocation: 0)
         #expect(env["CUSTOM_ENV"] == "custom")
         #expect(env["CODEX_ENV_SHOULD_NOT_LEAK"] == "")
-        #expect(env["OPENAI_BASE_URL"] == "")
         #expect(env["CODEX_API_KEY"] == "test-key")
         #expect(env["CODEX_INTERNAL_ORIGINATOR_OVERRIDE"] == "codex_sdk_swift")
-        #expect(collectConfigValues(args: args, key: "openai_base_url") == [#"openai_base_url="https:\/\/example.test""#])
+        #expect(Array(args.prefix(3)) == ["app-server", "--listen", "stdio://"])
+        #expect(args.contains("--config"))
+        #expect(args.contains(#"openai_base_url="https:\/\/example.test""#))
+
+        let threadStartParams = try #require(
+            messages.first { $0.stringValue(forKey: "method") == "thread/start" }?.objectValue(forKey: "params")
+        )
+        #expect(threadStartParams.objectValue(forKey: "config")?["custom_override"] == .string("enabled"))
+        await codex.close()
     }
-
-    @Test
-    func processFailureAndTurnFailureThrow() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureInvocation(0, outputLines: [], exitCode: 2, stderr: "boom")
-        try stub.configureInvocation(1, outputLines: [
-            threadStarted("thread_fail"),
-            turnFailed("rate limit exceeded"),
-        ])
-
-        let client = Codex(options: stub.explicitOptions())
-        let thread = client.startThread()
-
-        await #expect(throws: Error.self) {
-            _ = try await thread.run("boom")
-        }
-
-        let resumed = client.startThread()
-        await #expect(throws: Error.self) {
-            _ = try await resumed.run("turn failure")
-        }
-    }
-}
-
-private func collectConfigValues(args: [String], key: String) -> [String] {
-    var values: [String] = []
-    for index in args.indices where args[index] == "--config" {
-        let valueIndex = index + 1
-        if valueIndex < args.count, args[valueIndex].hasPrefix("\(key)=") {
-            values.append(args[valueIndex])
-        }
-    }
-    return values
 }
