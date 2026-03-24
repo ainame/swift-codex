@@ -4,65 +4,76 @@ import Foundation
 @main
 struct BasicExample {
     static func main() async {
-        let codex = Codex()
-        let thread = codex.startThread(options: ThreadOptions(skipGitRepoCheck: true))
+        let config = CodexConfig(
+            commandApprovalHandler: { request in
+                print("Approve command: \(request.command ?? "<unknown>")")
+                return .approve
+            },
+            fileChangeApprovalHandler: { request in
+                print("Approve file changes under: \(request.grantRoot ?? "<unknown>")")
+                return .approve
+            }
+        )
+
+        let client = CodexRPCClient(config: config)
 
         do {
-            let turn = try await thread.run("Summarize the current repository status in two sentences.")
-            print("Buffered response:")
-            print(turn.finalResponse)
-            print("")
+            let initialize = try await client.initialize()
+            print("Connected to \(initialize.serverInfo?.name ?? "codex") \(initialize.serverInfo?.version ?? "")")
 
-            print("Streaming a follow-up turn:")
-            let stream = await thread.runStreamed("List the next three engineering tasks as a todo list.")
-            for try await event in stream {
-                print(describe(event))
+            let started = try await client.threadStart(options: .init(
+                model: "gpt-5-codex",
+                sandbox: .workspaceWrite
+            ))
+            print("Started thread: \(started.thread.id)")
+
+            let listed = try await client.threadList()
+            print("Visible threads: \(listed.data.count)")
+
+            let read = try await client.threadRead(threadID: started.thread.id, includeTurns: true)
+            print("Read thread preview: \(read.thread.preview)")
+
+            let turn = try await client.turnStart(
+                threadID: started.thread.id,
+                input: [.text("Summarize the repository status and stream progress.")],
+                options: .init(summary: .concise)
+            )
+            print("Streaming turn: \(turn.turn.id)")
+
+            while true {
+                let notification = try await client.nextNotification()
+                print(describe(notification))
+
+                if case .turnCompleted(let payload) = notification.payload, payload.turn.id == turn.turn.id {
+                    break
+                }
             }
         } catch {
             fputs("Example failed: \(error)\n", stderr)
             Foundation.exit(1)
         }
+
+        await client.close()
     }
 
-    private static func describe(_ event: ThreadEvent) -> String {
-        switch event {
-        case .threadStarted(let started):
-            return "thread.started id=\(started.threadID)"
-        case .turnStarted:
-            return "turn.started"
-        case .turnCompleted(let completed):
-            return "turn.completed output_tokens=\(completed.usage.outputTokens)"
-        case .turnFailed(let failed):
-            return "turn.failed message=\(failed.error.message)"
-        case .itemStarted(let item):
-            return "item.started \(describe(item.item))"
-        case .itemUpdated(let item):
-            return "item.updated \(describe(item.item))"
-        case .itemCompleted(let item):
-            return "item.completed \(describe(item.item))"
-        case .error(let error):
-            return "error message=\(error.message)"
-        }
-    }
-
-    private static func describe(_ item: ThreadItem) -> String {
-        switch item {
-        case .agentMessage(let message):
-            return "agent_message text=\(message.text)"
-        case .reasoning(let reasoning):
-            return "reasoning text=\(reasoning.text)"
-        case .commandExecution(let command):
-            return "command_execution status=\(command.status.rawValue)"
-        case .fileChange(let change):
-            return "file_change status=\(change.status.rawValue)"
-        case .mcpToolCall(let call):
-            return "mcp_tool_call tool=\(call.tool) status=\(call.status.rawValue)"
-        case .webSearch(let search):
-            return "web_search query=\(search.query)"
-        case .todoList(let todo):
-            return "todo_list count=\(todo.items.count)"
-        case .error(let error):
-            return "error message=\(error.message)"
+    private static func describe(_ notification: CodexNotification) -> String {
+        switch notification.payload {
+        case .itemCompleted(let payload):
+            return "item.completed turn=\(payload.turnId)"
+        case .itemStarted(let payload):
+            return "item.started turn=\(payload.turnId)"
+        case .threadStarted(let payload):
+            return "thread.started id=\(payload.thread.id)"
+        case .turnStarted(let payload):
+            return "turn.started id=\(payload.turn.id)"
+        case .turnCompleted(let payload):
+            return "turn.completed id=\(payload.turn.id) status=\(payload.turn.status.rawValue)"
+        case .threadTokenUsageUpdated(let payload):
+            return "usage.updated input=\(payload.tokenUsage.total.inputTokens) output=\(payload.tokenUsage.total.outputTokens)"
+        case .unknown(let method, _):
+            return "unknown notification \(method)"
+        default:
+            return notification.method
         }
     }
 }

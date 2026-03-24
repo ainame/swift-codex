@@ -2,48 +2,23 @@
 
 Swift SDK for the [`codex`](https://github.com/openai/codex) CLI.
 
-This project ports the TypeScript Codex SDK in [`openai/codex/sdk/typescript`](https://github.com/openai/codex/tree/main/sdk/typescript) to Swift. It stays intentionally thin: it spawns the `codex` CLI with `swift-subprocess`, exchanges JSONL events over stdin/stdout, and exposes a Swift-first API for threads, turns, and streamed events.
+`swift-codex` now uses the Codex JSON-RPC v2 app-server transport exclusively. The SDK starts `codex app-server --listen stdio://`, speaks JSON-RPC over stdio, and exposes both a high-level `Codex` API and a low-level `CodexRPCClient` with typed protocol models generated from the vendored upstream schema.
 
-## Attribution
-
-This project derives part of its design and implementation from the OpenAI Codex repository, especially the TypeScript SDK in [`openai/codex/sdk/typescript`](https://github.com/openai/codex/tree/main/sdk/typescript), which is licensed under Apache License 2.0.
-
-See [`NOTICE`](NOTICE), [`LICENSE`](LICENSE), and [`UPSTREAM.md`](UPSTREAM.md) for attribution and upstream reference details.
-
-## Upstream Reference
-
-This repository tracks the TypeScript SDK in [`openai/codex/sdk/typescript`](https://github.com/openai/codex/tree/main/sdk/typescript) by repository commit, not by the moving `main` branch alone.
-
-- Upstream repository: `openai/codex`
-- Upstream SDK path: `sdk/typescript`
-- Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `527244910fb851cea6147334dbc08f8fbce4cb9d`
-- Current recorded references:
-  - stable `exec` transport: `sdk/typescript` at `3293538e128e02ca24d5e9913af986ac68405b00`
-  - experimental app-server transport: `sdk/python/src/codex_app_server` and app-server v2 protocol at `527244910fb851cea6147334dbc08f8fbce4cb9d`
-
-Use [`UPSTREAM.md`](UPSTREAM.md) to distinguish the vendored upstream checkout from the exact commit SHA the Swift port has been reviewed or synced against.
-
-## License
-
-This repository is licensed under Apache License 2.0.
-
-Because this project ports functionality from the OpenAI Codex repository, it preserves Apache-2.0 licensing and repository-level attribution via [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+This repository still exists as a Swift port of the OpenAI Codex SDK work in [`openai/codex`](https://github.com/openai/codex), with upstream attribution and sync notes recorded in [`NOTICE`](NOTICE), [`LICENSE`](LICENSE), and [`UPSTREAM.md`](UPSTREAM.md).
 
 ## Status
 
 Current implementation includes:
 
-- `Codex` client with `startThread()` and `resumeThread(id:)`
-- buffered `run()` and streamed `runStreamed()`
-- typed thread events and items
-- structured input with text and local images
-- output schema temp-file forwarding
-- config override flattening to CLI `--config key=value`
-- explicit CLI path override or `PATH` lookup
-- experimental app-server client that tracks the upstream Python `codex_app_server` SDK
-- generated `AppServerV2` protocol wrappers and notification registry
-- parity-focused tests with `swift-testing`
+- async `Codex`, `CodexThread`, and `CodexTurnHandle`
+- low-level `CodexRPCClient`
+- typed generated protocol models such as `Thread`, `Turn`, `ThreadItem`, `ModelListResponse`, and `CodexNotificationPayload`
+- thread start, resume, fork, archive, unarchive, rename, compact, list, and read
+- turn start, steer, interrupt, buffered run, and streamed notifications
+- typed approval handling for command and file-change requests
+- structured input items with text, remote images, local images, skills, and mentions
+- typed union fallback with `rawJSON`, `additionalFields`, and `.unknown(JSONValue)` support
+- parity-focused tests using `swift-testing`
 
 Current scope does not include:
 
@@ -51,12 +26,25 @@ Current scope does not include:
 - a Swift MCP dependency
 - Node/npm-specific binary discovery
 
+This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surface settles.
+
+## Upstream Basis
+
+- Upstream repository: `openai/codex`
+- Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
+- Vendored upstream commit: `527244910fb851cea6147334dbc08f8fbce4cb9d`
+- Primary reviewed upstream basis for the current transport and schema:
+  - `sdk/python/src/codex_app_server`
+  - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
+
+See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files and Swift-specific deviations.
+
 ## Requirements
 
 - Swift 6.2
-- Installed `codex` CLI available on `PATH`, or pass an explicit binary path
+- Installed `codex` CLI available on `PATH`, or an explicit binary path in `CodexConfig`
 
-Codex CLI installation is external to this package. For example:
+Example installation:
 
 ```bash
 brew install --cask codex
@@ -88,98 +76,115 @@ Then depend on the `Codex` product:
 ```swift
 import Codex
 
-let codex = Codex()
-let thread = codex.startThread()
-let turn = try await thread.run("Diagnose the test failure and propose a fix")
+let codex = try await Codex(config: .init())
+let thread = try await codex.startThread(options: .init(
+    model: "gpt-5-codex",
+    sandbox: .workspaceWrite
+))
 
-print(turn.finalResponse)
-print(turn.items)
+let result = try await thread.run(
+    "Diagnose the failing test and propose a fix.",
+    options: .init(summary: .concise)
+)
+
+print(result.finalResponse ?? "")
+print(result.items.count)
+
+await codex.close()
 ```
 
-Reuse the same thread to continue the conversation:
+Continue on the same thread:
 
 ```swift
-let nextTurn = try await thread.run("Implement the fix")
+let next = try await thread.run("Implement the fix.")
 ```
 
-Resume an existing thread by id:
+Resume or fork an existing thread:
 
 ```swift
-let resumed = codex.resumeThread(id: "thread_123")
-let turn = try await resumed.run("Continue")
+let resumed = try await codex.resumeThread(id: "thread_123")
+let forked = try await codex.forkThread(id: "thread_123")
 ```
 
 ## Streaming
 
-Use `runStreamed()` when you want incremental progress:
+Use `turn(...)` plus `stream()` for incremental notifications:
 
 ```swift
-let stream = await thread.runStreamed("Diagnose the failure")
+let handle = try await thread.turn(
+    [.text("Inspect the repository and stream progress.")],
+    options: .init(summary: .concise)
+)
 
-for try await event in stream {
-    switch event {
-    case .itemCompleted(let completed):
-        print(completed.item)
-    case .turnCompleted(let completed):
-        print(completed.usage)
+for try await notification in try await handle.stream() {
+    switch notification.payload {
+    case .itemCompleted(let payload):
+        print(payload.item)
+    case .turnCompleted(let payload):
+        print(payload.turn.status)
     default:
         break
     }
 }
 ```
 
+Only one active turn consumer is supported per `CodexRPCClient`/`Codex` instance at a time.
+
 ## Structured Input
 
-Text segments are joined with blank lines. Images are forwarded as repeated `--image` flags:
-
 ```swift
-let input: [UserInput] = [
-    .text("Describe these screenshots"),
+let input: [InputItem] = [
+    .text("Describe these files."),
     .localImage(path: "/tmp/ui.png"),
-    .localImage(path: "/tmp/diagram.jpg"),
+    .image(url: "https://example.test/diagram.png"),
+    .skill(name: "checks", path: "/tmp/checks"),
+    .mention(name: "repo", path: "/tmp/repo"),
 ]
 
-let turn = try await thread.run(input)
+let result = try await thread.run(input)
 ```
 
 ## Configuration
 
-Client-wide options:
+Client-wide configuration:
 
 ```swift
-let codex = Codex(options: CodexOptions(
+let config = CodexConfig(
     codexPathOverride: "/opt/homebrew/bin/codex",
     baseURL: "https://api.example.test",
     apiKey: "test-key",
     config: [
-        "approval_policy": "never",
-        "sandbox_workspace_write": [
-            "network_access": true,
-        ],
+        "approval_policy": .string("never"),
+        "sandbox_workspace_write": .object([
+            "network_access": .bool(true),
+        ]),
     ],
     environment: [
         "PATH": "/opt/homebrew/bin:/usr/bin:/bin",
-    ]
-))
+    ],
+    commandApprovalHandler: { request in
+        print(request.command ?? "")
+        return .approve
+    },
+    fileChangeApprovalHandler: { request in
+        print(request.grantRoot ?? "")
+        return .approve
+    }
+)
+
+let codex = try await Codex(config: config)
 ```
 
-When `baseURL` is set, the SDK passes it through `--config openai_base_url=...`. A custom
-`environment` map stays isolated except for required SDK variables such as `CODEX_API_KEY`
-and `CODEX_INTERNAL_ORIGINATOR_OVERRIDE`.
+`baseURL` is serialized into the process config as `openai_base_url`. Thread-level config overrides are sent as JSON-RPC request params.
 
 Thread options:
 
 ```swift
-let thread = codex.startThread(options: ThreadOptions(
+let thread = try await codex.startThread(options: .init(
+    approvalPolicy: .onRequest,
+    cwd: "/path/to/repo",
     model: "gpt-5-codex",
-    sandboxMode: .workspaceWrite,
-    workingDirectory: "/path/to/repo",
-    additionalDirectories: ["/tmp/shared"],
-    skipGitRepoCheck: true,
-    modelReasoningEffort: .high,
-    networkAccessEnabled: true,
-    webSearchMode: .cached,
-    approvalPolicy: .onRequest
+    sandbox: .workspaceWrite
 ))
 ```
 
@@ -187,23 +192,76 @@ Turn options with an output schema:
 
 ```swift
 let schema: JSONObject = [
-    "type": "object",
-    "properties": [
-        "summary": ["type": "string"],
-        "status": [
-            "type": "string",
-            "enum": ["ok", "action_required"],
-        ],
-    ],
-    "required": ["summary", "status"],
-    "additionalProperties": false,
+    "type": .string("object"),
+    "properties": .object([
+        "summary": .object(["type": .string("string")]),
+        "status": .object([
+            "type": .string("string"),
+            "enum": .array([.string("ok"), .string("action_required")]),
+        ]),
+    ]),
+    "required": .array([.string("summary"), .string("status")]),
+    "additionalProperties": .bool(false),
 ]
 
-let turn = try await thread.run(
-    "Summarize repository status",
-    options: TurnOptions(outputSchema: schema)
+let result = try await thread.run(
+    "Summarize the repository status.",
+    options: .init(
+        effort: .high,
+        outputSchema: schema,
+        summary: .concise
+    )
 )
 ```
+
+## Low-Level RPC Client
+
+`CodexRPCClient` exposes the raw JSON-RPC method surface with typed request and response models:
+
+```swift
+let client = CodexRPCClient(config: .init())
+let initialize = try await client.initialize()
+print(initialize.serverInfo?.name ?? "")
+
+let started = try await client.threadStart(options: .init(model: "gpt-5-codex"))
+let listed = try await client.threadList()
+let read = try await client.threadRead(threadID: started.thread.id, includeTurns: true)
+let models = try await client.modelList()
+
+print(listed.data.count)
+print(read.thread.id)
+print(models.data.map(\.id))
+
+await client.close()
+```
+
+Known inbound approval requests are modeled as:
+
+- `ServerRequest.commandApproval`
+- `ServerRequest.fileChangeApproval`
+
+Unknown request methods fall back to:
+
+- `ServerRequest.unknown(method:params:)`
+
+## Generated Models
+
+Generated protocol models live in:
+
+- [`Sources/Codex/RPCModelsGenerated.swift`](Sources/Codex/RPCModelsGenerated.swift)
+- [`Sources/Codex/GeneratedModelSupport.swift`](Sources/Codex/GeneratedModelSupport.swift)
+
+Regenerate them with:
+
+```bash
+python3 Scripts/generate_app_server_v2.py
+```
+
+Forward-compatibility hooks:
+
+- `rawJSON` on generated models and enums
+- `additionalFields` on object models
+- `.unknown(JSONValue)` on generated unions
 
 ## Examples
 
@@ -215,95 +273,22 @@ swift build
 swift run basic-example
 ```
 
-It depends on the root package by local path and demonstrates both buffered and streamed execution.
-
-## Experimental App-Server API
-
-`swift-codex` also exposes an experimental JSON-RPC app-server client that tracks the upstream Python `codex_app_server` SDK while keeping the stable `Codex` / `CodexThread` `exec` transport unchanged.
-
-This experimental surface is intentionally separate from the stable `exec` API:
-
-- `AppServerClient`
-- `AppServerCodex`
-- `AppServerThread`
-- `AppServerTurnHandle`
-- `AppServerNotification`
-- `AppServerV2`
-- `CommandApprovalRequest`
-- `FileChangeApprovalRequest`
-- `ApprovalDecision`
-
-Current app-server coverage includes:
-
-- startup, initialize, and shutdown
-- thread start, resume, list, read, fork, archive, unarchive, rename, and compact
-- turn start, steer, stream, run, and interrupt
-- model listing
-- generated notification payload decoding via `AppServerNotification`
-- native command and file-change approval requests plus generic server-request handling
-- stderr-tail transport diagnostics when the app-server exits early
-- retry helpers for overload-style JSON-RPC failures
-
-`AppServerThread.run(...)` returns `AppServerRunResult`, `AppServerTurnHandle.run()` returns `AppServerV2.Turn`, and `AppServerTurnHandle.stream()` yields full typed `AppServerNotification` values.
-
-Approval handlers default to `.approve`, and unknown inbound server requests default to `{}` to match the current Python client behavior:
-
-```swift
-let client = try await AppServerCodex(config: AppServerConfig(
-    commandApprovalHandler: { request in
-        print(request.command ?? "")
-        return .approve
-    },
-    fileChangeApprovalHandler: { request in
-        print(request.grantRoot ?? "")
-        return .approve
-    }
-))
-
-let thread = try await client.startThread(options: AppServerThreadOptions(
-    model: "gpt-5-codex",
-    sandbox: .workspaceWrite,
-    cwd: "/path/to/repo",
-    approvalPolicy: .mode(.onRequest)
-))
-
-let handle = try await thread.turn([
-    .text("Inspect the repository and propose a patch"),
-    .localImage(path: "/tmp/ui.png"),
-], options: AppServerTurnOptions(summary: .concise))
-
-for try await notification in try await handle.stream() {
-    print(notification.method)
-}
-
-try await handle.interrupt()
-
-let result = try await thread.run("Summarize the approved changes")
-print(result.finalResponse ?? "")
-```
-
-Only one active turn consumer is supported per `AppServerCodex` instance, matching the current upstream experimental SDK behavior.
-
-Generated `AppServerV2` protocol wrappers live in [`Sources/Codex/AppServerV2.swift`](Sources/Codex/AppServerV2.swift) and [`Sources/Codex/AppServerV2Generated.swift`](Sources/Codex/AppServerV2Generated.swift). Regenerate them with:
-
-```bash
-python3 Scripts/generate_app_server_v2.py
-```
+The example demonstrates startup, approvals, thread list/read, and streamed notifications using the current RPC API.
 
 ## Testing
 
-Run the main package tests:
+Run the package tests:
 
 ```bash
 swift test
 ```
 
-The test suite uses `swift-testing` and a stub `codex` executable to verify CLI arguments, environment handling, schema cleanup, thread resume behavior, streamed events, and failure propagation.
+The suite uses `swift-testing` and a stub `codex` binary that simulates the JSON-RPC app-server protocol.
 
 ## Repository Layout
 
 - [`Sources/Codex`](Sources/Codex): SDK implementation
-- [`Tests/CodexTests`](Tests/CodexTests): parity-focused tests and stub CLI harness
-- [`Scripts/generate_app_server_v2.py`](Scripts/generate_app_server_v2.py): app-server v2 wrapper generator
-- [`Examples`](Examples): standalone executable examples package
+- [`Tests/CodexTests`](Tests/CodexTests): tests and stub transport harness
+- [`Scripts/generate_app_server_v2.py`](Scripts/generate_app_server_v2.py): typed model generator
+- [`Examples`](Examples): executable example package
 - [`AGENTS.md`](AGENTS.md): repository instructions for coding agents

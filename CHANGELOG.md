@@ -2,7 +2,7 @@
 
 All notable changes to this project should be documented in this file.
 
-For upstream parity work, record both the Swift package version and the `openai/codex` `sdk/typescript` basis that the release or unreleased work reflects. Keep detailed provenance in [`UPSTREAM.md`](UPSTREAM.md) and summarize user-visible results here.
+For upstream parity work, record both the Swift package version and the reviewed `openai/codex` basis. Keep detailed provenance in [`UPSTREAM.md`](UPSTREAM.md).
 
 The format is based on Keep a Changelog and this project uses tags without a `v` prefix.
 
@@ -10,30 +10,30 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Added
 
-- Added [`UPSTREAM.md`](UPSTREAM.md) to record the exact upstream `openai/codex` commit used for sync work.
-- Added explicit upstream sync instructions to [`AGENTS.md`](AGENTS.md).
-- Added the upstream `openai/codex` repository as a git submodule at [`vendor/openai-codex`](vendor/openai-codex).
-- Added `Scripts/generate_app_server_v2.py` plus checked-in generated `AppServerV2` wrappers and notification registry output for the experimental app-server protocol.
-- Added a public low-level `AppServerClient` alongside the high-level `AppServerCodex`, `AppServerThread`, and `AppServerTurnHandle` app-server APIs.
-- Added experimental app-server support for thread list/read/fork/archive/unarchive/name/compact, turn steer/run, model list, rich app-server input items, retry helpers, and full typed notification streaming.
-- Added app-server transport tests covering initialize, thread and model RPC helpers, default approval behavior, turn steer/interrupt, typed notifications, stderr-tail diagnostics, and turn-consumer exclusivity.
+- Added a typed JSON-RPC v2 model layer generated into [`Sources/Codex/RPCModelsGenerated.swift`](Sources/Codex/RPCModelsGenerated.swift).
+- Added generated model support for `rawJSON`, `additionalFields`, and union `.unknown(JSONValue)` fallback in [`Sources/Codex/GeneratedModelSupport.swift`](Sources/Codex/GeneratedModelSupport.swift).
+- Added `CodexRPCClient` as the low-level JSON-RPC client.
+- Added RPC-focused regression tests for typed model round-tripping, unknown union fallback, notification metadata fallback, retry behavior, initialize normalization, approval handling, and thread/turn lifecycle operations.
+- Added an updated executable example for startup, approvals, thread list/read, and streamed notifications.
 
 ### Changed
 
-- Updated the vendored [`openai/codex`](vendor/openai-codex) submodule to `527244910fb851cea6147334dbc08f8fbce4cb9d`.
-- Passed `baseURL` via `--config openai_base_url=...` instead of `OPENAI_BASE_URL` to match the current TypeScript SDK behavior when callers provide a custom environment override.
-- Documented that the installation snippet uses version `0.0.1` in [`README.md`](README.md).
-- Documented that upstream reference tracking should use an exact `openai/codex` commit instead of the moving `main` branch.
-- Kept the existing `Codex` / `CodexThread` exec transport unchanged while expanding the experimental app-server API toward Python `codex_app_server` parity.
-- Set a low-latency `swift-subprocess` preferred buffer size for the app-server stdio transport so JSON-RPC responses surface promptly on Darwin.
-- Switched the experimental app-server default server-request behavior to match Python: approval requests accept by default and unknown request methods return `{}`.
-- Reworked the app-server stream surface so `AppServerTurnHandle.stream()` yields `AppServerNotification`, `AppServerTurnHandle.run()` returns `AppServerV2.Turn`, and `AppServerThread.run()` returns `AppServerRunResult`.
-- Promoted transport-closure stderr tail output into a first-class public app-server error when available.
+- Replaced the old dual-surface SDK with a single JSON-RPC v2 transport based on `codex app-server --listen stdio://`.
+- Promoted the RPC-backed API to the primary public surface: `Codex`, `CodexThread`, `CodexTurnHandle`, `CodexConfig`, `ThreadOptions`, `ThreadListOptions`, `TurnOptions`, `RunResult`, `CodexNotification`, and `CodexNotificationPayload`.
+- Replaced JSONValue-wrapper protocol models with stored-property generated types such as `Thread`, `Turn`, `ThreadItem`, `ModelListResponse`, `ThreadListResponse`, and `ThreadReadResponse`.
+- Aligned response shapes with the vendored schema, including `ThreadListResponse.data`, `ModelListResponse.data`, integer token counts, typed `MessagePhase`, and empty typed interrupt/archive/name/compact responses.
+- Switched final-response extraction and notification metadata handling to the typed model layer.
+- Updated README, UPSTREAM notes, tests, and examples to document the RPC-only API.
+
+### Removed
+
+- Removed the legacy `codex exec` transport and its event/item model family.
+- Removed the `AppServerClient`, `AppServerCodex`, `AppServerThread`, `AppServerTurnHandle`, `AppServerNotification`, and `AppServerV2` public surfaces.
+- Removed the transitional `AppServerV2ValueModel` / handwritten `JSONValue` accessor layer.
 
 ### Upstream Basis
 
 - Swift package version: `0.0.1`
 - Vendored upstream checkout: `vendor/openai-codex` at `527244910fb851cea6147334dbc08f8fbce4cb9d`
-- Upstream TypeScript SDK basis: `3293538e128e02ca24d5e9913af986ac68405b00`
-- Upstream Python app-server basis: `527244910fb851cea6147334dbc08f8fbce4cb9d`
-- Notes: latest reviewed stable SDK behavior includes the `openai_base_url` config override parity update. The experimental JSON-RPC app-server API now tracks the upstream Python `codex_app_server` facade and current v2 protocol at the vendored commit above.
+- Reviewed upstream JSON-RPC basis: `527244910fb851cea6147334dbc08f8fbce4cb9d`
+- Notes: the Swift SDK now treats the vendored Python app-server client and v2 protocol schema as the runtime source of truth. The old `exec` transport is no longer part of the public SDK.
