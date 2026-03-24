@@ -10,7 +10,7 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Added
 
-- Added a typed JSON-RPC v2 model layer generated into [`Sources/Codex/RPCModelsGenerated.swift`](Sources/Codex/RPCModelsGenerated.swift).
+- Added a typed JSON-RPC v2 model layer generated into [`Sources/Codex/RPCModels/Generated`](Sources/Codex/RPCModels/Generated).
 - Added generated model support for `rawJSON`, `additionalFields`, and union `.unknown(JSONValue)` fallback in [`Sources/Codex/GeneratedModelSupport.swift`](Sources/Codex/GeneratedModelSupport.swift).
 - Added `CodexRPCClient` as the low-level JSON-RPC client.
 - Added RPC-focused regression tests for typed model round-tripping, unknown union fallback, notification metadata fallback, retry behavior, initialize normalization, approval handling, and thread/turn lifecycle operations.
@@ -24,6 +24,7 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 - Aligned response shapes with the vendored schema, including `ThreadListResponse.data`, `ModelListResponse.data`, integer token counts, typed `MessagePhase`, and empty typed interrupt/archive/name/compact responses.
 - Switched final-response extraction and notification metadata handling to the typed model layer.
 - Updated README, UPSTREAM notes, tests, and examples to document the RPC-only API.
+- Split generated RPC v2 models into one file per type under [`Sources/Codex/RPCModels/Generated`](Sources/Codex/RPCModels/Generated) so editors no longer need to open a single 17k+ line file.
 
 ### Removed
 

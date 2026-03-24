@@ -248,8 +248,10 @@ Unknown request methods fall back to:
 
 Generated protocol models live in:
 
-- [`Sources/Codex/RPCModelsGenerated.swift`](Sources/Codex/RPCModelsGenerated.swift)
+- [`Sources/Codex/RPCModels/Generated`](Sources/Codex/RPCModels/Generated)
 - [`Sources/Codex/GeneratedModelSupport.swift`](Sources/Codex/GeneratedModelSupport.swift)
+
+The generator writes one Swift file per generated type plus [`CodexNotificationPayload.swift`](Sources/Codex/RPCModels/Generated/CodexNotificationPayload.swift) so the model layer stays editor-friendly.
 
 Regenerate them with:
 
