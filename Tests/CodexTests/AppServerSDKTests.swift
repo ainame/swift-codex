@@ -5,7 +5,7 @@ import Testing
 @Suite(.serialized)
 struct AppServerSDKTests {
     @Test
-    func appServerInitializesAndStreamsTurnEvents() async throws {
+    func appServerInitializesAndStreamsTypedNotifications() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
         try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
@@ -15,14 +15,6 @@ struct AppServerSDKTests {
                 .notification(method: "thread/started", params: appServerThreadStarted(threadID: "thread_app")),
                 .notification(method: "turn/started", params: appServerTurnStarted(threadID: "thread_app", turnID: "turn_app")),
                 .notification(
-                    method: "item/started",
-                    params: appServerItemNotification(
-                        threadID: "thread_app",
-                        turnID: "turn_app",
-                        item: appServerAgentMessageItem(text: "Working")
-                    )
-                ),
-                .notification(
                     method: "item/completed",
                     params: appServerItemNotification(
                         threadID: "thread_app",
@@ -30,63 +22,85 @@ struct AppServerSDKTests {
                         item: appServerAgentMessageItem(text: "Done")
                     )
                 ),
-                .notification(method: "turn/completed", params: appServerTurnCompleted(threadID: "thread_app", turnID: "turn_app")),
+                .notification(method: "turn/completed", params: [
+                    "threadId": .string("thread_app"),
+                    "turn": .object(appServerTurnObject(id: "turn_app")),
+                ]),
             ]]
         ))
 
-        let client = try await makeAppServerClient(stub: stub)
-        let metadata = await client.metadata()
+        let codex = try await makeAppServerCodex(stub: stub)
+        let metadata = await codex.metadata()
         #expect(metadata.serverName == "codex")
         #expect(metadata.serverVersion == "test")
 
-        let thread = try await client.startThread()
+        let thread = try await codex.startThread()
         let handle = try await thread.turn("Hello")
         let stream = try await handle.stream()
 
-        var events: [AppServerEvent] = []
-        for try await event in stream {
-            events.append(event)
+        var methods: [String] = []
+        for try await notification in stream {
+            methods.append(notification.method)
         }
 
-        #expect(thread.id == "thread_app")
-        #expect(events.count == 5)
-        if case .threadStarted(let threadID) = try #require(events.first) {
-            #expect(threadID == "thread_app")
-        } else {
-            Issue.record("Expected first event to be thread started")
-        }
-
-        let methods = try stub.appServerMessages(forInvocation: 0).compactMap { $0.string(forKey: "method") }
-        #expect(methods == ["initialize", "initialized", "thread/start", "turn/start"])
-        await client.close()
+        #expect(methods == ["thread/started", "turn/started", "item/completed", "turn/completed"])
+        await codex.close()
     }
 
     @Test
-    func appServerResumeThreadUsesResumeMethod() async throws {
+    func appServerThreadRunCollectsFinalResponseAndUsage() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
         try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
-            threadResumeResponses: [appServerThreadResponse(id: "thread_resume")]
+            threadStartResponses: [appServerThreadResponse(id: "thread_run")],
+            turnStartResponses: [appServerTurnResponse(id: "turn_run")],
+            turnStartSequences: [[
+                .notification(method: "turn/started", params: appServerTurnStarted(threadID: "thread_run", turnID: "turn_run")),
+                .notification(
+                    method: "item/completed",
+                    params: appServerItemNotification(
+                        threadID: "thread_run",
+                        turnID: "turn_run",
+                        item: appServerAgentMessageItem(text: "Interim", phase: nil)
+                    )
+                ),
+                .notification(
+                    method: "item/completed",
+                    params: appServerItemNotification(
+                        threadID: "thread_run",
+                        turnID: "turn_run",
+                        item: appServerAgentMessageItem(text: "Final", phase: "final_answer")
+                    )
+                ),
+                .notification(
+                    method: "thread/tokenUsage/updated",
+                    params: appServerThreadTokenUsageUpdated(threadID: "thread_run", turnID: "turn_run")
+                ),
+                .notification(method: "turn/completed", params: [
+                    "threadId": .string("thread_run"),
+                    "turn": .object(appServerTurnObject(id: "turn_run")),
+                ]),
+            ]]
         ))
 
-        let client = try await makeAppServerClient(stub: stub)
-        let thread = try await client.resumeThread(id: "thread_resume")
+        let codex = try await makeAppServerCodex(stub: stub)
+        let thread = try await codex.startThread()
+        let result = try await thread.run("Hello")
 
-        #expect(thread.id == "thread_resume")
-        let methods = try stub.appServerMessages(forInvocation: 0).compactMap { $0.string(forKey: "method") }
-        #expect(methods == ["initialize", "initialized", "thread/resume"])
-        await client.close()
+        #expect(result.finalResponse == "Final")
+        #expect(result.items.count == 2)
+        #expect(result.usage != nil)
+        await codex.close()
     }
 
     @Test
-    func appServerCommandApprovalRespondsAccept() async throws {
+    func appServerDefaultApprovalAcceptsAndUnknownServerRequestsReturnEmptyObject() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
         try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
             threadStartResponses: [appServerThreadResponse(id: "thread_cmd")],
             turnStartResponses: [appServerTurnResponse(id: "turn_cmd")],
             turnStartSequences: [[
-                .notification(method: "turn/started", params: appServerTurnStarted(threadID: "thread_cmd", turnID: "turn_cmd")),
                 .request(
                     id: "approval-1",
                     method: "item/commandExecution/requestApproval",
@@ -100,110 +114,131 @@ struct AppServerSDKTests {
                         reason: "requires approval"
                     )
                 ),
-                .notification(method: "turn/completed", params: appServerTurnCompleted(threadID: "thread_cmd", turnID: "turn_cmd")),
+                .request(
+                    id: "unknown-1",
+                    method: "item/tool/requestUserInput",
+                    params: [
+                        "threadId": .string("thread_cmd"),
+                        "turnId": .string("turn_cmd"),
+                    ]
+                ),
+                .notification(method: "turn/completed", params: [
+                    "threadId": .string("thread_cmd"),
+                    "turn": .object(appServerTurnObject(id: "turn_cmd")),
+                ]),
             ]]
         ))
 
-        let client = try await makeAppServerClient(
-            stub: stub,
-            commandApprovalHandler: { request in
-                #expect(request.itemID == "cmd_1")
-                #expect(request.command == "git push")
-                return .approve
-            }
-        )
-
-        let thread = try await client.startThread()
+        let codex = try await makeAppServerCodex(stub: stub)
+        let thread = try await codex.startThread()
         _ = try await thread.run("Approve it")
 
         let responses = try stub.appServerResponses(forInvocation: 0)
-        let result = try #require(responses.first?["result"]?.objectValue)
-        #expect(result["decision"] == .string("accept"))
+        let approval = try #require(responses.first?["result"]?.objectValue)
+        #expect(approval["decision"] == .string("accept"))
+        let fallback = try #require(responses.dropFirst().first?["result"]?.objectValue)
+        #expect(fallback == [:])
+        await codex.close()
+    }
+
+    @Test
+    func appServerLowLevelClientCoversThreadAndModelHelpers() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadStartResponses: [appServerThreadResponse(id: "thread_start")],
+            threadResumeResponses: [appServerThreadResponse(id: "thread_resume")],
+            threadListResponses: [appServerThreadListResponse(threads: [appServerThreadObject(id: "thread_listed")])],
+            threadReadResponses: [appServerThreadReadResponse(thread: appServerThreadObject(id: "thread_read", turns: [appServerTurnObject(id: "turn_old")]))],
+            threadForkResponses: [appServerThreadResponse(id: "thread_fork")],
+            threadArchiveResponses: [appServerEmptyResponse()],
+            threadUnarchiveResponses: [appServerThreadResponse(id: "thread_unarchived")],
+            threadSetNameResponses: [appServerEmptyResponse()],
+            threadCompactResponses: [appServerEmptyResponse()],
+            modelListResponses: [["models": []]]
+        ))
+
+        let client = AppServerClient(config: makeAppServerConfig(stub: stub))
+        let initialize = try await client.initialize()
+        #expect(initialize.serverName == "codex")
+
+        let started = try await client.threadStart(options: .init(model: "gpt-5"))
+        #expect(started.thread?.id == "thread_start")
+        let resumed = try await client.threadResume(threadID: "thread_resume")
+        #expect(resumed.thread?.id == "thread_resume")
+        let listed = try await client.threadList()
+        if case .array(let threads)? = listed.jsonObject?["threads"] {
+            #expect(threads.count == 1)
+        } else {
+            Issue.record("Expected thread/list response to contain threads array")
+        }
+        let read = try await client.threadRead(threadID: "thread_read", includeTurns: true)
+        #expect(read.jsonObject?.valueModel(forKey: "thread") as AppServerV2.Thread? != nil)
+        let forked = try await client.threadFork(threadID: "thread_resume")
+        #expect(forked.thread?.id == "thread_fork")
+        _ = try await client.threadArchive(threadID: "thread_resume")
+        let unarchived = try await client.threadUnarchive(threadID: "thread_resume")
+        #expect(unarchived.thread?.id == "thread_unarchived")
+        _ = try await client.threadSetName(threadID: "thread_resume", name: "Renamed")
+        _ = try await client.threadCompact(threadID: "thread_resume")
+        _ = try await client.modelList()
+
+        let methods = try stub.appServerMessages(forInvocation: 0).compactMap { $0.string(forKey: "method") }
+        #expect(methods == [
+            "initialize",
+            "initialized",
+            "thread/start",
+            "thread/resume",
+            "thread/list",
+            "thread/read",
+            "thread/fork",
+            "thread/archive",
+            "thread/unarchive",
+            "thread/name/set",
+            "thread/compact/start",
+            "model/list",
+        ])
         await client.close()
     }
 
     @Test
-    func appServerFileChangeApprovalRespondsDeclineAndTurnFails() async throws {
+    func appServerTurnSteerAndInterruptUseExpectedMethods() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
         try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
-            threadStartResponses: [appServerThreadResponse(id: "thread_patch")],
-            turnStartResponses: [appServerTurnResponse(id: "turn_patch")],
-            turnStartSequences: [[
-                .notification(method: "turn/started", params: appServerTurnStarted(threadID: "thread_patch", turnID: "turn_patch")),
-                .request(
-                    id: "approval-2",
-                    method: "item/fileChange/requestApproval",
-                    params: appServerFileChangeApprovalParams(
-                        threadID: "thread_patch",
-                        turnID: "turn_patch",
-                        itemID: "patch_1",
-                        reason: "extra write access needed",
-                        grantRoot: "/tmp/other"
-                    )
-                ),
-                .notification(
-                    method: "error",
-                    params: appServerErrorNotification(
-                        threadID: "thread_patch",
-                        turnID: "turn_patch",
-                        message: "write denied"
-                    )
-                ),
-            ]]
+            threadStartResponses: [appServerThreadResponse(id: "thread_control")],
+            turnStartResponses: [appServerTurnResponse(id: "turn_control")],
+            turnStartSequences: [[]],
+            turnSteerResponses: [appServerTurnSteerResponse(turnID: "turn_control")],
+            turnInterruptResponses: [appServerEmptyResponse()]
         ))
 
-        let client = try await makeAppServerClient(
-            stub: stub,
-            fileChangeApprovalHandler: { request in
-                #expect(request.itemID == "patch_1")
-                #expect(request.grantRoot == "/tmp/other")
-                return .deny
-            }
-        )
+        let codex = try await makeAppServerCodex(stub: stub)
+        let thread = try await codex.startThread()
+        let handle = try await thread.turn([.text("Hello"), .image(url: "https://example.test/a.png"), .skill(name: "checks", path: "/tmp/checks"), .mention(name: "repo", path: "/tmp/repo")])
+        let steer = try await handle.steer(.localImage(path: "/tmp/local.png"))
+        #expect(steer.turnID == "turn_control")
+        _ = try await handle.interrupt()
 
-        let thread = try await client.startThread()
-        do {
-            _ = try await thread.run("Patch it")
-            Issue.record("Expected turn failure after declined file-change approval")
-        } catch let error as AppServerError {
-            #expect(error == .turnFailed("write denied"))
+        let messages = try stub.appServerMessages(forInvocation: 0)
+        let methods = messages.compactMap { $0.string(forKey: "method") }
+        #expect(methods == ["initialize", "initialized", "thread/start", "turn/start", "turn/steer", "turn/interrupt"])
+
+        let turnStartInput = try #require(messages.first { $0.string(forKey: "method") == "turn/start" }?["params"]?.objectValue?["input"])
+        if case .array(let items) = turnStartInput {
+            #expect(items.count == 4)
+        } else {
+            Issue.record("Expected turn/start input array")
         }
 
-        let responses = try stub.appServerResponses(forInvocation: 0)
-        let result = try #require(responses.first?["result"]?.objectValue)
-        #expect(result["decision"] == .string("decline"))
-        await client.close()
-    }
-
-    @Test
-    func appServerUnsupportedServerRequestFailsClearly() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
-            threadStartResponses: [appServerThreadResponse(id: "thread_bad")],
-            turnStartResponses: [appServerTurnResponse(id: "turn_bad")],
-            turnStartSequences: [[
-                .notification(method: "turn/started", params: appServerTurnStarted(threadID: "thread_bad", turnID: "turn_bad")),
-                .request(
-                    id: "unsupported-1",
-                    method: "item/tool/requestUserInput",
-                    params: ["threadId": "thread_bad", "turnId": "turn_bad"]
-                ),
-            ]]
-        ))
-
-        let client = try await makeAppServerClient(stub: stub)
-        let thread = try await client.startThread()
-
-        do {
-            _ = try await thread.run("Unsupported")
-            Issue.record("Expected unsupported server request error")
-        } catch let error as AppServerError {
-            #expect(error == .unsupportedServerRequest("item/tool/requestUserInput"))
+        let steerInput = try #require(messages.first { $0.string(forKey: "method") == "turn/steer" }?["params"]?.objectValue?["input"])
+        if case .array(let items) = steerInput {
+            #expect(items.count == 1)
+        } else {
+            Issue.record("Expected turn/steer input array")
         }
 
-        await client.close()
+        await codex.close()
     }
 
     @Test
@@ -218,8 +253,8 @@ struct AppServerSDKTests {
             ]]
         ))
 
-        let client = try await makeAppServerClient(stub: stub)
-        let thread = try await client.startThread()
+        let codex = try await makeAppServerCodex(stub: stub)
+        let thread = try await codex.startThread()
         let handle = try await thread.turn("Concurrent")
         let first = try await handle.stream()
         _ = first
@@ -231,28 +266,7 @@ struct AppServerSDKTests {
             #expect(error == .concurrentTurnConsumer(activeTurnID: "turn_concurrent", requestedTurnID: "turn_concurrent"))
         }
 
-        await client.close()
-    }
-
-    @Test
-    func appServerTurnInterruptUsesInterruptMethod() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
-            threadStartResponses: [appServerThreadResponse(id: "thread_interrupt")],
-            turnStartResponses: [appServerTurnResponse(id: "turn_interrupt")],
-            turnStartSequences: [[]],
-            turnInterruptResponses: [appServerEmptyResponse()]
-        ))
-
-        let client = try await makeAppServerClient(stub: stub)
-        let thread = try await client.startThread()
-        let handle = try await thread.turn("Stop the turn")
-        try await handle.interrupt()
-
-        let methods = try stub.appServerMessages(forInvocation: 0).compactMap { $0.string(forKey: "method") }
-        #expect(methods == ["initialize", "initialized", "thread/start", "turn/start", "turn/interrupt"])
-        await client.close()
+        await codex.close()
     }
 
     @Test
@@ -267,7 +281,7 @@ struct AppServerSDKTests {
         ))
 
         do {
-            _ = try await makeAppServerClient(stub: stub)
+            _ = try await makeAppServerCodex(stub: stub)
             Issue.record("Expected transport closure during initialize")
         } catch let error as AppServerError {
             if case .transportClosedWithStderrTail(let stderrTail) = error {
@@ -280,19 +294,24 @@ struct AppServerSDKTests {
     }
 }
 
-private func makeAppServerClient(
+private func makeAppServerConfig(
     stub: CodexStub,
-    commandApprovalHandler: @escaping AppServerConfig.CommandApprovalHandler = { _ in .deny },
-    fileChangeApprovalHandler: @escaping AppServerConfig.FileChangeApprovalHandler = { _ in .deny }
-) async throws -> AppServerCodex {
-    try await AppServerCodex(config: AppServerConfig(
+    serverRequestHandler: AppServerConfig.ServerRequestHandler? = nil
+) -> AppServerConfig {
+    AppServerConfig(
         codexPathOverride: stub.executableURL.path(),
         environment: [
             "CODEX_TEST_STATE_DIR": stub.rootURL.path(),
         ],
-        commandApprovalHandler: commandApprovalHandler,
-        fileChangeApprovalHandler: fileChangeApprovalHandler
-    ))
+        serverRequestHandler: serverRequestHandler
+    )
+}
+
+private func makeAppServerCodex(
+    stub: CodexStub,
+    serverRequestHandler: AppServerConfig.ServerRequestHandler? = nil
+) async throws -> AppServerCodex {
+    try await AppServerCodex(config: makeAppServerConfig(stub: stub, serverRequestHandler: serverRequestHandler))
 }
 
 private extension JSONValue {

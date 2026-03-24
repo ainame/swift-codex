@@ -59,14 +59,32 @@ struct CodexStub {
         initialize_close_stderr = scenario.get("initializeCloseStderr", [])
         thread_start_responses = scenario.get("threadStartResponses", [])
         thread_resume_responses = scenario.get("threadResumeResponses", [])
+        thread_list_responses = scenario.get("threadListResponses", [])
+        thread_read_responses = scenario.get("threadReadResponses", [])
+        thread_fork_responses = scenario.get("threadForkResponses", [])
+        thread_archive_responses = scenario.get("threadArchiveResponses", [])
+        thread_unarchive_responses = scenario.get("threadUnarchiveResponses", [])
+        thread_set_name_responses = scenario.get("threadSetNameResponses", [])
+        thread_compact_responses = scenario.get("threadCompactResponses", [])
         turn_start_responses = scenario.get("turnStartResponses", [])
         turn_start_sequences = scenario.get("turnStartSequences", [])
+        turn_steer_responses = scenario.get("turnSteerResponses", [])
         turn_interrupt_responses = scenario.get("turnInterruptResponses", [])
+        model_list_responses = scenario.get("modelListResponses", [])
 
         thread_start_index = 0
         thread_resume_index = 0
+        thread_list_index = 0
+        thread_read_index = 0
+        thread_fork_index = 0
+        thread_archive_index = 0
+        thread_unarchive_index = 0
+        thread_set_name_index = 0
+        thread_compact_index = 0
         turn_start_index = 0
+        turn_steer_index = 0
         turn_interrupt_index = 0
+        model_list_index = 0
 
         def append_jsonl(suffix, payload):
             path = os.path.join(state_dir, f"{invocation}.{suffix}.jsonl")
@@ -111,6 +129,48 @@ struct CodexStub {
                 write_message({"id": request_id, "result": response})
                 continue
 
+            if method == "thread/list":
+                response = thread_list_responses[thread_list_index]
+                thread_list_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/read":
+                response = thread_read_responses[thread_read_index]
+                thread_read_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/fork":
+                response = thread_fork_responses[thread_fork_index]
+                thread_fork_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/archive":
+                response = thread_archive_responses[thread_archive_index]
+                thread_archive_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/unarchive":
+                response = thread_unarchive_responses[thread_unarchive_index]
+                thread_unarchive_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/name/set":
+                response = thread_set_name_responses[thread_set_name_index]
+                thread_set_name_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/compact/start":
+                response = thread_compact_responses[thread_compact_index]
+                thread_compact_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
             if method == "turn/start":
                 response = turn_start_responses[turn_start_index]
                 sequence = turn_start_sequences[turn_start_index]
@@ -132,9 +192,21 @@ struct CodexStub {
                     append_jsonl("appserver.responses", json.loads(response_line))
                 continue
 
+            if method == "turn/steer":
+                response = turn_steer_responses[turn_steer_index]
+                turn_steer_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
             if method == "turn/interrupt":
                 response = turn_interrupt_responses[turn_interrupt_index]
                 turn_interrupt_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "model/list":
+                response = model_list_responses[model_list_index]
+                model_list_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
@@ -285,26 +357,53 @@ struct AppServerScenario: Encodable {
     var initializeCloseStderr: [String]
     var threadStartResponses: [JSONObject]
     var threadResumeResponses: [JSONObject]
+    var threadListResponses: [JSONObject]
+    var threadReadResponses: [JSONObject]
+    var threadForkResponses: [JSONObject]
+    var threadArchiveResponses: [JSONObject]
+    var threadUnarchiveResponses: [JSONObject]
+    var threadSetNameResponses: [JSONObject]
+    var threadCompactResponses: [JSONObject]
     var turnStartResponses: [JSONObject]
     var turnStartSequences: [[AppServerScriptStep]]
+    var turnSteerResponses: [JSONObject]
     var turnInterruptResponses: [JSONObject]
+    var modelListResponses: [JSONObject]
 
     init(
         initializeResult: JSONObject = appServerInitializeResult(),
         initializeCloseStderr: [String] = [],
         threadStartResponses: [JSONObject] = [],
         threadResumeResponses: [JSONObject] = [],
+        threadListResponses: [JSONObject] = [],
+        threadReadResponses: [JSONObject] = [],
+        threadForkResponses: [JSONObject] = [],
+        threadArchiveResponses: [JSONObject] = [],
+        threadUnarchiveResponses: [JSONObject] = [],
+        threadSetNameResponses: [JSONObject] = [],
+        threadCompactResponses: [JSONObject] = [],
         turnStartResponses: [JSONObject] = [],
         turnStartSequences: [[AppServerScriptStep]] = [],
-        turnInterruptResponses: [JSONObject] = []
+        turnSteerResponses: [JSONObject] = [],
+        turnInterruptResponses: [JSONObject] = [],
+        modelListResponses: [JSONObject] = []
     ) {
         self.initializeResult = initializeResult
         self.initializeCloseStderr = initializeCloseStderr
         self.threadStartResponses = threadStartResponses
         self.threadResumeResponses = threadResumeResponses
+        self.threadListResponses = threadListResponses
+        self.threadReadResponses = threadReadResponses
+        self.threadForkResponses = threadForkResponses
+        self.threadArchiveResponses = threadArchiveResponses
+        self.threadUnarchiveResponses = threadUnarchiveResponses
+        self.threadSetNameResponses = threadSetNameResponses
+        self.threadCompactResponses = threadCompactResponses
         self.turnStartResponses = turnStartResponses
         self.turnStartSequences = turnStartSequences
+        self.turnSteerResponses = turnSteerResponses
         self.turnInterruptResponses = turnInterruptResponses
+        self.modelListResponses = modelListResponses
     }
 }
 
@@ -374,6 +473,66 @@ func appServerEmptyResponse() -> JSONObject {
     [:]
 }
 
+func appServerThreadObject(id: String, turns: [JSONObject] = []) -> JSONObject {
+    [
+        "id": .string(id),
+        "turns": .array(turns.map(JSONValue.object)),
+    ]
+}
+
+func appServerThreadListResponse(threads: [JSONObject], nextCursor: String? = nil) -> JSONObject {
+    var result: JSONObject = [
+        "threads": .array(threads.map(JSONValue.object)),
+    ]
+    if let nextCursor {
+        result["nextCursor"] = .string(nextCursor)
+    }
+    return result
+}
+
+func appServerThreadReadResponse(thread: JSONObject) -> JSONObject {
+    [
+        "thread": .object(thread),
+    ]
+}
+
+func appServerTurnObject(id: String, status: String = "completed", items: [JSONObject] = [], error: JSONObject? = nil) -> JSONObject {
+    var turn: JSONObject = [
+        "id": .string(id),
+        "status": .string(status),
+        "items": .array(items.map(JSONValue.object)),
+    ]
+    if let error {
+        turn["error"] = .object(error)
+    }
+    return turn
+}
+
+func appServerTurnSteerResponse(turnID: String) -> JSONObject {
+    [
+        "turnId": .string(turnID),
+    ]
+}
+
+func appServerThreadTokenUsageUpdated(threadID: String, turnID: String) -> JSONObject {
+    [
+        "threadId": .string(threadID),
+        "turnId": .string(turnID),
+        "tokenUsage": .object([
+            "last": .object([
+                "inputTokens": .number(1),
+                "outputTokens": .number(2),
+                "cachedInputTokens": .number(0),
+            ]),
+            "total": .object([
+                "inputTokens": .number(1),
+                "outputTokens": .number(2),
+                "cachedInputTokens": .number(0),
+            ]),
+        ]),
+    ]
+}
+
 func appServerThreadStarted(threadID: String) -> JSONObject {
     [
         "thread": .object([
@@ -418,12 +577,16 @@ func appServerItemNotification(threadID: String, turnID: String, item: JSONObjec
     ]
 }
 
-func appServerAgentMessageItem(id: String = "msg_1", text: String) -> JSONObject {
-    [
+func appServerAgentMessageItem(id: String = "msg_1", text: String, phase: String? = nil) -> JSONObject {
+    var item: JSONObject = [
         "id": .string(id),
         "type": .string("agentMessage"),
         "text": .string(text),
     ]
+    if let phase {
+        item["phase"] = .string(phase)
+    }
+    return item
 }
 
 func appServerCommandApprovalParams(
