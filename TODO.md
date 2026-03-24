@@ -1,6 +1,6 @@
 # TODO
 
-This file tracks follow-up work for the experimental app-server API added on `codex/app-server-approval-api`.
+This file tracks follow-up work for the experimental app-server API after the Python-parity work on `codex/app-server-python-parity`.
 
 ## Why JSON-RPC Matters
 
@@ -34,31 +34,43 @@ The app-server JSON-RPC transport unlocks capabilities that were previously impo
 
 ## Current Scope
 
-The current experimental Swift implementation intentionally supports only the minimum subset needed to replace prompt-based approval handling:
+The current experimental Swift implementation now covers the main Python `codex_app_server` surface:
 
 - initialize and initialized handshake
 - thread start
 - thread resume
+- thread list
+- thread read
+- thread fork
+- thread archive
+- thread unarchive
+- thread rename
+- thread compact
 - turn start
+- turn steer
 - turn interrupt
-- event streaming
+- model list
+- full notification streaming via `AppServerNotification`
 - command approval requests
 - file-change approval requests
+- generic server-request handling
 - stderr-tail diagnostics for transport closure when the app-server exits early
+- retry helpers for overload-style JSON-RPC failures
+- generated `AppServerV2` wrappers and notification registry output
 
 ## Next App-Server Work
 
-- Add typed support for more thread operations.
-  Start with `thread/read`, `thread/list`, `thread/fork`, `thread/archive`, and `thread/rollback`.
+- Improve the generated model layer.
+  The current generator emits thin `JSONValue` wrappers plus a typed notification registry. If the protocol stabilizes, consider generating more field-level accessors directly from the schema.
 
-- Add typed support for more turn operations.
-  Evaluate `turn/steer` next because it is a natural fit for long-lived session control.
+- Add executable examples.
+  A small example should show startup, approval callbacks, thread list/read, and turn streaming.
 
-- Promote more notifications into the Swift event surface.
-  Candidates include status changes, plan updates, diff updates, reasoning deltas, and realtime notifications.
+- Watch for new upstream request and notification methods.
+  The current surface tracks the reviewed Python SDK and v2 protocol, but experimental upstream changes may add or rename methods quickly.
 
-- Support additional server request types.
-  The current implementation rejects unsupported server requests clearly; add typed handling only as specific runtime use cases require it.
+- Improve typed accessors for high-value protocol objects.
+  `Thread`, `Turn`, `ThreadItem`, usage objects, and notification payloads should gain more convenience accessors as real consumers need them.
 
 - Improve approval response modeling.
   If upstream grows richer approval payloads or decision metadata, preserve that structure instead of returning only accept or decline.
@@ -66,15 +78,9 @@ The current experimental Swift implementation intentionally supports only the mi
 - Evaluate whether `preferredBufferSize = 1` should remain fixed.
   It is the safest setting for interactive JSON-RPC latency on Darwin, but a slightly larger value may be acceptable if tests and responsiveness stay reliable.
 
-- Add an executable app-server example.
-  A small example should show startup, approval callbacks, and turn streaming.
-
 ## Upstream Tracking
 
 - Re-check the upstream app-server protocol whenever this API changes.
   The current compatibility review was against `openai/codex` `origin/main` at `527244910fb851cea6147334dbc08f8fbce4cb9d`.
 
-- Watch for protocol changes outside the currently implemented subset.
-  The Python SDK and generated v2 protocol already support far more than this Swift client currently exposes.
-
-- If upstream changes the approval methods or payload shapes, update the Swift transport before extending higher-level APIs.
+- If upstream changes request names, notification payloads, or approval payload shapes, update the generator and transport before extending higher-level APIs.
