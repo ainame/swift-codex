@@ -63,6 +63,8 @@ The current experimental Swift implementation now covers the main Python `codex_
 - Improve the generated model layer.
   The current generator emits thin `JSONValue` wrappers plus a typed notification registry. This was a deliberate parity shortcut, not the intended steady-state API.
   Current examples like `AppServerV2.AgentPath` are not good public Swift models because they expose transport representation rather than domain semantics.
+  The same concern applies to handwritten extension accessors like `InitializeResponse.serverInfo`, `userAgent`, and similar `jsonObject?.stringValue(...)` helpers.
+  Those helpers are better than forcing SDK users to dig into `jsonValue`, but they are still dynamic lookup disguised as a typed model.
   The next pass should move toward schema-driven Swift models with stored properties or strongly typed scalar wrappers.
   Prioritize the generated shapes in this order:
   1. scalar aliases and path-like values such as `AgentPath`, `AbsolutePathBuf`, ids, and timestamps
@@ -85,7 +87,15 @@ The current experimental Swift implementation now covers the main Python `codex_
   - reading thread ids, turn ids, status, usage, final responses, and item text
   - inspecting plan, diff, and reasoning notification payloads
   - consuming model-list metadata
+  Replace handwritten dynamic helpers like `jsonObject?.valueModel(forKey:)` and `jsonObject?.stringValue(forKey:)` with generated stored properties or generated decoding where the schema is stable enough.
+  Treat the current convenience extensions as transitional glue, not the target architecture.
   If a future agent adds stored properties for these models, trim redundant handwritten extension accessors at the same time so the API does not fork into two competing access patterns.
+
+- Simplify notification metadata extraction.
+  Helpers like `AppServerNotification.threadID` and `turnID` should not require giant handwritten `switch` statements over every notification case.
+  In the short term, prefer generic extraction from `rawParams` using common paths like `threadId`, `thread.id`, `turnId`, and `turn.id`, with a tiny fallback only for genuinely irregular payloads.
+  In the longer term, move this logic into generated metadata accessors or generated protocol conformances once the model layer is no longer `JSONValue`-first.
+  Avoid maintaining parallel handwritten dispatch logic that must be updated every time upstream adds another notification type.
 
 - Improve approval response modeling.
   If upstream grows richer approval payloads or decision metadata, preserve that structure instead of returning only accept or decline.
