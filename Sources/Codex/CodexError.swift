@@ -40,6 +40,6 @@ extension CodexError {
         @unknown default:
             detail = "\(status)"
         }
-        return .processFailed(detail: "Codex Exec exited with \(detail): \(stderr)")
+        return .processFailed(detail: "Codex process exited with \(detail): \(stderr)")
     }
 }
