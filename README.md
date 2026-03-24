@@ -39,6 +39,7 @@ Current implementation includes:
 - output schema temp-file forwarding
 - config override flattening to CLI `--config key=value`
 - explicit CLI path override or `PATH` lookup
+- experimental `AppServerCodex` client with native approval callbacks
 - parity-focused tests with `swift-testing`
 
 Current scope does not include:
@@ -212,6 +213,65 @@ swift run basic-example
 ```
 
 It depends on the root package by local path and demonstrates both buffered and streamed execution.
+
+## Experimental App-Server API
+
+`swift-codex` also exposes an experimental app-server client for native approval handling and structured turn lifecycle events.
+
+This API is intentionally separate from the stable `Codex` / `CodexThread` `exec` transport:
+
+- `AppServerCodex`
+- `AppServerThread`
+- `AppServerTurnHandle`
+- `CommandApprovalRequest`
+- `FileChangeApprovalRequest`
+- `ApprovalDecision`
+
+The current experimental scope is intentionally narrow:
+
+- client startup and shutdown
+- thread start and resume
+- turn start and streaming
+- turn interrupt
+- native command and file-change approval requests
+- stderr-tail transport diagnostics when the app-server exits early
+
+Other app-server request types are not implemented yet and will fail clearly.
+
+Approval handlers default to `.deny`, not auto-approve:
+
+```swift
+let client = try await AppServerCodex(config: AppServerConfig(
+    commandApprovalHandler: { request in
+        print(request.command ?? "")
+        return .approve
+    },
+    fileChangeApprovalHandler: { request in
+        print(request.grantRoot ?? "")
+        return .deny
+    }
+))
+
+let thread = try await client.startThread(options: AppServerThreadOptions(
+    model: "gpt-5-codex",
+    sandboxMode: .workspaceWrite,
+    workingDirectory: "/path/to/repo",
+    approvalPolicy: .onRequest
+))
+
+let handle = try await thread.turn("Inspect the repository and propose a patch")
+for try await event in try await handle.stream() {
+    print(event)
+}
+```
+
+If the host needs to stop an active turn early:
+
+```swift
+try await handle.interrupt()
+```
+
+Only one active turn consumer is supported per `AppServerCodex` instance, matching the current upstream experimental SDK behavior.
 
 ## Testing
 

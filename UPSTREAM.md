@@ -44,10 +44,19 @@ Use this section for ongoing maintenance notes. Add dated entries newest first.
   - `sdk/typescript/tests/setupCodexHome.ts`
   - `sdk/typescript/tests/testCodex.ts`
   - `sdk/typescript/README.md`
+  - `sdk/python/src/codex_app_server/api.py`
+  - `sdk/python/src/codex_app_server/client.py`
+  - `sdk/python/src/codex_app_server/generated/v2_all.py`
+  - `codex-rs/app-server-protocol/schema/json/v2/*.json`
 - Reviewed upstream features:
   - `baseUrl` now maps to `--config openai_base_url=...` rather than `OPENAI_BASE_URL`
   - explicit environment overrides must remain isolated from the host environment except for required SDK variables
   - resume arguments must continue to precede image arguments
+  - experimental app-server requests `thread/start`, `thread/resume`, and `turn/start` remain wire-compatible with the current Swift implementation
+  - experimental server requests `item/commandExecution/requestApproval` and `item/fileChange/requestApproval` remain unchanged in the current upstream review
+  - upstream app-server `origin/main` reviewed at `527244910fb851cea6147334dbc08f8fbce4cb9d` on `2026-03-24`
 - Intentional deviations:
   - Swift uses task cancellation rather than exposing an `AbortSignal`-style turn option
   - Swift keeps CLI discovery `PATH`-based or explicitly overridden instead of npm package resolution
+  - Swift currently implements only a minimal experimental app-server subset rather than the broader Python app-server surface
+  - Swift defaults app-server approval handlers to deny, while the current Python app-server client defaults approvals to accept
