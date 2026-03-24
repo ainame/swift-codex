@@ -1,6 +1,6 @@
 # TODO
 
-This file tracks follow-up work for the experimental app-server API added on `codex/app-server-approval-api`.
+This file tracks follow-up work for the experimental app-server API after the Python-parity work on `codex/app-server-python-parity`.
 
 ## Why JSON-RPC Matters
 
@@ -34,31 +34,68 @@ The app-server JSON-RPC transport unlocks capabilities that were previously impo
 
 ## Current Scope
 
-The current experimental Swift implementation intentionally supports only the minimum subset needed to replace prompt-based approval handling:
+The current experimental Swift implementation now covers the main Python `codex_app_server` surface:
 
 - initialize and initialized handshake
 - thread start
 - thread resume
+- thread list
+- thread read
+- thread fork
+- thread archive
+- thread unarchive
+- thread rename
+- thread compact
 - turn start
+- turn steer
 - turn interrupt
-- event streaming
+- model list
+- full notification streaming via `AppServerNotification`
 - command approval requests
 - file-change approval requests
+- generic server-request handling
 - stderr-tail diagnostics for transport closure when the app-server exits early
+- retry helpers for overload-style JSON-RPC failures
+- generated `AppServerV2` wrappers and notification registry output
 
 ## Next App-Server Work
 
-- Add typed support for more thread operations.
-  Start with `thread/read`, `thread/list`, `thread/fork`, `thread/archive`, and `thread/rollback`.
+- Improve the generated model layer.
+  The current generator emits thin `JSONValue` wrappers plus a typed notification registry. This was a deliberate parity shortcut, not the intended steady-state API.
+  Current examples like `AppServerV2.AgentPath` are not good public Swift models because they expose transport representation rather than domain semantics.
+  The same concern applies to handwritten extension accessors like `InitializeResponse.serverInfo`, `userAgent`, and similar `jsonObject?.stringValue(...)` helpers.
+  Those helpers are better than forcing SDK users to dig into `jsonValue`, but they are still dynamic lookup disguised as a typed model.
+  The next pass should move toward schema-driven Swift models with stored properties or strongly typed scalar wrappers.
+  Prioritize the generated shapes in this order:
+  1. scalar aliases and path-like values such as `AgentPath`, `AbsolutePathBuf`, ids, and timestamps
+  2. high-value objects returned by the public facade such as `Thread`, `Turn`, `ThreadItem`, `ThreadTokenUsage`, and model-list payloads
+  3. frequently consumed notification payloads such as turn, item, diff, plan, and reasoning notifications
+  Keep unknown-field preservation available, but as an escape hatch like `rawJSON` or `additionalFields`, not as the primary public API.
+  Avoid hand-maintaining hundreds of types; keep this generator-based and prefer schema-driven field generation over adding more handwritten accessors.
+  Maintain wire compatibility with the vendored protocol and preserve the current ability to decode newer upstream payloads without immediate breakage.
 
-- Add typed support for more turn operations.
-  Evaluate `turn/steer` next because it is a natural fit for long-lived session control.
+- Add executable examples.
+  A small example should show startup, approval callbacks, thread list/read, and turn streaming.
 
-- Promote more notifications into the Swift event surface.
-  Candidates include status changes, plan updates, diff updates, reasoning deltas, and realtime notifications.
+- Watch for new upstream request and notification methods.
+  The current surface tracks the reviewed Python SDK and v2 protocol, but experimental upstream changes may add or rename methods quickly.
 
-- Support additional server request types.
-  The current implementation rejects unsupported server requests clearly; add typed handling only as specific runtime use cases require it.
+- Improve typed accessors for high-value protocol objects.
+  `Thread`, `Turn`, `ThreadItem`, usage objects, and notification payloads should gain more convenience accessors as real consumers need them.
+  The goal here is to shrink direct `JSONValue` access from app-level code.
+  Favor a design where most SDK consumers never touch `jsonValue` for common flows like:
+  - reading thread ids, turn ids, status, usage, final responses, and item text
+  - inspecting plan, diff, and reasoning notification payloads
+  - consuming model-list metadata
+  Replace handwritten dynamic helpers like `jsonObject?.valueModel(forKey:)` and `jsonObject?.stringValue(forKey:)` with generated stored properties or generated decoding where the schema is stable enough.
+  Treat the current convenience extensions as transitional glue, not the target architecture.
+  If a future agent adds stored properties for these models, trim redundant handwritten extension accessors at the same time so the API does not fork into two competing access patterns.
+
+- Simplify notification metadata extraction.
+  Helpers like `AppServerNotification.threadID` and `turnID` should not require giant handwritten `switch` statements over every notification case.
+  In the short term, prefer generic extraction from `rawParams` using common paths like `threadId`, `thread.id`, `turnId`, and `turn.id`, with a tiny fallback only for genuinely irregular payloads.
+  In the longer term, move this logic into generated metadata accessors or generated protocol conformances once the model layer is no longer `JSONValue`-first.
+  Avoid maintaining parallel handwritten dispatch logic that must be updated every time upstream adds another notification type.
 
 - Improve approval response modeling.
   If upstream grows richer approval payloads or decision metadata, preserve that structure instead of returning only accept or decline.
@@ -66,15 +103,13 @@ The current experimental Swift implementation intentionally supports only the mi
 - Evaluate whether `preferredBufferSize = 1` should remain fixed.
   It is the safest setting for interactive JSON-RPC latency on Darwin, but a slightly larger value may be acceptable if tests and responsiveness stay reliable.
 
-- Add an executable app-server example.
-  A small example should show startup, approval callbacks, and turn streaming.
-
 ## Upstream Tracking
 
 - Re-check the upstream app-server protocol whenever this API changes.
   The current compatibility review was against `openai/codex` `origin/main` at `527244910fb851cea6147334dbc08f8fbce4cb9d`.
 
-- Watch for protocol changes outside the currently implemented subset.
-  The Python SDK and generated v2 protocol already support far more than this Swift client currently exposes.
+- If upstream changes request names, notification payloads, or approval payload shapes, update the generator and transport before extending higher-level APIs.
 
-- If upstream changes the approval methods or payload shapes, update the Swift transport before extending higher-level APIs.
+- Re-check generator inputs before changing generated output shape.
+  The current generator reads both the vendored Python notification registry and the vendored v2 JSON schema.
+  Keep those two inputs aligned: the schema should remain the source of truth for available types, while the Python notification registry should remain the source of truth for the current notification-method mapping used by the higher-level SDK.

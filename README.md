@@ -17,8 +17,10 @@ This repository tracks the TypeScript SDK in [`openai/codex/sdk/typescript`](htt
 - Upstream repository: `openai/codex`
 - Upstream SDK path: `sdk/typescript`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `06e06ab173a7912de1661f6678eaf8d1c04da170`
-- Current recorded reference: `3293538e128e02ca24d5e9913af986ac68405b00`
+- Vendored upstream commit: `527244910fb851cea6147334dbc08f8fbce4cb9d`
+- Current recorded references:
+  - stable `exec` transport: `sdk/typescript` at `3293538e128e02ca24d5e9913af986ac68405b00`
+  - experimental app-server transport: `sdk/python/src/codex_app_server` and app-server v2 protocol at `527244910fb851cea6147334dbc08f8fbce4cb9d`
 
 Use [`UPSTREAM.md`](UPSTREAM.md) to distinguish the vendored upstream checkout from the exact commit SHA the Swift port has been reviewed or synced against.
 
@@ -39,7 +41,8 @@ Current implementation includes:
 - output schema temp-file forwarding
 - config override flattening to CLI `--config key=value`
 - explicit CLI path override or `PATH` lookup
-- experimental `AppServerCodex` client with native approval callbacks
+- experimental app-server client that tracks the upstream Python `codex_app_server` SDK
+- generated `AppServerV2` protocol wrappers and notification registry
 - parity-focused tests with `swift-testing`
 
 Current scope does not include:
@@ -216,29 +219,34 @@ It depends on the root package by local path and demonstrates both buffered and 
 
 ## Experimental App-Server API
 
-`swift-codex` also exposes an experimental app-server client for native approval handling and structured turn lifecycle events.
+`swift-codex` also exposes an experimental JSON-RPC app-server client that tracks the upstream Python `codex_app_server` SDK while keeping the stable `Codex` / `CodexThread` `exec` transport unchanged.
 
-This API is intentionally separate from the stable `Codex` / `CodexThread` `exec` transport:
+This experimental surface is intentionally separate from the stable `exec` API:
 
+- `AppServerClient`
 - `AppServerCodex`
 - `AppServerThread`
 - `AppServerTurnHandle`
+- `AppServerNotification`
+- `AppServerV2`
 - `CommandApprovalRequest`
 - `FileChangeApprovalRequest`
 - `ApprovalDecision`
 
-The current experimental scope is intentionally narrow:
+Current app-server coverage includes:
 
-- client startup and shutdown
-- thread start and resume
-- turn start and streaming
-- turn interrupt
-- native command and file-change approval requests
+- startup, initialize, and shutdown
+- thread start, resume, list, read, fork, archive, unarchive, rename, and compact
+- turn start, steer, stream, run, and interrupt
+- model listing
+- generated notification payload decoding via `AppServerNotification`
+- native command and file-change approval requests plus generic server-request handling
 - stderr-tail transport diagnostics when the app-server exits early
+- retry helpers for overload-style JSON-RPC failures
 
-Other app-server request types are not implemented yet and will fail clearly.
+`AppServerThread.run(...)` returns `AppServerRunResult`, `AppServerTurnHandle.run()` returns `AppServerV2.Turn`, and `AppServerTurnHandle.stream()` yields full typed `AppServerNotification` values.
 
-Approval handlers default to `.deny`, not auto-approve:
+Approval handlers default to `.approve`, and unknown inbound server requests default to `{}` to match the current Python client behavior:
 
 ```swift
 let client = try await AppServerCodex(config: AppServerConfig(
@@ -248,30 +256,39 @@ let client = try await AppServerCodex(config: AppServerConfig(
     },
     fileChangeApprovalHandler: { request in
         print(request.grantRoot ?? "")
-        return .deny
+        return .approve
     }
 ))
 
 let thread = try await client.startThread(options: AppServerThreadOptions(
     model: "gpt-5-codex",
-    sandboxMode: .workspaceWrite,
-    workingDirectory: "/path/to/repo",
-    approvalPolicy: .onRequest
+    sandbox: .workspaceWrite,
+    cwd: "/path/to/repo",
+    approvalPolicy: .mode(.onRequest)
 ))
 
-let handle = try await thread.turn("Inspect the repository and propose a patch")
-for try await event in try await handle.stream() {
-    print(event)
+let handle = try await thread.turn([
+    .text("Inspect the repository and propose a patch"),
+    .localImage(path: "/tmp/ui.png"),
+], options: AppServerTurnOptions(summary: .concise))
+
+for try await notification in try await handle.stream() {
+    print(notification.method)
 }
-```
 
-If the host needs to stop an active turn early:
-
-```swift
 try await handle.interrupt()
+
+let result = try await thread.run("Summarize the approved changes")
+print(result.finalResponse ?? "")
 ```
 
 Only one active turn consumer is supported per `AppServerCodex` instance, matching the current upstream experimental SDK behavior.
+
+Generated `AppServerV2` protocol wrappers live in [`Sources/Codex/AppServerV2.swift`](Sources/Codex/AppServerV2.swift) and [`Sources/Codex/AppServerV2Generated.swift`](Sources/Codex/AppServerV2Generated.swift). Regenerate them with:
+
+```bash
+python3 Scripts/generate_app_server_v2.py
+```
 
 ## Testing
 
@@ -287,5 +304,6 @@ The test suite uses `swift-testing` and a stub `codex` executable to verify CLI 
 
 - [`Sources/Codex`](Sources/Codex): SDK implementation
 - [`Tests/CodexTests`](Tests/CodexTests): parity-focused tests and stub CLI harness
+- [`Scripts/generate_app_server_v2.py`](Scripts/generate_app_server_v2.py): app-server v2 wrapper generator
 - [`Examples`](Examples): standalone executable examples package
 - [`AGENTS.md`](AGENTS.md): repository instructions for coding agents

@@ -7,12 +7,14 @@ This repository ports the TypeScript SDK from the [`openai/codex`](https://githu
 - Upstream repository: `openai/codex`
 - Upstream SDK path: `sdk/typescript`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `06e06ab173a7912de1661f6678eaf8d1c04da170`
-- Reference commit SHA: `3293538e128e02ca24d5e9913af986ac68405b00`
-- Reference commit URL: `https://github.com/openai/codex/commit/3293538e128e02ca24d5e9913af986ac68405b00`
-- Last reviewed date: `2026-03-21`
+- Vendored upstream commit: `527244910fb851cea6147334dbc08f8fbce4cb9d`
+- Stable exec reference commit SHA: `3293538e128e02ca24d5e9913af986ac68405b00`
+- Stable exec reference commit URL: `https://github.com/openai/codex/commit/3293538e128e02ca24d5e9913af986ac68405b00`
+- Experimental app-server reference commit SHA: `527244910fb851cea6147334dbc08f8fbce4cb9d`
+- Experimental app-server reference commit URL: `https://github.com/openai/codex/commit/527244910fb851cea6147334dbc08f8fbce4cb9d`
+- Last reviewed date: `2026-03-24`
 
-The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The exact upstream commit that the current Swift implementation was originally based on was not recorded before this file was added. Do not replace the reference commit placeholders unless you have verified the port basis being referenced.
+The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The stable `exec` transport still tracks an earlier reviewed TypeScript basis, while the experimental app-server client now tracks the current Python `codex_app_server` and v2 protocol basis shown above.
 
 ## How To Keep This In Sync
 
@@ -35,8 +37,9 @@ Use this section for ongoing maintenance notes. Add dated entries newest first.
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `06e06ab173a7912de1661f6678eaf8d1c04da170`
-- Reference commit: `3293538e128e02ca24d5e9913af986ac68405b00`
+- Vendored checkout: `vendor/openai-codex` at `527244910fb851cea6147334dbc08f8fbce4cb9d`
+- Stable exec reference commit: `3293538e128e02ca24d5e9913af986ac68405b00`
+- Experimental app-server reference commit: `527244910fb851cea6147334dbc08f8fbce4cb9d`
 - Reviewed upstream files:
   - `sdk/typescript/src/exec.ts`
   - `sdk/typescript/tests/exec.test.ts`
@@ -46,17 +49,21 @@ Use this section for ongoing maintenance notes. Add dated entries newest first.
   - `sdk/typescript/README.md`
   - `sdk/python/src/codex_app_server/api.py`
   - `sdk/python/src/codex_app_server/client.py`
+  - `sdk/python/src/codex_app_server/_run.py`
+  - `sdk/python/src/codex_app_server/errors.py`
   - `sdk/python/src/codex_app_server/generated/v2_all.py`
-  - `codex-rs/app-server-protocol/schema/json/v2/*.json`
+  - `sdk/python/src/codex_app_server/generated/notification_registry.py`
+  - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
   - `baseUrl` now maps to `--config openai_base_url=...` rather than `OPENAI_BASE_URL`
   - explicit environment overrides must remain isolated from the host environment except for required SDK variables
   - resume arguments must continue to precede image arguments
-  - experimental app-server requests `thread/start`, `thread/resume`, and `turn/start` remain wire-compatible with the current Swift implementation
-  - experimental server requests `item/commandExecution/requestApproval` and `item/fileChange/requestApproval` remain unchanged in the current upstream review
+  - the experimental app-server client now mirrors the Python `codex_app_server` request surface for thread, turn, model, and initialize operations
+  - generated `AppServerV2` wrappers and notification payload mapping are derived from the vendored v2 protocol schema and Python notification registry
+  - default app-server server-request behavior matches Python: approval requests accept by default and unknown methods return an empty object result
   - upstream app-server `origin/main` reviewed at `527244910fb851cea6147334dbc08f8fbce4cb9d` on `2026-03-24`
 - Intentional deviations:
   - Swift uses task cancellation rather than exposing an `AbortSignal`-style turn option
   - Swift keeps CLI discovery `PATH`-based or explicitly overridden instead of npm package resolution
-  - Swift currently implements only a minimal experimental app-server subset rather than the broader Python app-server surface
-  - Swift defaults app-server approval handlers to deny, while the current Python app-server client defaults approvals to accept
+  - Swift remains async-only and does not add Python-style synchronous wrappers
+  - generated Swift models are thin `JSONValue` wrappers with typed convenience accessors rather than field-by-field value structs
