@@ -15,6 +15,7 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 - Added the upstream `openai/codex` repository as a git submodule at [`vendor/openai-codex`](vendor/openai-codex).
 - Added an experimental app-server SDK surface with `AppServerCodex`, `AppServerThread`, `AppServerTurnHandle`, typed approval requests, and typed app-server lifecycle events.
 - Added app-server transport tests covering initialize, thread start/resume, approval accept/deny flows, unsupported server requests, and turn-consumer exclusivity.
+- Added experimental app-server coverage for `turn/interrupt` and stderr-tail transport diagnostics.
 
 ### Changed
 
@@ -25,6 +26,7 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 - Kept the existing `Codex` / `CodexThread` exec transport unchanged while adding the experimental app-server client as a separate API path.
 - Set a low-latency `swift-subprocess` preferred buffer size for the app-server stdio transport so JSON-RPC responses surface promptly on Darwin.
 - Reviewed the latest upstream app-server protocol on `origin/main` and confirmed the currently implemented request and notification subset remains compatible.
+- Promoted transport-closure stderr tail output into a first-class public app-server error when available.
 
 ### Upstream Basis
 

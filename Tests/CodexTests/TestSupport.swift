@@ -56,14 +56,17 @@ struct CodexStub {
             "serverInfo": {"name": "codex", "version": "test"},
             "userAgent": "codex/test"
         })
+        initialize_close_stderr = scenario.get("initializeCloseStderr", [])
         thread_start_responses = scenario.get("threadStartResponses", [])
         thread_resume_responses = scenario.get("threadResumeResponses", [])
         turn_start_responses = scenario.get("turnStartResponses", [])
         turn_start_sequences = scenario.get("turnStartSequences", [])
+        turn_interrupt_responses = scenario.get("turnInterruptResponses", [])
 
         thread_start_index = 0
         thread_resume_index = 0
         turn_start_index = 0
+        turn_interrupt_index = 0
 
         def append_jsonl(suffix, payload):
             path = os.path.join(state_dir, f"{invocation}.{suffix}.jsonl")
@@ -87,6 +90,12 @@ struct CodexStub {
             request_id = message.get("id")
 
             if method == "initialize":
+                if initialize_close_stderr:
+                    for entry in initialize_close_stderr:
+                        sys.stderr.write(entry)
+                        sys.stderr.write("\\n")
+                    sys.stderr.flush()
+                    sys.exit(0)
                 write_message({"id": request_id, "result": initialize_result})
                 continue
 
@@ -121,6 +130,12 @@ struct CodexStub {
                     if not response_line:
                         sys.exit(0)
                     append_jsonl("appserver.responses", json.loads(response_line))
+                continue
+
+            if method == "turn/interrupt":
+                response = turn_interrupt_responses[turn_interrupt_index]
+                turn_interrupt_index += 1
+                write_message({"id": request_id, "result": response})
                 continue
 
             if request_id is not None:
@@ -267,23 +282,29 @@ struct CodexStub {
 
 struct AppServerScenario: Encodable {
     var initializeResult: JSONObject
+    var initializeCloseStderr: [String]
     var threadStartResponses: [JSONObject]
     var threadResumeResponses: [JSONObject]
     var turnStartResponses: [JSONObject]
     var turnStartSequences: [[AppServerScriptStep]]
+    var turnInterruptResponses: [JSONObject]
 
     init(
         initializeResult: JSONObject = appServerInitializeResult(),
+        initializeCloseStderr: [String] = [],
         threadStartResponses: [JSONObject] = [],
         threadResumeResponses: [JSONObject] = [],
         turnStartResponses: [JSONObject] = [],
-        turnStartSequences: [[AppServerScriptStep]] = []
+        turnStartSequences: [[AppServerScriptStep]] = [],
+        turnInterruptResponses: [JSONObject] = []
     ) {
         self.initializeResult = initializeResult
+        self.initializeCloseStderr = initializeCloseStderr
         self.threadStartResponses = threadStartResponses
         self.threadResumeResponses = threadResumeResponses
         self.turnStartResponses = turnStartResponses
         self.turnStartSequences = turnStartSequences
+        self.turnInterruptResponses = turnInterruptResponses
     }
 }
 
@@ -347,6 +368,10 @@ func appServerTurnResponse(id: String) -> JSONObject {
             "id": .string(id),
         ]),
     ]
+}
+
+func appServerEmptyResponse() -> JSONObject {
+    [:]
 }
 
 func appServerThreadStarted(threadID: String) -> JSONObject {

@@ -113,6 +113,17 @@ actor AppServerTransport {
         return try decode(AppServerTurnStartResponse.self, from: response).turn.id
     }
 
+    func interruptTurn(threadID: String, turnID: String) async throws {
+        let response = try await request(
+            method: "turn/interrupt",
+            params: .object([
+                "threadId": .string(threadID),
+                "turnId": .string(turnID),
+            ])
+        )
+        _ = try decode(AppServerEmptyResponse.self, from: response)
+    }
+
     func openTurnStream(threadID: String, turnID: String) throws -> AsyncThrowingStream<AppServerEvent, Error> {
         if let activeConsumer {
             throw AppServerError.concurrentTurnConsumer(
@@ -189,7 +200,7 @@ actor AppServerTransport {
 
     private func send(_ payload: JSONValue) throws {
         guard let continuation = outboundContinuation else {
-            throw terminalError ?? AppServerError.transportClosed
+            throw terminalError ?? makeTransportClosedError()
         }
         let data = try JSONEncoder().encode(payload)
         guard let line = String(data: data, encoding: .utf8) else {
@@ -207,10 +218,10 @@ actor AppServerTransport {
         if let error {
             terminalError = error
         } else if terminalError == nil {
-            terminalError = AppServerError.transportClosed
+            terminalError = makeTransportClosedError()
         }
 
-        let failure = terminalError ?? AppServerError.transportClosed
+        let failure = terminalError ?? makeTransportClosedError()
 
         for (_, continuation) in pendingRequests {
             continuation.resume(throwing: failure)
@@ -228,6 +239,18 @@ actor AppServerTransport {
         if stderrTail.count > 40 {
             stderrTail.removeFirst(stderrTail.count - 40)
         }
+    }
+
+    private func makeTransportClosedError() -> AppServerError {
+        let stderrTail = stderrTailText()
+        guard !stderrTail.isEmpty else {
+            return .transportClosed
+        }
+        return .transportClosedWithStderrTail(stderrTail)
+    }
+
+    private func stderrTailText() -> String {
+        stderrTail.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func handleIncomingLine(_ line: String) async {
@@ -515,6 +538,8 @@ private struct AppServerThreadResumeResponse: Decodable {
 private struct AppServerTurnStartResponse: Decodable {
     var turn: WireTurn
 }
+
+private struct AppServerEmptyResponse: Decodable {}
 
 private struct WireThreadStartedNotification: Decodable {
     var thread: WireThread

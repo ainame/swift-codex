@@ -40,9 +40,11 @@ The current experimental Swift implementation intentionally supports only the mi
 - thread start
 - thread resume
 - turn start
+- turn interrupt
 - event streaming
 - command approval requests
 - file-change approval requests
+- stderr-tail diagnostics for transport closure when the app-server exits early
 
 ## Next App-Server Work
 
@@ -50,7 +52,7 @@ The current experimental Swift implementation intentionally supports only the mi
   Start with `thread/read`, `thread/list`, `thread/fork`, `thread/archive`, and `thread/rollback`.
 
 - Add typed support for more turn operations.
-  Evaluate `turn/interrupt` and `turn/steer` next because they are natural fits for long-lived session control.
+  Evaluate `turn/steer` next because it is a natural fit for long-lived session control.
 
 - Promote more notifications into the Swift event surface.
   Candidates include status changes, plan updates, diff updates, reasoning deltas, and realtime notifications.
@@ -60,9 +62,6 @@ The current experimental Swift implementation intentionally supports only the mi
 
 - Improve approval response modeling.
   If upstream grows richer approval payloads or decision metadata, preserve that structure instead of returning only accept or decline.
-
-- Add first-class stderr-tail diagnostics to public errors.
-  Transport failures should surface enough stderr context to diagnose runtime or protocol failures quickly.
 
 - Evaluate whether `preferredBufferSize = 1` should remain fixed.
   It is the safest setting for interactive JSON-RPC latency on Darwin, but a slightly larger value may be acceptable if tests and responsiveness stay reliable.

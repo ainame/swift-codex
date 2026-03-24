@@ -233,6 +233,51 @@ struct AppServerSDKTests {
 
         await client.close()
     }
+
+    @Test
+    func appServerTurnInterruptUsesInterruptMethod() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadStartResponses: [appServerThreadResponse(id: "thread_interrupt")],
+            turnStartResponses: [appServerTurnResponse(id: "turn_interrupt")],
+            turnStartSequences: [[]],
+            turnInterruptResponses: [appServerEmptyResponse()]
+        ))
+
+        let client = try await makeAppServerClient(stub: stub)
+        let thread = try await client.startThread()
+        let handle = try await thread.turn("Stop the turn")
+        try await handle.interrupt()
+
+        let methods = try stub.appServerMessages(forInvocation: 0).compactMap { $0.string(forKey: "method") }
+        #expect(methods == ["initialize", "initialized", "thread/start", "turn/start", "turn/interrupt"])
+        await client.close()
+    }
+
+    @Test
+    func appServerInitializeClosureIncludesStderrTail() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            initializeCloseStderr: [
+                "fatal: initialize failed",
+                "hint: app-server exited early",
+            ]
+        ))
+
+        do {
+            _ = try await makeAppServerClient(stub: stub)
+            Issue.record("Expected transport closure during initialize")
+        } catch let error as AppServerError {
+            if case .transportClosedWithStderrTail(let stderrTail) = error {
+                #expect(stderrTail.contains("fatal: initialize failed"))
+                #expect(stderrTail.contains("hint: app-server exited early"))
+            } else {
+                Issue.record("Expected transportClosedWithStderrTail, got \(error)")
+            }
+        }
+    }
 }
 
 private func makeAppServerClient(

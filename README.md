@@ -232,7 +232,9 @@ The current experimental scope is intentionally narrow:
 - client startup and shutdown
 - thread start and resume
 - turn start and streaming
+- turn interrupt
 - native command and file-change approval requests
+- stderr-tail transport diagnostics when the app-server exits early
 
 Other app-server request types are not implemented yet and will fail clearly.
 
@@ -261,6 +263,12 @@ let handle = try await thread.turn("Inspect the repository and propose a patch")
 for try await event in try await handle.stream() {
     print(event)
 }
+```
+
+If the host needs to stop an active turn early:
+
+```swift
+try await handle.interrupt()
 ```
 
 Only one active turn consumer is supported per `AppServerCodex` instance, matching the current upstream experimental SDK behavior.

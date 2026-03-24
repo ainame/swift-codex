@@ -100,6 +100,7 @@ public enum AppServerEvent: Sendable, Hashable, Codable {
 
 public enum AppServerError: Error, Sendable, Hashable {
     case transportClosed
+    case transportClosedWithStderrTail(String)
     case invalidResponseLine(String)
     case invalidResponse(String)
     case invalidRequestID
@@ -229,6 +230,10 @@ public struct AppServerTurnHandle: Sendable {
 
     public func stream() async throws -> AsyncThrowingStream<AppServerEvent, Error> {
         try await transport.openTurnStream(threadID: threadID, turnID: id)
+    }
+
+    public func interrupt() async throws {
+        try await transport.interruptTurn(threadID: threadID, turnID: id)
     }
 
     public func run() async throws -> RunResult {
