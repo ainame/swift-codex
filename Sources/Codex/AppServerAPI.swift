@@ -58,19 +58,19 @@ public struct FileChangeApprovalRequest: Sendable, Hashable, Codable {
 public enum ServerRequest: Sendable, Hashable, Codable {
     case commandApproval(CommandApprovalRequest)
     case fileChangeApproval(FileChangeApprovalRequest)
-    case unknown(method: String, params: JSONObject?)
+    case unknown(method: String, params: JSONValue?)
 }
 
 public enum ServerRequestResult: Sendable, Hashable, Codable {
     case approval(ApprovalDecision)
-    case json(JSONObject)
+    case json(JSONValue)
 
-    var jsonObject: JSONObject {
+    var jsonValue: JSONValue {
         switch self {
         case .approval(let decision):
-            return ["decision": .string(decision == .approve ? "accept" : "decline")]
-        case .json(let object):
-            return object
+            return .object(["decision": .string(decision == .approve ? "accept" : "decline")])
+        case .json(let value):
+            return value
         }
     }
 }
@@ -733,11 +733,11 @@ private func decodeResponse<T: Decodable>(_ type: T.Type, from value: JSONValue)
 }
 
 private func normalizedInitializePayload(_ payload: InitializeResponse) throws -> InitializeResponse {
-    let userAgent = payload.userAgent?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    let userAgent = payload.userAgent?.trimmingCharacters(in: .whitespacesAndNewlines)
     var serverName = payload.serverInfo?.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     var serverVersion = payload.serverInfo?.version?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
-    if (serverName.isEmpty || serverVersion.isEmpty), !userAgent.isEmpty {
+    if (serverName.isEmpty || serverVersion.isEmpty), let userAgent, !userAgent.isEmpty {
         let parsed = splitUserAgent(userAgent)
         if serverName.isEmpty {
             serverName = parsed.name ?? ""
@@ -747,13 +747,13 @@ private func normalizedInitializePayload(_ payload: InitializeResponse) throws -
         }
     }
 
-    guard !userAgent.isEmpty, !serverName.isEmpty, !serverVersion.isEmpty else {
+    guard !serverName.isEmpty, !serverVersion.isEmpty else {
         throw CodexError.missingMetadata
     }
 
     return InitializeResponse(
         serverInfo: ServerInfo(name: serverName, version: serverVersion),
-        userAgent: userAgent,
+        userAgent: userAgent?.isEmpty == false ? userAgent : nil,
         platformFamily: payload.platformFamily,
         platformOs: payload.platformOs,
         additionalFields: payload.additionalFields

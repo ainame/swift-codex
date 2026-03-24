@@ -104,7 +104,7 @@ struct AppServerSDKTests {
                 .request(
                     id: "approval-1",
                     method: "item/commandExecution/requestApproval",
-                    params: appServerCommandApprovalParams(
+                    params: .object(appServerCommandApprovalParams(
                         threadID: "thread_cmd",
                         turnID: "turn_cmd",
                         itemID: "cmd_1",
@@ -112,15 +112,15 @@ struct AppServerSDKTests {
                         command: "git push",
                         cwd: "/tmp/repo",
                         reason: "requires approval"
-                    )
+                    ))
                 ),
                 .request(
                     id: "unknown-1",
                     method: "item/tool/requestUserInput",
-                    params: [
+                    params: .object([
                         "threadId": .string("thread_cmd"),
                         "turnId": .string("turn_cmd"),
-                    ]
+                    ])
                 ),
                 .notification(method: "turn/completed", params: appServerTurnCompleted(threadID: "thread_cmd", turnID: "turn_cmd")),
             ]]
@@ -315,6 +315,76 @@ struct AppServerSDKTests {
         let metadata = await codex.metadata()
         #expect(metadata.serverInfo?.name == "codex")
         #expect(metadata.serverInfo?.version == "9.9.9")
+        await codex.close()
+    }
+
+    @Test
+    func initializeAcceptsServerInfoWithoutUserAgent() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            initializeResult: appServerInitializeResult(
+                userAgent: nil,
+                serverName: "codex",
+                serverVersion: "10.0.0"
+            )
+        ))
+
+        let codex = try await Codex(config: stub.makeConfig())
+        let metadata = await codex.metadata()
+        #expect(metadata.serverInfo?.name == "codex")
+        #expect(metadata.serverInfo?.version == "10.0.0")
+        #expect(metadata.userAgent == nil)
+        await codex.close()
+    }
+
+    @Test
+    func unknownServerRequestsPreserveNonObjectParamsAndResults() async throws {
+        actor RequestRecorder {
+            var request: ServerRequest?
+
+            func record(_ request: ServerRequest) {
+                self.request = request
+            }
+        }
+
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadStartResponses: [appServerThreadStartResponse(id: "thread_unknown")],
+            turnStartResponses: [appServerTurnStartResponse(id: "turn_unknown")],
+            turnStartSequences: [[
+                .request(
+                    id: "unknown-array",
+                    method: "host/customRequest",
+                    params: .array([.string("first"), .number(2)])
+                ),
+                .notification(method: "turn/completed", params: appServerTurnCompleted(threadID: "thread_unknown", turnID: "turn_unknown")),
+            ]]
+        ))
+
+        let recorder = RequestRecorder()
+        let config = stub.makeConfig(serverRequestHandler: { request in
+            await recorder.record(request)
+            return .json(.array([.string("ack"), .bool(true)]))
+        })
+
+        let codex = try await Codex(config: config)
+        let thread = try await codex.startThread()
+        _ = try await thread.run("Hello")
+
+        let request = try #require(await recorder.request)
+        switch request {
+        case .unknown(let method, let params):
+            #expect(method == "host/customRequest")
+            #expect(params == .array([.string("first"), .number(2)]))
+        default:
+            Issue.record("Expected unknown server request")
+        }
+
+        let responses = try stub.appServerResponses(forInvocation: 0)
+        let result = try #require(responses.first?["result"])
+        #expect(result == .array([.string("ack"), .bool(true)]))
         await codex.close()
     }
 }

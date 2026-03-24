@@ -370,7 +370,7 @@ struct AppServerScenario: Encodable {
 
 enum AppServerScriptStep: Encodable {
     case notification(method: String, params: JSONObject)
-    case request(id: String, method: String, params: JSONObject)
+    case request(id: String, method: String, params: JSONValue)
 
     private enum CodingKeys: String, CodingKey {
         case kind
@@ -401,7 +401,7 @@ enum AppServerScriptStep: Encodable {
 }
 
 func appServerInitializeResult(
-    userAgent: String = "codex/test",
+    userAgent: String? = "codex/test",
     serverName: String? = "codex",
     serverVersion: String? = "test"
 ) -> JSONObject {
