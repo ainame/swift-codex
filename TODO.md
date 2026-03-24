@@ -61,7 +61,16 @@ The current experimental Swift implementation now covers the main Python `codex_
 ## Next App-Server Work
 
 - Improve the generated model layer.
-  The current generator emits thin `JSONValue` wrappers plus a typed notification registry. If the protocol stabilizes, consider generating more field-level accessors directly from the schema.
+  The current generator emits thin `JSONValue` wrappers plus a typed notification registry. This was a deliberate parity shortcut, not the intended steady-state API.
+  Current examples like `AppServerV2.AgentPath` are not good public Swift models because they expose transport representation rather than domain semantics.
+  The next pass should move toward schema-driven Swift models with stored properties or strongly typed scalar wrappers.
+  Prioritize the generated shapes in this order:
+  1. scalar aliases and path-like values such as `AgentPath`, `AbsolutePathBuf`, ids, and timestamps
+  2. high-value objects returned by the public facade such as `Thread`, `Turn`, `ThreadItem`, `ThreadTokenUsage`, and model-list payloads
+  3. frequently consumed notification payloads such as turn, item, diff, plan, and reasoning notifications
+  Keep unknown-field preservation available, but as an escape hatch like `rawJSON` or `additionalFields`, not as the primary public API.
+  Avoid hand-maintaining hundreds of types; keep this generator-based and prefer schema-driven field generation over adding more handwritten accessors.
+  Maintain wire compatibility with the vendored protocol and preserve the current ability to decode newer upstream payloads without immediate breakage.
 
 - Add executable examples.
   A small example should show startup, approval callbacks, thread list/read, and turn streaming.
@@ -71,6 +80,12 @@ The current experimental Swift implementation now covers the main Python `codex_
 
 - Improve typed accessors for high-value protocol objects.
   `Thread`, `Turn`, `ThreadItem`, usage objects, and notification payloads should gain more convenience accessors as real consumers need them.
+  The goal here is to shrink direct `JSONValue` access from app-level code.
+  Favor a design where most SDK consumers never touch `jsonValue` for common flows like:
+  - reading thread ids, turn ids, status, usage, final responses, and item text
+  - inspecting plan, diff, and reasoning notification payloads
+  - consuming model-list metadata
+  If a future agent adds stored properties for these models, trim redundant handwritten extension accessors at the same time so the API does not fork into two competing access patterns.
 
 - Improve approval response modeling.
   If upstream grows richer approval payloads or decision metadata, preserve that structure instead of returning only accept or decline.
@@ -84,3 +99,7 @@ The current experimental Swift implementation now covers the main Python `codex_
   The current compatibility review was against `openai/codex` `origin/main` at `527244910fb851cea6147334dbc08f8fbce4cb9d`.
 
 - If upstream changes request names, notification payloads, or approval payload shapes, update the generator and transport before extending higher-level APIs.
+
+- Re-check generator inputs before changing generated output shape.
+  The current generator reads both the vendored Python notification registry and the vendored v2 JSON schema.
+  Keep those two inputs aligned: the schema should remain the source of truth for available types, while the Python notification registry should remain the source of truth for the current notification-method mapping used by the higher-level SDK.
