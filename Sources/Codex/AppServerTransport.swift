@@ -180,7 +180,7 @@ actor CodexRPCTransport {
                     try await handleServerRequest(
                         method: method,
                         requestID: requestID,
-                        params: message["params"]?.objectValue
+                        params: message["params"]
                     )
                 } else {
                     handleNotification(
@@ -209,47 +209,48 @@ actor CodexRPCTransport {
         }
     }
 
-    private func handleServerRequest(method: String, requestID: String, params: JSONObject?) async throws {
+    private func handleServerRequest(method: String, requestID: String, params: JSONValue?) async throws {
         let result = await makeServerRequestResult(method: method, params: params)
         try send(
             .object([
                 "id": .string(requestID),
-                "result": .object(result.jsonObject),
+                "result": result.jsonValue,
             ])
         )
     }
 
-    private func makeServerRequestResult(method: String, params: JSONObject?) async -> ServerRequestResult {
+    private func makeServerRequestResult(method: String, params: JSONValue?) async -> ServerRequestResult {
         if let serverRequestHandler = config.serverRequestHandler {
             let request = makeServerRequest(method: method, params: params)
             return await serverRequestHandler(request)
         }
 
+        let objectParams = params?.objectValue
         switch method {
         case "item/commandExecution/requestApproval":
             let request = CommandApprovalRequest(
-                threadID: params?.stringValue(forKey: "threadId") ?? "",
-                turnID: params?.stringValue(forKey: "turnId") ?? "",
-                itemID: params?.stringValue(forKey: "itemId") ?? "",
-                approvalID: params?.stringValue(forKey: "approvalId"),
-                command: params?.stringValue(forKey: "command"),
-                workingDirectory: params?.stringValue(forKey: "cwd"),
-                reason: params?.stringValue(forKey: "reason")
+                threadID: objectParams?.stringValue(forKey: "threadId") ?? "",
+                turnID: objectParams?.stringValue(forKey: "turnId") ?? "",
+                itemID: objectParams?.stringValue(forKey: "itemId") ?? "",
+                approvalID: objectParams?.stringValue(forKey: "approvalId"),
+                command: objectParams?.stringValue(forKey: "command"),
+                workingDirectory: objectParams?.stringValue(forKey: "cwd"),
+                reason: objectParams?.stringValue(forKey: "reason")
             )
             let decision = await config.commandApprovalHandler(request)
             return .approval(decision)
         case "item/fileChange/requestApproval":
             let request = FileChangeApprovalRequest(
-                threadID: params?.stringValue(forKey: "threadId") ?? "",
-                turnID: params?.stringValue(forKey: "turnId") ?? "",
-                itemID: params?.stringValue(forKey: "itemId") ?? "",
-                reason: params?.stringValue(forKey: "reason"),
-                grantRoot: params?.stringValue(forKey: "grantRoot")
+                threadID: objectParams?.stringValue(forKey: "threadId") ?? "",
+                turnID: objectParams?.stringValue(forKey: "turnId") ?? "",
+                itemID: objectParams?.stringValue(forKey: "itemId") ?? "",
+                reason: objectParams?.stringValue(forKey: "reason"),
+                grantRoot: objectParams?.stringValue(forKey: "grantRoot")
             )
             let decision = await config.fileChangeApprovalHandler(request)
             return .approval(decision)
         default:
-            return .json([:])
+            return .json(.object([:]))
         }
     }
 
@@ -263,28 +264,29 @@ actor CodexRPCTransport {
         pendingNotifications.append(notification)
     }
 
-    private func makeServerRequest(method: String, params: JSONObject?) -> ServerRequest {
+    private func makeServerRequest(method: String, params: JSONValue?) -> ServerRequest {
+        let objectParams = params?.objectValue
         switch method {
         case "item/commandExecution/requestApproval":
             return .commandApproval(
                 CommandApprovalRequest(
-                    threadID: params?.stringValue(forKey: "threadId") ?? "",
-                    turnID: params?.stringValue(forKey: "turnId") ?? "",
-                    itemID: params?.stringValue(forKey: "itemId") ?? "",
-                    approvalID: params?.stringValue(forKey: "approvalId"),
-                    command: params?.stringValue(forKey: "command"),
-                    workingDirectory: params?.stringValue(forKey: "cwd"),
-                    reason: params?.stringValue(forKey: "reason")
+                    threadID: objectParams?.stringValue(forKey: "threadId") ?? "",
+                    turnID: objectParams?.stringValue(forKey: "turnId") ?? "",
+                    itemID: objectParams?.stringValue(forKey: "itemId") ?? "",
+                    approvalID: objectParams?.stringValue(forKey: "approvalId"),
+                    command: objectParams?.stringValue(forKey: "command"),
+                    workingDirectory: objectParams?.stringValue(forKey: "cwd"),
+                    reason: objectParams?.stringValue(forKey: "reason")
                 )
             )
         case "item/fileChange/requestApproval":
             return .fileChangeApproval(
                 FileChangeApprovalRequest(
-                    threadID: params?.stringValue(forKey: "threadId") ?? "",
-                    turnID: params?.stringValue(forKey: "turnId") ?? "",
-                    itemID: params?.stringValue(forKey: "itemId") ?? "",
-                    reason: params?.stringValue(forKey: "reason"),
-                    grantRoot: params?.stringValue(forKey: "grantRoot")
+                    threadID: objectParams?.stringValue(forKey: "threadId") ?? "",
+                    turnID: objectParams?.stringValue(forKey: "turnId") ?? "",
+                    itemID: objectParams?.stringValue(forKey: "itemId") ?? "",
+                    reason: objectParams?.stringValue(forKey: "reason"),
+                    grantRoot: objectParams?.stringValue(forKey: "grantRoot")
                 )
             )
         default:
