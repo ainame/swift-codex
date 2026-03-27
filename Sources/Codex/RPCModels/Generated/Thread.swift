@@ -149,6 +149,63 @@ public struct Thread: ObjectModel {
             case turns
             case updatedAt
         }
+
+
+        init(
+            agentNickname: String?,
+            agentRole: String?,
+            cliVersion: String,
+            createdAt: Int,
+            cwd: String,
+            ephemeral: Bool,
+            gitInfo: GitInfo?,
+            id: String,
+            modelProvider: String,
+            name: String?,
+            path: String?,
+            preview: String,
+            source: SessionSource,
+            status: ThreadStatus,
+            turns: [Turn],
+            updatedAt: Int
+        ) {
+            self.agentNickname = agentNickname
+            self.agentRole = agentRole
+            self.cliVersion = cliVersion
+            self.createdAt = createdAt
+            self.cwd = cwd
+            self.ephemeral = ephemeral
+            self.gitInfo = gitInfo
+            self.id = id
+            self.modelProvider = modelProvider
+            self.name = name
+            self.path = path
+            self.preview = preview
+            self.source = source
+            self.status = status
+            self.turns = turns
+            self.updatedAt = updatedAt
+        }
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.agentNickname = try container.decodeIfPresent(String.self, forKey: .agentNickname)
+            self.agentRole = try container.decodeIfPresent(String.self, forKey: .agentRole)
+            self.cliVersion = try container.decode(String.self, forKey: .cliVersion)
+            self.createdAt = try container.decode(Int.self, forKey: .createdAt)
+            self.cwd = try container.decode(String.self, forKey: .cwd)
+            self.ephemeral = try container.decodeIfPresent(Bool.self, forKey: .ephemeral) ?? false
+            self.gitInfo = try container.decodeIfPresent(GitInfo.self, forKey: .gitInfo)
+            self.id = try container.decode(String.self, forKey: .id)
+            self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
+            self.name = try container.decodeIfPresent(String.self, forKey: .name)
+            self.path = try container.decodeIfPresent(String.self, forKey: .path)
+            self.preview = try container.decode(String.self, forKey: .preview)
+            self.source = try container.decode(SessionSource.self, forKey: .source)
+            self.status = try container.decode(ThreadStatus.self, forKey: .status)
+            self.turns = try container.decode([Turn].self, forKey: .turns)
+            self.updatedAt = try container.decode(Int.self, forKey: .updatedAt)
+        }
     }
 }
 

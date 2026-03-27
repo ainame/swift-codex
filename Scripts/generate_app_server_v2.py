@@ -83,6 +83,7 @@ MANUAL_DEFINITIONS = {
 }
 
 COMPATIBILITY_DEFAULTS = {
+    ("Thread", "ephemeral"): "false",
     ("ThreadStartResponse", "approvalsReviewer"): ".user",
     ("ThreadResumeResponse", "approvalsReviewer"): ".user",
     ("ThreadForkResponse", "approvalsReviewer"): ".user",

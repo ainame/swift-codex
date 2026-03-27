@@ -69,6 +69,15 @@ struct CodexSDKTests {
     }
 
     @Test
+    func threadDefaultsMissingEphemeralForOlderRuntimes() throws {
+        var raw = jsonObject(makeThread(id: "thread_ephemeral_compat"))
+        raw.removeValue(forKey: "ephemeral")
+
+        let decoded = try decodeJSONValue(Thread.self, from: .object(raw))
+        #expect(decoded.ephemeral == false)
+    }
+
+    @Test
     func unknownNotificationFallbackStillExtractsMetadata() {
         let notification = CodexNotification(
             method: "future/event",
