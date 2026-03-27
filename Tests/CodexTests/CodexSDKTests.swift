@@ -51,6 +51,24 @@ struct CodexSDKTests {
     }
 
     @Test
+    func threadResponsesDefaultMissingApprovalsReviewerForOlderRuntimes() throws {
+        var startRaw = appServerThreadStartResponse(id: "thread_start_compat")
+        startRaw.removeValue(forKey: "approvalsReviewer")
+        let start = try decodeJSONValue(ThreadStartResponse.self, from: .object(startRaw))
+        #expect(start.approvalsReviewer == .user)
+
+        var resumeRaw = appServerThreadResumeResponse(id: "thread_resume_compat")
+        resumeRaw.removeValue(forKey: "approvalsReviewer")
+        let resume = try decodeJSONValue(ThreadResumeResponse.self, from: .object(resumeRaw))
+        #expect(resume.approvalsReviewer == .user)
+
+        var forkRaw = appServerThreadForkResponse(id: "thread_fork_compat")
+        forkRaw.removeValue(forKey: "approvalsReviewer")
+        let fork = try decodeJSONValue(ThreadForkResponse.self, from: .object(forkRaw))
+        #expect(fork.approvalsReviewer == .user)
+    }
+
+    @Test
     func unknownNotificationFallbackStillExtractsMetadata() {
         let notification = CodexNotification(
             method: "future/event",

@@ -100,6 +100,40 @@ public struct ThreadResumeResponse: ObjectModel {
             case serviceTier
             case thread
         }
+
+        init(
+            approvalPolicy: AskForApproval,
+            approvalsReviewer: ApprovalsReviewer,
+            cwd: String,
+            model: String,
+            modelProvider: String,
+            reasoningEffort: ReasoningEffort?,
+            sandbox: SandboxPolicy,
+            serviceTier: ServiceTier?,
+            thread: Thread
+        ) {
+            self.approvalPolicy = approvalPolicy
+            self.approvalsReviewer = approvalsReviewer
+            self.cwd = cwd
+            self.model = model
+            self.modelProvider = modelProvider
+            self.reasoningEffort = reasoningEffort
+            self.sandbox = sandbox
+            self.serviceTier = serviceTier
+            self.thread = thread
+        }
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.approvalPolicy = try container.decode(AskForApproval.self, forKey: .approvalPolicy)
+            self.approvalsReviewer = try container.decodeIfPresent(ApprovalsReviewer.self, forKey: .approvalsReviewer) ?? .user
+            self.cwd = try container.decode(String.self, forKey: .cwd)
+            self.model = try container.decode(String.self, forKey: .model)
+            self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
+            self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: .reasoningEffort)
+            self.sandbox = try container.decode(SandboxPolicy.self, forKey: .sandbox)
+            self.serviceTier = try container.decodeIfPresent(ServiceTier.self, forKey: .serviceTier)
+            self.thread = try container.decode(Thread.self, forKey: .thread)
+        }
     }
 }
-

@@ -82,6 +82,12 @@ MANUAL_DEFINITIONS = {
     },
 }
 
+COMPATIBILITY_DEFAULTS = {
+    ("ThreadStartResponse", "approvalsReviewer"): ".user",
+    ("ThreadResumeResponse", "approvalsReviewer"): ".user",
+    ("ThreadForkResponse", "approvalsReviewer"): ".user",
+}
+
 
 def read_notification_registry() -> list[tuple[str, str]]:
     text = REGISTRY_PATH.read_text()
@@ -137,6 +143,10 @@ def json_string(value: str) -> str:
 
 def optional_of(swift_type: str) -> str:
     return swift_type if swift_type.endswith("?") else f"{swift_type}?"
+
+
+def base_type(swift_type: str) -> str:
+    return swift_type[:-1] if swift_type.endswith("?") else swift_type
 
 
 def non_null_variants(schema: dict) -> list[dict] | None:
@@ -330,12 +340,51 @@ def render_object(name: str, schema: dict, registry: Registry) -> str:
         initializer_signature = f"{init_params},\n        additionalFields: JSONObject = [:]"
         payload_initializer = f"        Payload(\n{payload_assignment}\n        )"
         decode_payload = "        let payload = try decodeJSONValue(Payload.self, from: .object(object))"
+        payload_decoder = ""
+        if any((name, json_name) in COMPATIBILITY_DEFAULTS for _, json_name, _, _ in fields):
+            payload_init_params = ",\n".join(
+                f"            {property_name}: {property_type}"
+                for property_name, _, property_type, _ in fields
+            )
+            payload_init_assignments = "\n".join(
+                f"            self.{property_name} = {property_name}"
+                for property_name, _, _, _ in fields
+            )
+            decode_lines: list[str] = []
+            for property_name, json_name, property_type, is_required in fields:
+                field_base_type = base_type(property_type)
+                compatibility_default = COMPATIBILITY_DEFAULTS.get((name, json_name))
+                if compatibility_default is not None:
+                    decode_lines.append(
+                        f"            self.{property_name} = try container.decodeIfPresent({field_base_type}.self, forKey: .{property_name}) ?? {compatibility_default}"
+                    )
+                elif is_required:
+                    decode_lines.append(
+                        f"            self.{property_name} = try container.decode({field_base_type}.self, forKey: .{property_name})"
+                    )
+                else:
+                    decode_lines.append(
+                        f"            self.{property_name} = try container.decodeIfPresent({field_base_type}.self, forKey: .{property_name})"
+                    )
+            payload_decoder = """
+
+        init(
+{payload_init_params}
+        ) {
+{payload_init_assignments}
+        }
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+{decode_lines}
+        }""".replace("{payload_init_params}", payload_init_params).replace("{payload_init_assignments}", payload_init_assignments).replace("{decode_lines}", "\n".join(decode_lines))
         payload_struct = f"""    private struct Payload: Codable, Hashable, Sendable {{
 {payload_properties}
 
         enum CodingKeys: String, CodingKey {{
 {coding_keys}
         }}
+{payload_decoder}
     }}"""
     else:
         initializer_signature = "        additionalFields: JSONObject = [:]"
