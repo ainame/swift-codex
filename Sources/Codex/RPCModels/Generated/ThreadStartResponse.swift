@@ -101,6 +101,7 @@ public struct ThreadStartResponse: ObjectModel {
             case thread
         }
 
+
         init(
             approvalPolicy: AskForApproval,
             approvalsReviewer: ApprovalsReviewer,
@@ -137,3 +138,4 @@ public struct ThreadStartResponse: ObjectModel {
         }
     }
 }
+

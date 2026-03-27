@@ -341,6 +341,7 @@ def render_object(name: str, schema: dict, registry: Registry) -> str:
         payload_initializer = f"        Payload(\n{payload_assignment}\n        )"
         decode_payload = "        let payload = try decodeJSONValue(Payload.self, from: .object(object))"
         payload_decoder = ""
+        payload_decoder_block = ""
         if any((name, json_name) in COMPATIBILITY_DEFAULTS for _, json_name, _, _ in fields):
             payload_init_params = ",\n".join(
                 f"            {property_name}: {property_type}"
@@ -378,13 +379,13 @@ def render_object(name: str, schema: dict, registry: Registry) -> str:
             let container = try decoder.container(keyedBy: CodingKeys.self)
 {decode_lines}
         }""".replace("{payload_init_params}", payload_init_params).replace("{payload_init_assignments}", payload_init_assignments).replace("{decode_lines}", "\n".join(decode_lines))
+            payload_decoder_block = f"\n{payload_decoder}" if payload_decoder else ""
         payload_struct = f"""    private struct Payload: Codable, Hashable, Sendable {{
 {payload_properties}
 
         enum CodingKeys: String, CodingKey {{
 {coding_keys}
-        }}
-{payload_decoder}
+        }}{payload_decoder_block}
     }}"""
     else:
         initializer_signature = "        additionalFields: JSONObject = [:]"
