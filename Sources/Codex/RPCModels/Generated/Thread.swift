@@ -202,7 +202,7 @@ public struct Thread: ObjectModel {
             self.path = try container.decodeIfPresent(String.self, forKey: .path)
             self.preview = try container.decode(String.self, forKey: .preview)
             self.source = try container.decode(SessionSource.self, forKey: .source)
-            self.status = try container.decode(ThreadStatus.self, forKey: .status)
+            self.status = try container.decodeIfPresent(ThreadStatus.self, forKey: .status) ?? .idle(IdleThreadStatus(type: .idle))
             self.turns = try container.decode([Turn].self, forKey: .turns)
             self.updatedAt = try container.decode(Int.self, forKey: .updatedAt)
         }

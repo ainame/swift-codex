@@ -78,6 +78,19 @@ struct CodexSDKTests {
     }
 
     @Test
+    func threadDefaultsMissingStatusForOlderRuntimes() throws {
+        var raw = jsonObject(makeThread(id: "thread_status_compat"))
+        raw.removeValue(forKey: "status")
+
+        let decoded = try decodeJSONValue(Thread.self, from: .object(raw))
+        if case .idle(let payload) = decoded.status {
+            #expect(payload.type == .idle)
+        } else {
+            Issue.record("Expected missing thread status to default to idle")
+        }
+    }
+
+    @Test
     func unknownNotificationFallbackStillExtractsMetadata() {
         let notification = CodexNotification(
             method: "future/event",

@@ -30,7 +30,7 @@ struct BasicExample {
             let listed = try await client.threadList()
             print("Visible threads: \(listed.data.count)")
 
-            let read = try await client.threadRead(threadID: started.thread.id, includeTurns: true)
+            let read = try await client.threadRead(threadID: started.thread.id)
             print("Read thread preview: \(read.thread.preview)")
 
             let turn = try await client.turnStart(
@@ -48,6 +48,9 @@ struct BasicExample {
                     break
                 }
             }
+
+            let materialized = try await client.threadRead(threadID: started.thread.id, includeTurns: true)
+            print("Materialized turn count: \(materialized.thread.turns.count)")
         } catch {
             fputs("Example failed: \(error)\n", stderr)
             Foundation.exit(1)

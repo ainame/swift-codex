@@ -84,6 +84,7 @@ MANUAL_DEFINITIONS = {
 
 COMPATIBILITY_DEFAULTS = {
     ("Thread", "ephemeral"): "false",
+    ("Thread", "status"): '.idle(IdleThreadStatus(type: .idle))',
     ("ThreadStartResponse", "approvalsReviewer"): ".user",
     ("ThreadResumeResponse", "approvalsReviewer"): ".user",
     ("ThreadForkResponse", "approvalsReviewer"): ".user",

@@ -218,6 +218,32 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func threadStartAcceptsOlderThreadPayloadWithoutStatus() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+
+        var legacyStart = appServerThreadStartResponse(id: "thread_legacy_status")
+        var legacyThread = try #require(legacyStart.objectValue(forKey: "thread"))
+        legacyThread.removeValue(forKey: "status")
+        legacyStart["thread"] = .object(legacyThread)
+
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadStartResponses: [legacyStart]
+        ))
+
+        let client = CodexRPCClient(config: stub.makeConfig())
+        let started = try await client.threadStart()
+
+        #expect(started.thread.id == "thread_legacy_status")
+        if case .idle(let payload) = started.thread.status {
+            #expect(payload.type == .idle)
+        } else {
+            Issue.record("Expected missing thread status to default to idle")
+        }
+        await client.close()
+    }
+
+    @Test
     func turnSteerAndInterruptUseExpectedMethods() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
