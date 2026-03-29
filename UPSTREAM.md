@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `527244910fb851cea6147334dbc08f8fbce4cb9d`
-- Reviewed JSON-RPC basis commit SHA: `527244910fb851cea6147334dbc08f8fbce4cb9d`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/527244910fb851cea6147334dbc08f8fbce4cb9d`
-- Last reviewed date: `2026-03-24`
+- Vendored upstream commit: `4c70bff480af37b1bf1a9b352b8341060fe55755`
+- Reviewed JSON-RPC basis commit SHA: `4c70bff480af37b1bf1a9b352b8341060fe55755`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/4c70bff480af37b1bf1a9b352b8341060fe55755`
+- Last reviewed date: `2026-03-29`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `codex_app_server` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,13 +33,16 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `527244910fb851cea6147334dbc08f8fbce4cb9d`
+- Vendored checkout: `vendor/openai-codex` at `4c70bff480af37b1bf1a9b352b8341060fe55755` (`rust-v0.117.0`)
 - Reviewed upstream files:
   - `sdk/python/src/codex_app_server/api.py`
+  - `sdk/python/src/codex_app_server/async_client.py`
   - `sdk/python/src/codex_app_server/client.py`
   - `sdk/python/src/codex_app_server/errors.py`
   - `sdk/python/src/codex_app_server/generated/v2_all.py`
   - `sdk/python/src/codex_app_server/generated/notification_registry.py`
+  - `sdk/python/examples/01_quickstart_constructor/sync.py`
+  - `sdk/python/examples/02_turn_run/sync.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
   - initialize, thread, turn, model, and notification method shapes
@@ -48,6 +51,9 @@ When porting new behavior from upstream or validating parity:
   - empty-object responses for interrupt/archive/name/compact style methods
   - `data` collection fields on thread/model list responses
   - server metadata normalization from initialize payloads
+  - process launch config parity for explicit `cwd` and full argv override
+  - typed plugin marketplace response support via `plugin/list`
+  - `HookEventName.postToolUse` from the updated v2 schema
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than Python synchronous wrappers
   - `JSONValue.number(Double)` remains the raw escape hatch type, while generated typed models use integer fields where the schema requires them

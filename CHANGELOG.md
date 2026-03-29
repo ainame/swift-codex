@@ -8,6 +8,10 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `vendor/openai-codex` to `rust-v0.117.0` (`4c70bff480af37b1bf1a9b352b8341060fe55755`).
+
 ## [0.0.2] - 2026-03-29
 
 ### Added
