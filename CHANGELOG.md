@@ -8,6 +8,8 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-03-29
+
 ### Added
 
 - Added `CodexRPCClient.pluginList()` / `Codex.plugins()` with typed plugin marketplace models generated from the vendored app-server schema.
@@ -18,6 +20,7 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 - Updated `vendor/openai-codex` to `rust-v0.117.0` (`4c70bff480af37b1bf1a9b352b8341060fe55755`).
 - Regenerated app-server v2 models against the updated release schema, including `HookEventName.postToolUse` and plugin marketplace support.
+- Moved the `codex-sdk-upstream-sync` skill into this repository and updated it to target Python app-server parity instead of the older TypeScript SDK basis.
 
 ## [0.0.2] - 2026-03-29
 
