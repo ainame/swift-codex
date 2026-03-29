@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex App-Server Sync"
+  short_description: "Sync Swift port with upstream Python app-server SDK"
+  default_prompt: "Use $codex-sdk-upstream-sync to update this Swift Codex SDK port from the latest relevant openai/codex Python app-server upstream, then refresh vendored upstream and recorded metadata."
