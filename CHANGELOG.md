@@ -8,6 +8,8 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-03-29
+
 ### Added
 
 - Added a typed JSON-RPC v2 model layer generated into [`Sources/Codex/RPCModels/Generated`](Sources/Codex/RPCModels/Generated).
