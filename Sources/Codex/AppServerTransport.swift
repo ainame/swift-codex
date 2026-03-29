@@ -16,10 +16,12 @@ actor CodexRPCTransport {
         self.config = config
         self.exec = CodexRPCExec(
             executablePathOverride: config.codexPathOverride,
+            launchArgsOverride: config.launchArgsOverride,
             environmentOverride: config.environment,
             configOverrides: config.config,
             baseURL: config.baseURL,
-            apiKey: config.apiKey
+            apiKey: config.apiKey,
+            workingDirectory: config.workingDirectory
         )
     }
 

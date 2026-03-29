@@ -97,9 +97,11 @@ public struct CodexConfig: Sendable {
     public typealias FileChangeApprovalHandler = @Sendable (FileChangeApprovalRequest) async -> ApprovalDecision
 
     public var codexPathOverride: String?
+    public var launchArgsOverride: [String]?
     public var baseURL: String?
     public var apiKey: String?
     public var config: JSONObject?
+    public var workingDirectory: String?
     public var environment: [String: String]?
     public var clientName: String
     public var clientTitle: String
@@ -111,9 +113,11 @@ public struct CodexConfig: Sendable {
 
     public init(
         codexPathOverride: String? = nil,
+        launchArgsOverride: [String]? = nil,
         baseURL: String? = nil,
         apiKey: String? = nil,
         config: JSONObject? = nil,
+        workingDirectory: String? = nil,
         environment: [String: String]? = nil,
         clientName: String = "swift-codex",
         clientTitle: String = "swift-codex",
@@ -124,9 +128,11 @@ public struct CodexConfig: Sendable {
         fileChangeApprovalHandler: @escaping FileChangeApprovalHandler = { _ in .approve }
     ) {
         self.codexPathOverride = codexPathOverride
+        self.launchArgsOverride = launchArgsOverride
         self.baseURL = baseURL
         self.apiKey = apiKey
         self.config = config
+        self.workingDirectory = workingDirectory
         self.environment = environment
         self.clientName = clientName
         self.clientTitle = clientTitle
@@ -351,6 +357,10 @@ public actor CodexRPCClient {
         )
     }
 
+    public func pluginList() async throws -> PluginListResponse {
+        try await request("plugin/list", responseType: PluginListResponse.self)
+    }
+
     private func makeThreadStartParams(_ options: ThreadOptions) -> JSONObject {
         var params: JSONObject = [:]
         if let approvalPolicy = options.approvalPolicy {
@@ -531,6 +541,10 @@ public actor Codex {
 
     public func models(includeHidden: Bool = false) async throws -> ModelListResponse {
         try await client.modelList(includeHidden: includeHidden)
+    }
+
+    public func plugins() async throws -> PluginListResponse {
+        try await client.pluginList()
     }
 }
 

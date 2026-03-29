@@ -3,22 +3,14 @@
 
 import Foundation
 
-public enum HookEventName: RawJSONRepresentable {
-    case preToolUse
-    case postToolUse
-    case sessionStart
-    case userPromptSubmit
-    case stop
+public enum LocalPluginSourceType: RawJSONRepresentable {
+    case local
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "preToolUse": self = .preToolUse
-        case "postToolUse": self = .postToolUse
-        case "sessionStart": self = .sessionStart
-        case "userPromptSubmit": self = .userPromptSubmit
-        case "stop": self = .stop
+        case "local": self = .local
         default:
             self = .unrecognized(value)
         }
@@ -30,11 +22,7 @@ public enum HookEventName: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .preToolUse: return "preToolUse"
-        case .postToolUse: return "postToolUse"
-        case .sessionStart: return "sessionStart"
-        case .userPromptSubmit: return "userPromptSubmit"
-        case .stop: return "stop"
+        case .local: return "local"
         case .unrecognized(let value):
             return value
         }

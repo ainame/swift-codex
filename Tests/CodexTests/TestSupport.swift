@@ -80,6 +80,7 @@ struct CodexStub {
         turn_steer_responses = scenario.get("turnSteerResponses", [])
         turn_interrupt_responses = scenario.get("turnInterruptResponses", [])
         model_list_responses = scenario.get("modelListResponses", [])
+        plugin_list_responses = scenario.get("pluginListResponses", [])
 
         thread_start_index = 0
         thread_resume_index = 0
@@ -94,6 +95,7 @@ struct CodexStub {
         turn_steer_index = 0
         turn_interrupt_index = 0
         model_list_index = 0
+        plugin_list_index = 0
 
         def append_jsonl(suffix, payload):
             path = os.path.join(state_dir, f"{invocation}.{suffix}.jsonl")
@@ -227,6 +229,12 @@ struct CodexStub {
                 write_message({"id": request_id, "result": response})
                 continue
 
+            if method == "plugin/list":
+                response = response_at(plugin_list_responses, plugin_list_index, {"marketplaces": []})
+                plugin_list_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
             if request_id is not None:
                 write_message({
                     "id": request_id,
@@ -248,9 +256,11 @@ struct CodexStub {
     }
 
     func makeConfig(
+        launchArgsOverride: [String]? = nil,
         baseURL: String? = "https://example.test",
         apiKey: String? = "test-key",
         config: JSONObject? = nil,
+        workingDirectory: String? = nil,
         environment: [String: String]? = nil,
         serverRequestHandler: CodexConfig.ServerRequestHandler? = nil
     ) -> CodexConfig {
@@ -258,20 +268,23 @@ struct CodexStub {
         env["CODEX_TEST_STATE_DIR"] = rootURL.path()
         return CodexConfig(
             codexPathOverride: executableURL.path(),
+            launchArgsOverride: launchArgsOverride,
             baseURL: baseURL,
             apiKey: apiKey,
             config: config,
+            workingDirectory: workingDirectory,
             environment: env,
             serverRequestHandler: serverRequestHandler
         )
     }
 
-    func makePathLookupConfig(environment: [String: String]) -> CodexConfig {
+    func makePathLookupConfig(environment: [String: String], workingDirectory: String? = nil) -> CodexConfig {
         var env = environment
         env["CODEX_TEST_STATE_DIR"] = rootURL.path()
         return CodexConfig(
             baseURL: "https://example.test",
             apiKey: "test-key",
+            workingDirectory: workingDirectory,
             environment: env
         )
     }
@@ -330,6 +343,7 @@ struct AppServerScenario: Encodable {
     var turnSteerResponses: [JSONObject]
     var turnInterruptResponses: [JSONObject]
     var modelListResponses: [JSONObject]
+    var pluginListResponses: [JSONObject]
 
     init(
         initializeResult: JSONObject = appServerInitializeResult(),
@@ -347,7 +361,8 @@ struct AppServerScenario: Encodable {
         turnStartSequences: [[AppServerScriptStep]] = [],
         turnSteerResponses: [JSONObject] = [],
         turnInterruptResponses: [JSONObject] = [],
-        modelListResponses: [JSONObject] = []
+        modelListResponses: [JSONObject] = [],
+        pluginListResponses: [JSONObject] = []
     ) {
         self.initializeResult = initializeResult
         self.initializeCloseStderr = initializeCloseStderr
@@ -365,6 +380,7 @@ struct AppServerScenario: Encodable {
         self.turnSteerResponses = turnSteerResponses
         self.turnInterruptResponses = turnInterruptResponses
         self.modelListResponses = modelListResponses
+        self.pluginListResponses = pluginListResponses
     }
 }
 

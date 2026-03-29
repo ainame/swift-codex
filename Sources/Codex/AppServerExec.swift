@@ -12,10 +12,12 @@ struct CodexRPCExec: Sendable {
     private static let appServerPreferredBufferSize = 1
 
     var executablePathOverride: String?
+    var launchArgsOverride: [String]?
     var environmentOverride: [String: String]?
     var configOverrides: JSONObject?
     var baseURL: String?
     var apiKey: String?
+    var workingDirectory: String?
 
     func runRPCServer(
         outgoingMessages: AsyncStream<String>,
@@ -23,11 +25,12 @@ struct CodexRPCExec: Sendable {
         onStderrLine: @escaping @Sendable (String) async -> Void
     ) async throws {
         let environment = buildEnvironment()
-        let executable = try resolveExecutable(in: environment)
+        let command = try resolveCommand(in: environment)
         let configuration = Configuration(
-            executable: executable,
-            arguments: Arguments(try commandArguments()),
-            environment: .custom(subprocessEnvironment(from: environment))
+            executable: command.executable,
+            arguments: Arguments(command.arguments),
+            environment: .custom(subprocessEnvironment(from: environment)),
+            workingDirectory: workingDirectory.map { FilePath($0) }
         )
 
 
@@ -102,6 +105,23 @@ struct CodexRPCExec: Sendable {
         return commandArgs
     }
 
+    private func resolveCommand(in environment: [String: String]) throws -> (executable: Executable, arguments: [String]) {
+        if let launchArgsOverride {
+            guard let executableName = launchArgsOverride.first, !executableName.isEmpty else {
+                throw CodexError.invalidConfig("launchArgsOverride must include an executable path or name")
+            }
+            return (
+                executable: try resolveExecutable(named: executableName, in: environment),
+                arguments: Array(launchArgsOverride.dropFirst())
+            )
+        }
+
+        return (
+            executable: try resolveExecutable(in: environment),
+            arguments: try commandArguments()
+        )
+    }
+
     private func buildEnvironment() -> [String: String] {
         var environment = environmentOverride ?? ProcessInfo.processInfo.environment
         if environment[Self.internalOriginatorEnvironmentKey] == nil {
@@ -124,6 +144,21 @@ struct CodexRPCExec: Sendable {
             return executable
         } catch {
             throw CodexError.executableNotFound("codex")
+        }
+    }
+
+    private func resolveExecutable(named rawValue: String, in environment: [String: String]) throws -> Executable {
+        let executable: Executable
+        if rawValue.contains("/") {
+            executable = .path(FilePath(rawValue))
+        } else {
+            executable = .name(rawValue)
+        }
+        do {
+            _ = try executable.resolveExecutablePath(in: .custom(subprocessEnvironment(from: environment)))
+            return executable
+        } catch {
+            throw CodexError.executableNotFound(rawValue)
         }
     }
 

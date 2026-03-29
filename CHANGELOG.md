@@ -8,9 +8,16 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Added `CodexRPCClient.pluginList()` / `Codex.plugins()` with typed plugin marketplace models generated from the vendored app-server schema.
+- Added `CodexConfig.launchArgsOverride` and `CodexConfig.workingDirectory` to mirror Python app-server launch configuration controls.
+- Added regression coverage for plugin-list decoding and transport launch override behavior.
+
 ### Changed
 
 - Updated `vendor/openai-codex` to `rust-v0.117.0` (`4c70bff480af37b1bf1a9b352b8341060fe55755`).
+- Regenerated app-server v2 models against the updated release schema, including `HookEventName.postToolUse` and plugin marketplace support.
 
 ## [0.0.2] - 2026-03-29
 

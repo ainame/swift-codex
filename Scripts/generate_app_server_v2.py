@@ -30,6 +30,7 @@ ROOT_TYPES = {
     "InitializeResponse",
     "Model",
     "ModelListResponse",
+    "PluginListResponse",
     "Personality",
     "ReasoningEffort",
     "ReasoningSummary",

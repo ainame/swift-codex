@@ -196,6 +196,44 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func lowLevelClientSupportsPluginList() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            pluginListResponses: [[
+                "marketplaces": .array([
+                    .object([
+                        "name": .string("local"),
+                        "path": .string("/tmp/marketplace"),
+                        "plugins": .array([]),
+                    ]),
+                ]),
+                "featuredPluginIds": .array([.string("plugin.alpha")]),
+                "marketplaceLoadErrors": .array([
+                    .object([
+                        "marketplacePath": .string("/tmp/broken"),
+                        "message": .string("failed to load"),
+                    ]),
+                ]),
+                "remoteSyncError": .string("sync failed"),
+            ]]
+        ))
+
+        let client = CodexRPCClient(config: stub.makeConfig())
+        _ = try await client.initialize()
+
+        let plugins = try await client.pluginList()
+        #expect(plugins.marketplaces.map(\.name) == ["local"])
+        #expect(plugins.featuredPluginIds == ["plugin.alpha"])
+        #expect(plugins.marketplaceLoadErrors?.map(\.message) == ["failed to load"])
+        #expect(plugins.remoteSyncError == "sync failed")
+
+        let methods = try stub.appServerMessages(forInvocation: 0).compactMap { $0.stringValue(forKey: "method") }
+        #expect(methods == ["initialize", "initialized", "plugin/list"])
+        await client.close()
+    }
+
+    @Test
     func threadStartAcceptsOlderThreadPayloadWithoutEphemeral() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }

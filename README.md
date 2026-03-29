@@ -14,9 +14,11 @@ Current implementation includes:
 - low-level `CodexRPCClient`
 - typed generated protocol models such as `Thread`, `Turn`, `ThreadItem`, `ModelListResponse`, and `CodexNotificationPayload`
 - thread start, resume, fork, archive, unarchive, rename, compact, list, and read
+- plugin list retrieval with typed marketplace metadata
 - turn start, steer, interrupt, buffered run, and streamed notifications
 - typed approval handling for command and file-change requests
 - structured input items with text, remote images, local images, skills, and mentions
+- transport launch overrides for explicit process `cwd` and full argv replacement
 - typed union fallback with `rawJSON`, `additionalFields`, and `.unknown(JSONValue)` support
 - parity-focused tests using `swift-testing`
 

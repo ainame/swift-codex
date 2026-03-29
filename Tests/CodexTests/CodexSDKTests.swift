@@ -1,9 +1,14 @@
 import Darwin
+import Foundation
 import Testing
 @testable import Codex
 
 @Suite(.serialized)
 struct CodexSDKTests {
+    private func normalizedPath(_ path: String) -> String {
+        URL(fileURLWithPath: path).resolvingSymlinksInPath().standardizedFileURL.path
+    }
+
     @Test
     func typedModelsPreserveAdditionalFieldsAndRoundTrip() throws {
         var raw = jsonObject(makeThread(id: "thread_extra"))
@@ -160,7 +165,10 @@ struct CodexSDKTests {
             "CUSTOM_ENV": "custom",
         ]
 
-        let codex = try await Codex(config: stub.makePathLookupConfig(environment: environment))
+        let codex = try await Codex(config: stub.makePathLookupConfig(
+            environment: environment,
+            workingDirectory: stub.rootURL.path()
+        ))
         _ = try await codex.startThread(options: ThreadOptions(
             approvalPolicy: .onRequest,
             config: [
@@ -173,6 +181,7 @@ struct CodexSDKTests {
 
         let env = try stub.environment(forInvocation: 0)
         let args = try stub.arguments(forInvocation: 0)
+        let processWorkingDirectory = try stub.workingDirectory(forInvocation: 0)
         let messages = try stub.appServerMessages(forInvocation: 0)
         #expect(env["CUSTOM_ENV"] == "custom")
         #expect(env["CODEX_ENV_SHOULD_NOT_LEAK"] == "")
@@ -181,11 +190,35 @@ struct CodexSDKTests {
         #expect(Array(args.prefix(3)) == ["app-server", "--listen", "stdio://"])
         #expect(args.contains("--config"))
         #expect(args.contains(#"openai_base_url="https:\/\/example.test""#))
+        #expect(normalizedPath(processWorkingDirectory) == normalizedPath(stub.rootURL.path()))
 
         let threadStartParams = try #require(
             messages.first { $0.stringValue(forKey: "method") == "thread/start" }?.objectValue(forKey: "params")
         )
         #expect(threadStartParams.objectValue(forKey: "config")?["custom_override"] == .string("enabled"))
+        await codex.close()
+    }
+
+    @Test
+    func launchArgsOverrideTakesPrecedence() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadStartResponses: [appServerThreadStartResponse(id: "thread_override")]
+        ))
+
+        let config = stub.makeConfig(
+            launchArgsOverride: [stub.executableURL.path(), "app-server", "--listen", "stdio://", "--custom-flag"],
+            workingDirectory: stub.rootURL.path()
+        )
+
+        let codex = try await Codex(config: config)
+        _ = try await codex.startThread()
+
+        let args = try stub.arguments(forInvocation: 0)
+        let processWorkingDirectory = try stub.workingDirectory(forInvocation: 0)
+        #expect(args == ["app-server", "--listen", "stdio://", "--custom-flag"])
+        #expect(normalizedPath(processWorkingDirectory) == normalizedPath(stub.rootURL.path()))
         await codex.close()
     }
 }

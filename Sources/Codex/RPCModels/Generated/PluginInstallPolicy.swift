@@ -3,22 +3,18 @@
 
 import Foundation
 
-public enum HookEventName: RawJSONRepresentable {
-    case preToolUse
-    case postToolUse
-    case sessionStart
-    case userPromptSubmit
-    case stop
+public enum PluginInstallPolicy: RawJSONRepresentable {
+    case nOTAVAILABLE
+    case aVAILABLE
+    case iNSTALLEDBYDEFAULT
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "preToolUse": self = .preToolUse
-        case "postToolUse": self = .postToolUse
-        case "sessionStart": self = .sessionStart
-        case "userPromptSubmit": self = .userPromptSubmit
-        case "stop": self = .stop
+        case "NOT_AVAILABLE": self = .nOTAVAILABLE
+        case "AVAILABLE": self = .aVAILABLE
+        case "INSTALLED_BY_DEFAULT": self = .iNSTALLEDBYDEFAULT
         default:
             self = .unrecognized(value)
         }
@@ -30,11 +26,9 @@ public enum HookEventName: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .preToolUse: return "preToolUse"
-        case .postToolUse: return "postToolUse"
-        case .sessionStart: return "sessionStart"
-        case .userPromptSubmit: return "userPromptSubmit"
-        case .stop: return "stop"
+        case .nOTAVAILABLE: return "NOT_AVAILABLE"
+        case .aVAILABLE: return "AVAILABLE"
+        case .iNSTALLEDBYDEFAULT: return "INSTALLED_BY_DEFAULT"
         case .unrecognized(let value):
             return value
         }
