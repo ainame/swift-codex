@@ -8,6 +8,12 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `vendor/openai-codex` to `rust-v0.118.0` (`b630ce9a4e754d35a1f33e4366ba638d18626142`).
+- Regenerated app-server v2 models to include `fs/changed`, `mcpServer/startupStatus/updated`, and `thread/realtime/transcriptUpdated` notification payloads.
+- Added the new usage-based `PlanType` enum cases from the upstream app-server schema.
+
 ## [0.0.3] - 2026-03-29
 
 ### Added

@@ -118,6 +118,72 @@ struct CodexSDKTests {
     }
 
     @Test
+    func latestKnownNotificationPayloadsDecodeFromRegistry() throws {
+        let fsChanged = CodexNotification(
+            method: "fs/changed",
+            params: .object([
+                "changedPaths": .array([.string("/tmp/project/file.txt")]),
+                "watchId": .string("watch_123"),
+            ])
+        )
+        if case .fsChanged(let payload) = fsChanged.payload {
+            #expect(payload.changedPaths.map(\.rawValue) == ["/tmp/project/file.txt"])
+            #expect(payload.watchId == "watch_123")
+        } else {
+            Issue.record("Expected fs/changed payload")
+        }
+        #expect(fsChanged.threadID == nil)
+
+        let mcpStatus = CodexNotification(
+            method: "mcpServer/startupStatus/updated",
+            params: .object([
+                "name": .string("linear"),
+                "status": .string("ready"),
+            ])
+        )
+        if case .mcpServerStatusUpdated(let payload) = mcpStatus.payload {
+            #expect(payload.name == "linear")
+            #expect(payload.status == .ready)
+        } else {
+            Issue.record("Expected mcpServer/startupStatus/updated payload")
+        }
+
+        let transcript = CodexNotification(
+            method: "thread/realtime/transcriptUpdated",
+            params: .object([
+                "role": .string("assistant"),
+                "text": .string("Partial transcript"),
+                "threadId": .string("thread_realtime"),
+            ])
+        )
+        if case .threadRealtimeTranscriptUpdated(let payload) = transcript.payload {
+            #expect(payload.role == "assistant")
+            #expect(payload.text == "Partial transcript")
+            #expect(payload.threadId == "thread_realtime")
+        } else {
+            Issue.record("Expected thread/realtime/transcriptUpdated payload")
+        }
+        #expect(transcript.threadID == "thread_realtime")
+    }
+
+    @Test
+    func latestPlanTypesRoundTrip() throws {
+        let selfServe = try decodeJSONValue(
+            PlanType.self,
+            from: .string("self_serve_business_usage_based")
+        )
+        #expect(selfServe == .selfServeBusinessUsageBased)
+        #expect(selfServe.rawJSON == .string("self_serve_business_usage_based"))
+
+        let enterpriseUsageBased = try decodeJSONValue(
+            PlanType.self,
+            from: .string("enterprise_cbp_usage_based")
+        )
+        #expect(enterpriseUsageBased == .enterpriseCbpUsageBased)
+        #expect(enterpriseUsageBased.rawJSON == .string("enterprise_cbp_usage_based"))
+    }
+
+    @Test
     func retryOnOverloadRetriesUntilSuccess() async throws {
         actor AttemptCounter {
             var value = 0

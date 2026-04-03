@@ -12,6 +12,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case configWarning(ConfigWarningNotification)
     case deprecationNotice(DeprecationNoticeNotification)
     case error(ErrorNotification)
+    case fsChanged(FsChangedNotification)
     case fuzzyFileSearchSessionCompleted(FuzzyFileSearchSessionCompletedNotification)
     case fuzzyFileSearchSessionUpdated(FuzzyFileSearchSessionUpdatedNotification)
     case hookCompleted(HookCompletedNotification)
@@ -30,6 +31,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case reasoningTextDelta(ReasoningTextDeltaNotification)
     case itemStarted(ItemStartedNotification)
     case mcpServerOauthLoginCompleted(McpServerOauthLoginCompletedNotification)
+    case mcpServerStatusUpdated(McpServerStatusUpdatedNotification)
     case modelRerouted(ModelReroutedNotification)
     case serverRequestResolved(ServerRequestResolvedNotification)
     case skillsChanged(SkillsChangedNotification)
@@ -42,6 +44,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadRealtimeItemAdded(ThreadRealtimeItemAddedNotification)
     case threadRealtimeOutputAudioDelta(ThreadRealtimeOutputAudioDeltaNotification)
     case threadRealtimeStarted(ThreadRealtimeStartedNotification)
+    case threadRealtimeTranscriptUpdated(ThreadRealtimeTranscriptUpdatedNotification)
     case threadStarted(ThreadStartedNotification)
     case threadStatusChanged(ThreadStatusChangedNotification)
     case threadTokenUsageUpdated(ThreadTokenUsageUpdatedNotification)
@@ -64,6 +67,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "configWarning": self = .configWarning(try decodeJSONValue(ConfigWarningNotification.self, from: params))
         case "deprecationNotice": self = .deprecationNotice(try decodeJSONValue(DeprecationNoticeNotification.self, from: params))
         case "error": self = .error(try decodeJSONValue(ErrorNotification.self, from: params))
+        case "fs/changed": self = .fsChanged(try decodeJSONValue(FsChangedNotification.self, from: params))
         case "fuzzyFileSearch/sessionCompleted": self = .fuzzyFileSearchSessionCompleted(try decodeJSONValue(FuzzyFileSearchSessionCompletedNotification.self, from: params))
         case "fuzzyFileSearch/sessionUpdated": self = .fuzzyFileSearchSessionUpdated(try decodeJSONValue(FuzzyFileSearchSessionUpdatedNotification.self, from: params))
         case "hook/completed": self = .hookCompleted(try decodeJSONValue(HookCompletedNotification.self, from: params))
@@ -82,6 +86,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "item/reasoning/textDelta": self = .reasoningTextDelta(try decodeJSONValue(ReasoningTextDeltaNotification.self, from: params))
         case "item/started": self = .itemStarted(try decodeJSONValue(ItemStartedNotification.self, from: params))
         case "mcpServer/oauthLogin/completed": self = .mcpServerOauthLoginCompleted(try decodeJSONValue(McpServerOauthLoginCompletedNotification.self, from: params))
+        case "mcpServer/startupStatus/updated": self = .mcpServerStatusUpdated(try decodeJSONValue(McpServerStatusUpdatedNotification.self, from: params))
         case "model/rerouted": self = .modelRerouted(try decodeJSONValue(ModelReroutedNotification.self, from: params))
         case "serverRequest/resolved": self = .serverRequestResolved(try decodeJSONValue(ServerRequestResolvedNotification.self, from: params))
         case "skills/changed": self = .skillsChanged(try decodeJSONValue(SkillsChangedNotification.self, from: params))
@@ -94,6 +99,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/realtime/itemAdded": self = .threadRealtimeItemAdded(try decodeJSONValue(ThreadRealtimeItemAddedNotification.self, from: params))
         case "thread/realtime/outputAudio/delta": self = .threadRealtimeOutputAudioDelta(try decodeJSONValue(ThreadRealtimeOutputAudioDeltaNotification.self, from: params))
         case "thread/realtime/started": self = .threadRealtimeStarted(try decodeJSONValue(ThreadRealtimeStartedNotification.self, from: params))
+        case "thread/realtime/transcriptUpdated": self = .threadRealtimeTranscriptUpdated(try decodeJSONValue(ThreadRealtimeTranscriptUpdatedNotification.self, from: params))
         case "thread/started": self = .threadStarted(try decodeJSONValue(ThreadStartedNotification.self, from: params))
         case "thread/status/changed": self = .threadStatusChanged(try decodeJSONValue(ThreadStatusChangedNotification.self, from: params))
         case "thread/tokenUsage/updated": self = .threadTokenUsageUpdated(try decodeJSONValue(ThreadTokenUsageUpdatedNotification.self, from: params))
@@ -119,6 +125,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .configWarning(let value): return value.rawJSON
         case .deprecationNotice(let value): return value.rawJSON
         case .error(let value): return value.rawJSON
+        case .fsChanged(let value): return value.rawJSON
         case .fuzzyFileSearchSessionCompleted(let value): return value.rawJSON
         case .fuzzyFileSearchSessionUpdated(let value): return value.rawJSON
         case .hookCompleted(let value): return value.rawJSON
@@ -137,6 +144,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .reasoningTextDelta(let value): return value.rawJSON
         case .itemStarted(let value): return value.rawJSON
         case .mcpServerOauthLoginCompleted(let value): return value.rawJSON
+        case .mcpServerStatusUpdated(let value): return value.rawJSON
         case .modelRerouted(let value): return value.rawJSON
         case .serverRequestResolved(let value): return value.rawJSON
         case .skillsChanged(let value): return value.rawJSON
@@ -149,6 +157,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeItemAdded(let value): return value.rawJSON
         case .threadRealtimeOutputAudioDelta(let value): return value.rawJSON
         case .threadRealtimeStarted(let value): return value.rawJSON
+        case .threadRealtimeTranscriptUpdated(let value): return value.rawJSON
         case .threadStarted(let value): return value.rawJSON
         case .threadStatusChanged(let value): return value.rawJSON
         case .threadTokenUsageUpdated(let value): return value.rawJSON
@@ -193,6 +202,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeItemAdded(let value): return value.threadId
         case .threadRealtimeOutputAudioDelta(let value): return value.threadId
         case .threadRealtimeStarted(let value): return value.threadId
+        case .threadRealtimeTranscriptUpdated(let value): return value.threadId
         case .threadStarted(let value): return value.thread.id
         case .threadStatusChanged(let value): return value.threadId
         case .threadTokenUsageUpdated(let value): return value.threadId

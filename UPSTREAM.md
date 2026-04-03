@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `4c70bff480af37b1bf1a9b352b8341060fe55755`
-- Reviewed JSON-RPC basis commit SHA: `4c70bff480af37b1bf1a9b352b8341060fe55755`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/4c70bff480af37b1bf1a9b352b8341060fe55755`
-- Last reviewed date: `2026-03-29`
+- Vendored upstream commit: `b630ce9a4e754d35a1f33e4366ba638d18626142`
+- Reviewed JSON-RPC basis commit SHA: `b630ce9a4e754d35a1f33e4366ba638d18626142`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/b630ce9a4e754d35a1f33e4366ba638d18626142`
+- Last reviewed date: `2026-04-03`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `codex_app_server` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,7 +33,7 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `4c70bff480af37b1bf1a9b352b8341060fe55755` (`rust-v0.117.0`)
+- Vendored checkout: `vendor/openai-codex` at `b630ce9a4e754d35a1f33e4366ba638d18626142` (`rust-v0.118.0`)
 - Reviewed upstream files:
   - `sdk/python/src/codex_app_server/api.py`
   - `sdk/python/src/codex_app_server/async_client.py`
@@ -53,7 +53,10 @@ When porting new behavior from upstream or validating parity:
   - server metadata normalization from initialize payloads
   - process launch config parity for explicit `cwd` and full argv override
   - typed plugin marketplace response support via `plugin/list`
-  - `HookEventName.postToolUse` from the updated v2 schema
+  - `PlanType.selfServeBusinessUsageBased` and `PlanType.enterpriseCbpUsageBased`
+  - `fs/changed`, `mcpServer/startupStatus/updated`, and `thread/realtime/transcriptUpdated` notification payloads
+- Parity target:
+  - Python SDK parity, with typed model generation refreshed from the vendored v2 schema used by the Python app-server
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than Python synchronous wrappers
   - `JSONValue.number(Double)` remains the raw escape hatch type, while generated typed models use integer fields where the schema requires them

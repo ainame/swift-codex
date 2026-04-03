@@ -9,7 +9,9 @@ public enum PlanType: RawJSONRepresentable {
     case plus
     case pro
     case team
+    case selfServeBusinessUsageBased
     case business
+    case enterpriseCbpUsageBased
     case enterprise
     case edu
     case unknown
@@ -23,7 +25,9 @@ public enum PlanType: RawJSONRepresentable {
         case "plus": self = .plus
         case "pro": self = .pro
         case "team": self = .team
+        case "self_serve_business_usage_based": self = .selfServeBusinessUsageBased
         case "business": self = .business
+        case "enterprise_cbp_usage_based": self = .enterpriseCbpUsageBased
         case "enterprise": self = .enterprise
         case "edu": self = .edu
         case "unknown": self = .unknown
@@ -43,7 +47,9 @@ public enum PlanType: RawJSONRepresentable {
         case .plus: return "plus"
         case .pro: return "pro"
         case .team: return "team"
+        case .selfServeBusinessUsageBased: return "self_serve_business_usage_based"
         case .business: return "business"
+        case .enterpriseCbpUsageBased: return "enterprise_cbp_usage_based"
         case .enterprise: return "enterprise"
         case .edu: return "edu"
         case .unknown: return "unknown"
