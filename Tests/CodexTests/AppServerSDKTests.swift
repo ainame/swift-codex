@@ -50,6 +50,63 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func convenienceInitializersUseDefaultLogger() async throws {
+        TestLogging.install()
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+
+        let client = CodexRPCClient(config: stub.makeConfig())
+        _ = try await client.initialize()
+        await client.close()
+
+        let entries = TestLogging.recorder.entries()
+        #expect(entries.contains { $0.label == "swift-codex" && $0.message == "Initializing Codex RPC client" })
+        #expect(entries.contains { $0.label == "swift-codex" && $0.message == "Initialized Codex RPC client" })
+    }
+
+    @Test
+    func explicitLoggerKeepsNotificationLevelsSelective() async throws {
+        TestLogging.install()
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadStartResponses: [appServerThreadStartResponse(id: "thread_levels")],
+            turnStartResponses: [appServerTurnStartResponse(id: "turn_levels")],
+            turnStartSequences: [[
+                .notification(method: "item/completed", params: appServerItemCompleted(
+                    threadID: "thread_levels",
+                    turnID: "turn_levels",
+                    item: appServerAgentMessageItem(text: "Interim", phase: .commentary)
+                )),
+                .notification(method: "turn/completed", params: appServerTurnCompleted(
+                    threadID: "thread_levels",
+                    turnID: "turn_levels"
+                )),
+            ]]
+        ))
+
+        let logger = Codex.defaultLogger(label: "custom-codex")
+        let codex = try await Codex(config: stub.makeConfig(), logger: logger)
+        let thread = try await codex.startThread()
+        _ = try await thread.run("Hello")
+        await codex.close()
+
+        let entries = TestLogging.recorder.entries()
+        #expect(entries.contains {
+            $0.label == "custom-codex"
+                && $0.level == .debug
+                && $0.message == "Received RPC notification"
+                && $0.metadata["method"] == "item/completed"
+        })
+        #expect(entries.contains {
+            $0.label == "custom-codex"
+                && $0.level == .info
+                && $0.message == "Received RPC notification"
+                && $0.metadata["method"] == "turn/completed"
+        })
+    }
+
+    @Test
     func runCollectsFinalResponseAndUsage() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
@@ -95,6 +152,7 @@ struct AppServerSDKTests {
 
     @Test
     func defaultApprovalAcceptsAndUnknownServerRequestsReturnEmptyObject() async throws {
+        TestLogging.install()
         let stub = try CodexStub()
         defer { stub.cleanup() }
         try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
@@ -135,6 +193,20 @@ struct AppServerSDKTests {
         #expect(approval["decision"] == .string("accept"))
         let fallback = try #require(responses.dropFirst().first?.objectValue(forKey: "result"))
         #expect(fallback == [:])
+
+        let entries = TestLogging.recorder.entries()
+        #expect(entries.contains {
+            $0.level == .info
+                && $0.message == "Resolved command approval request"
+                && $0.metadata["approval_id"] == "approval_1"
+                && $0.metadata["decision"] == "approve"
+        })
+        #expect(entries.contains {
+            $0.level == .warning
+                && $0.message == "Returning default empty response for unknown server request"
+                && $0.metadata["method"] == "item/tool/requestUserInput"
+        })
+        #expect(!entries.contains { $0.message.contains("git push") })
         await codex.close()
     }
 

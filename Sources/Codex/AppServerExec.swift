@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 import Subprocess
 #if canImport(System)
 import System
@@ -18,14 +19,29 @@ struct CodexRPCExec: Sendable {
     var baseURL: String?
     var apiKey: String?
     var workingDirectory: String?
+    var logger: Logger
 
     func runRPCServer(
         outgoingMessages: AsyncStream<String>,
         onStdoutLine: @escaping @Sendable (String) async -> Void,
         onStderrLine: @escaping @Sendable (String) async -> Void
     ) async throws {
+        logger.info(
+            "Launching Codex app-server process",
+            metadata: [
+                "launch_mode": .string(launchMode),
+                "working_directory": workingDirectory.map(Logger.MetadataValue.string),
+            ].compactMapValues { $0 }
+        )
         let environment = buildEnvironment()
         let command = try resolveCommand(in: environment)
+        logger.debug(
+            "Resolved Codex app-server command",
+            metadata: [
+                "launch_mode": .string(launchMode),
+                "argument_count": .string(String(command.arguments.count)),
+            ]
+        )
         let configuration = Configuration(
             executable: command.executable,
             arguments: Arguments(command.arguments),
@@ -82,8 +98,22 @@ struct CodexRPCExec: Sendable {
         }
 
         if !result.terminationStatus.isSuccess {
+            logger.error(
+                "Codex app-server terminated unsuccessfully",
+                metadata: ["termination_status": .string(String(describing: result.terminationStatus))]
+            )
             throw CodexError.fromTerminationStatus(result.terminationStatus, stderr: result.value)
         }
+    }
+
+    private var launchMode: String {
+        if launchArgsOverride != nil {
+            return "launch_args_override"
+        }
+        if executablePathOverride != nil {
+            return "executable_path_override"
+        }
+        return "path_lookup"
     }
 
     private func commandArguments() throws -> [String] {

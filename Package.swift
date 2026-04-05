@@ -15,6 +15,7 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.6.4"),
         .package(url: "https://github.com/apple/swift-system.git", from: "1.6.0"),
         .package(url: "https://github.com/swiftlang/swift-subprocess.git", from: "0.1.0"),
         .package(url: "https://github.com/swiftlang/swift-testing.git", from: "0.9.0"),
@@ -23,6 +24,7 @@ let package = Package(
         .target(
             name: "Codex",
             dependencies: [
+                .product(name: "Logging", package: "swift-log"),
                 .product(name: "SystemPackage", package: "swift-system"),
                 .product(name: "Subprocess", package: "swift-subprocess"),
             ]
@@ -31,6 +33,7 @@ let package = Package(
             name: "CodexTests",
             dependencies: [
                 "Codex",
+                .product(name: "Logging", package: "swift-log"),
                 .product(name: "Testing", package: "swift-testing"),
             ]
         ),

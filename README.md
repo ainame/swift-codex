@@ -77,8 +77,12 @@ Then depend on the `Codex` product:
 
 ```swift
 import Codex
+import Logging
 
-let codex = try await Codex(config: .init())
+let codex = try await Codex(
+    config: .init(),
+    logger: Codex.defaultLogger()
+)
 let thread = try await codex.startThread(options: .init(
     model: "gpt-5-codex",
     sandbox: .workspaceWrite
@@ -236,6 +240,8 @@ print(models.data.map(\.id))
 
 await client.close()
 ```
+
+`Codex` and `CodexRPCClient` both accept a `swift-log` `Logger`. If you omit it, they use `Codex.defaultLogger()` with the label `swift-codex`.
 
 Known inbound approval requests are modeled as:
 
