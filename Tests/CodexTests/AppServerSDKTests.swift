@@ -65,6 +65,20 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func cleanCloseDoesNotLogErrors() async throws {
+        TestLogging.install()
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+
+        let client = CodexRPCClient(config: stub.makeConfig())
+        _ = try await client.initialize()
+        await client.close()
+
+        let entries = TestLogging.recorder.entries()
+        #expect(!entries.contains { $0.level == .error })
+    }
+
+    @Test
     func explicitLoggerKeepsNotificationLevelsSelective() async throws {
         TestLogging.install()
         let stub = try CodexStub()

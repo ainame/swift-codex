@@ -98,6 +98,9 @@ struct CodexRPCExec: Sendable {
         }
 
         if !result.terminationStatus.isSuccess {
+            if Task.isCancelled {
+                throw CancellationError()
+            }
             logger.error(
                 "Codex app-server terminated unsuccessfully",
                 metadata: ["termination_status": .string(String(describing: result.terminationStatus))]

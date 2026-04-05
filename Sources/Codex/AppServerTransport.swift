@@ -13,6 +13,7 @@ actor CodexRPCTransport {
     private var pendingNotificationContinuations: [CheckedContinuation<CodexNotification, Error>] = []
     private var terminalError: Error?
     private var stderrTail: [String] = []
+    private var isClosing = false
 
     init(config: CodexConfig, logger: Logger) {
         self.config = config
@@ -34,6 +35,7 @@ actor CodexRPCTransport {
             logger.debug("RPC transport already running")
             return
         }
+        isClosing = false
         logger.info("Starting RPC transport")
 
         let streamPair = AsyncStream.makeStream(of: String.self)
@@ -61,6 +63,7 @@ actor CodexRPCTransport {
     }
 
     func close() {
+        isClosing = true
         logger.info("Closing RPC transport")
         outboundContinuation?.finish()
         outboundContinuation = nil
@@ -169,7 +172,9 @@ actor CodexRPCTransport {
     }
 
     private func finishTransport(error: Error?) {
-        if let error {
+        if isClosing {
+            terminalError = terminalError ?? makeTransportClosedError()
+        } else if let error {
             terminalError = error
             logger.error("RPC transport failed", metadata: ["error": .string(String(describing: error))])
         } else if terminalError == nil {
