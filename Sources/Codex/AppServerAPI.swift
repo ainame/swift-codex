@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 
 public enum ApprovalDecision: String, Sendable, Hashable, Codable {
     case approve
@@ -167,13 +168,19 @@ public struct CodexNotification: Sendable, Hashable, Codable {
 
 public actor CodexRPCClient {
     private let config: CodexConfig
+    private let logger: Logger
     private let transport: CodexRPCTransport
     private var initializePayload: InitializeResponse?
     private var activeTurnConsumer: String?
 
-    public init(config: CodexConfig = .init()) {
+    public init(config: CodexConfig = .init(), logger: Logger) {
         self.config = config
-        self.transport = CodexRPCTransport(config: config)
+        self.logger = logger.codexScope("rpc")
+        self.transport = CodexRPCTransport(config: config, logger: logger.codexScope("transport"))
+    }
+
+    public init(config: CodexConfig = .init()) {
+        self.init(config: config, logger: Codex.defaultLogger())
     }
 
     public func start() async throws {
@@ -185,6 +192,7 @@ public actor CodexRPCClient {
             return initializePayload
         }
 
+        logger.info("Initializing Codex RPC client")
         try await start()
         let payload = try await request(
             "initialize",
@@ -200,9 +208,16 @@ public actor CodexRPCClient {
             ],
             responseType: InitializeResponse.self
         )
-        let normalized = try normalizedInitializePayload(payload)
+        let normalized = try normalizedInitializePayload(payload, logger: logger)
         try await notify("initialized")
         initializePayload = normalized
+        logger.info(
+            "Initialized Codex RPC client",
+            metadata: [
+                "server_name": normalized.serverInfo?.name.map(Logger.MetadataValue.string),
+                "server_version": normalized.serverInfo?.version.map(Logger.MetadataValue.string),
+            ].compactMapValues { $0 }
+        )
         return normalized
     }
 
@@ -211,6 +226,7 @@ public actor CodexRPCClient {
     }
 
     public func close() async {
+        logger.info("Closing Codex RPC client")
         await transport.close()
         initializePayload = nil
         activeTurnConsumer = nil
@@ -237,6 +253,13 @@ public actor CodexRPCClient {
 
     public func acquireTurnConsumer(turnID: String) throws {
         if let activeTurnConsumer {
+            logger.warning(
+                "Attempted to acquire a second active turn consumer",
+                metadata: [
+                    "active_turn_id": .string(activeTurnConsumer),
+                    "requested_turn_id": .string(turnID),
+                ]
+            )
             throw CodexError.concurrentTurnConsumer(
                 activeTurnID: activeTurnConsumer,
                 requestedTurnID: turnID
@@ -489,11 +512,26 @@ public actor CodexRPCClient {
 public actor Codex {
     private let client: CodexRPCClient
     private let initializePayload: InitializeResponse
+    private let logger: Logger
 
-    public init(config: CodexConfig = .init()) async throws {
-        let client = CodexRPCClient(config: config)
+    public init(config: CodexConfig = .init(), logger: Logger) async throws {
+        self.logger = logger.codexScope("codex")
+        let client = CodexRPCClient(config: config, logger: logger)
         self.client = client
         self.initializePayload = try await client.initialize()
+        self.logger.info("Codex session ready")
+    }
+
+    public init(config: CodexConfig = .init()) async throws {
+        try await self.init(config: config, logger: Self.defaultLogger())
+    }
+
+    public static func defaultLogger() -> Logger {
+        CodexLogging.makeDefaultLogger()
+    }
+
+    public static func defaultLogger(label: String) -> Logger {
+        CodexLogging.makeDefaultLogger(label: label)
     }
 
     deinit {
@@ -508,22 +546,38 @@ public actor Codex {
     }
 
     public func close() async {
+        logger.info("Closing Codex session")
         await client.close()
     }
 
     public func startThread(options: ThreadOptions = .init()) async throws -> CodexThread {
         let response = try await client.threadStart(options: options)
-        return CodexThread(client: client, id: response.thread.id)
+        logger.info("Started thread", metadata: ["thread_id": .string(response.thread.id)])
+        return CodexThread(
+            client: client,
+            id: response.thread.id,
+            logger: logger.codexScope("thread", metadata: ["thread_id": .string(response.thread.id)])
+        )
     }
 
     public func resumeThread(id: String, options: ThreadOptions = .init()) async throws -> CodexThread {
         let response = try await client.threadResume(threadID: id, options: options)
-        return CodexThread(client: client, id: response.thread.id)
+        logger.info("Resumed thread", metadata: ["thread_id": .string(response.thread.id)])
+        return CodexThread(
+            client: client,
+            id: response.thread.id,
+            logger: logger.codexScope("thread", metadata: ["thread_id": .string(response.thread.id)])
+        )
     }
 
     public func forkThread(id: String, options: ThreadOptions = .init()) async throws -> CodexThread {
         let response = try await client.threadFork(threadID: id, options: options)
-        return CodexThread(client: client, id: response.thread.id)
+        logger.info("Forked thread", metadata: ["thread_id": .string(response.thread.id)])
+        return CodexThread(
+            client: client,
+            id: response.thread.id,
+            logger: logger.codexScope("thread", metadata: ["thread_id": .string(response.thread.id)])
+        )
     }
 
     public func listThreads(options: ThreadListOptions = .init()) async throws -> ThreadListResponse {
@@ -531,12 +585,19 @@ public actor Codex {
     }
 
     public func archiveThread(id: String) async throws -> ThreadArchiveResponse {
-        try await client.threadArchive(threadID: id)
+        let response = try await client.threadArchive(threadID: id)
+        logger.info("Archived thread", metadata: ["thread_id": .string(id)])
+        return response
     }
 
     public func unarchiveThread(id: String) async throws -> CodexThread {
         let response = try await client.threadUnarchive(threadID: id)
-        return CodexThread(client: client, id: response.thread.id)
+        logger.info("Unarchived thread", metadata: ["thread_id": .string(response.thread.id)])
+        return CodexThread(
+            client: client,
+            id: response.thread.id,
+            logger: logger.codexScope("thread", metadata: ["thread_id": .string(response.thread.id)])
+        )
     }
 
     public func models(includeHidden: Bool = false) async throws -> ModelListResponse {
@@ -550,11 +611,13 @@ public actor Codex {
 
 public struct CodexThread: Sendable {
     private let client: CodexRPCClient
+    private let logger: Logger
     public let id: String
 
-    init(client: CodexRPCClient, id: String) {
+    init(client: CodexRPCClient, id: String, logger: Logger) {
         self.client = client
         self.id = id
+        self.logger = logger
     }
 
     public func run(_ input: String, options: TurnOptions = .init()) async throws -> RunResult {
@@ -566,6 +629,7 @@ public struct CodexThread: Sendable {
     }
 
     public func run(_ input: [InputItem], options: TurnOptions = .init()) async throws -> RunResult {
+        logger.info("Running turn", metadata: ["thread_id": .string(id)])
         let handle = try await turn(input, options: options)
         let stream = try await handle.stream()
         var completedTurn: Turn?
@@ -592,12 +656,27 @@ public struct CodexThread: Sendable {
         }
 
         guard let completedTurn else {
+            logger.error("Turn run did not receive completion event", metadata: ["thread_id": .string(id)])
             throw CodexError.invalidResponse("turn completed event not received")
         }
         if completedTurn.status == .failed {
+            logger.error(
+                "Turn run failed",
+                metadata: [
+                    "thread_id": .string(id),
+                    "turn_id": .string(handle.id),
+                ]
+            )
             throw CodexError.turnFailed(completedTurn.error?.message ?? "turn failed")
         }
 
+        logger.info(
+            "Turn run completed",
+            metadata: [
+                "thread_id": .string(id),
+                "turn_id": .string(handle.id),
+            ]
+        )
         return RunResult(
             finalResponse: finalAssistantResponse(from: items),
             items: items,
@@ -615,7 +694,22 @@ public struct CodexThread: Sendable {
 
     public func turn(_ input: [InputItem], options: TurnOptions = .init()) async throws -> CodexTurnHandle {
         let response = try await client.turnStart(threadID: id, input: input, options: options)
-        return CodexTurnHandle(client: client, threadID: id, id: response.turn.id)
+        logger.info(
+            "Started turn",
+            metadata: [
+                "thread_id": .string(id),
+                "turn_id": .string(response.turn.id),
+            ]
+        )
+        return CodexTurnHandle(
+            client: client,
+            threadID: id,
+            id: response.turn.id,
+            logger: logger.codexScope("turn", metadata: [
+                "thread_id": .string(id),
+                "turn_id": .string(response.turn.id),
+            ])
+        )
     }
 
     public func read(includeTurns: Bool = false) async throws -> ThreadReadResponse {
@@ -634,12 +728,14 @@ public struct CodexThread: Sendable {
 public struct CodexTurnHandle: Sendable {
     private let client: CodexRPCClient
     private let threadID: String
+    private let logger: Logger
     public let id: String
 
-    init(client: CodexRPCClient, threadID: String, id: String) {
+    init(client: CodexRPCClient, threadID: String, id: String, logger: Logger) {
         self.client = client
         self.threadID = threadID
         self.id = id
+        self.logger = logger
     }
 
     public func steer(_ input: String) async throws -> TurnSteerResponse {
@@ -647,19 +743,26 @@ public struct CodexTurnHandle: Sendable {
     }
 
     public func steer(_ input: InputItem) async throws -> TurnSteerResponse {
-        try await client.turnSteer(threadID: threadID, expectedTurnID: id, input: [input])
+        let response = try await client.turnSteer(threadID: threadID, expectedTurnID: id, input: [input])
+        logger.info("Steered turn")
+        return response
     }
 
     public func steer(_ input: [InputItem]) async throws -> TurnSteerResponse {
-        try await client.turnSteer(threadID: threadID, expectedTurnID: id, input: input)
+        let response = try await client.turnSteer(threadID: threadID, expectedTurnID: id, input: input)
+        logger.info("Steered turn")
+        return response
     }
 
     public func interrupt() async throws -> TurnInterruptResponse {
-        try await client.turnInterrupt(threadID: threadID, turnID: id)
+        let response = try await client.turnInterrupt(threadID: threadID, turnID: id)
+        logger.info("Interrupted turn")
+        return response
     }
 
     public func stream() async throws -> AsyncThrowingStream<CodexNotification, Error> {
         try await client.acquireTurnConsumer(turnID: id)
+        logger.debug("Starting turn stream")
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
@@ -669,11 +772,13 @@ public struct CodexTurnHandle: Sendable {
                         if notification.method == "turn/completed",
                            case .turnCompleted(let payload) = notification.payload,
                            payload.turn.id == id {
+                            logger.info("Turn stream completed")
                             continuation.finish()
                             break
                         }
                     }
                 } catch {
+                    logger.error("Turn stream failed")
                     continuation.finish(throwing: error)
                 }
                 await client.releaseTurnConsumer(turnID: id)
@@ -696,8 +801,10 @@ public struct CodexTurnHandle: Sendable {
             }
         }
         guard let completedTurn else {
+            logger.error("Turn completion event not received")
             throw CodexError.invalidResponse("turn completed event not received")
         }
+        logger.info("Turn finished")
         return completedTurn
     }
 }
@@ -746,12 +853,13 @@ private func decodeResponse<T: Decodable>(_ type: T.Type, from value: JSONValue)
     try decodeJSONValue(T.self, from: value)
 }
 
-private func normalizedInitializePayload(_ payload: InitializeResponse) throws -> InitializeResponse {
+private func normalizedInitializePayload(_ payload: InitializeResponse, logger: Logger) throws -> InitializeResponse {
     let userAgent = payload.userAgent?.trimmingCharacters(in: .whitespacesAndNewlines)
     var serverName = payload.serverInfo?.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     var serverVersion = payload.serverInfo?.version?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
     if (serverName.isEmpty || serverVersion.isEmpty), let userAgent, !userAgent.isEmpty {
+        logger.warning("Falling back to userAgent to normalize initialize metadata")
         let parsed = splitUserAgent(userAgent)
         if serverName.isEmpty {
             serverName = parsed.name ?? ""

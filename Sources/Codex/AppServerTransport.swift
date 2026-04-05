@@ -1,7 +1,9 @@
 import Foundation
+import Logging
 
 actor CodexRPCTransport {
     private let config: CodexConfig
+    private let logger: Logger
     private let exec: CodexRPCExec
     private var outboundContinuation: AsyncStream<String>.Continuation?
     private var runTask: Task<Void, Never>?
@@ -12,8 +14,9 @@ actor CodexRPCTransport {
     private var terminalError: Error?
     private var stderrTail: [String] = []
 
-    init(config: CodexConfig) {
+    init(config: CodexConfig, logger: Logger) {
         self.config = config
+        self.logger = logger
         self.exec = CodexRPCExec(
             executablePathOverride: config.codexPathOverride,
             launchArgsOverride: config.launchArgsOverride,
@@ -21,14 +24,17 @@ actor CodexRPCTransport {
             configOverrides: config.config,
             baseURL: config.baseURL,
             apiKey: config.apiKey,
-            workingDirectory: config.workingDirectory
+            workingDirectory: config.workingDirectory,
+            logger: logger.codexScope("exec")
         )
     }
 
     func startProcess() async throws {
         if runTask != nil {
+            logger.debug("RPC transport already running")
             return
         }
+        logger.info("Starting RPC transport")
 
         let streamPair = AsyncStream.makeStream(of: String.self)
         outboundContinuation = streamPair.continuation
@@ -55,6 +61,7 @@ actor CodexRPCTransport {
     }
 
     func close() {
+        logger.info("Closing RPC transport")
         outboundContinuation?.finish()
         outboundContinuation = nil
         runTask?.cancel()
@@ -78,6 +85,13 @@ actor CodexRPCTransport {
         }
 
         let id = nextRequestID()
+        logger.debug(
+            "Sending RPC request",
+            metadata: [
+                "method": .string(method),
+                "request_id": .string(id),
+            ]
+        )
         return try await withCheckedThrowingContinuation { continuation in
             pendingRequests[id] = continuation
             do {
@@ -96,6 +110,7 @@ actor CodexRPCTransport {
     }
 
     func notify(method: String, params: JSONObject) throws {
+        logger.debug("Sending RPC notification", metadata: ["method": .string(method)])
         try send(
             .object([
                 "method": .string(method),
@@ -134,6 +149,7 @@ actor CodexRPCTransport {
     }
 
     private func recordStderr(_ line: String) {
+        logger.debug("RPC stderr", metadata: ["stderr_line": .string(line)])
         stderrTail.append(line)
         if stderrTail.count > 400 {
             stderrTail.removeFirst(stderrTail.count - 400)
@@ -155,8 +171,10 @@ actor CodexRPCTransport {
     private func finishTransport(error: Error?) {
         if let error {
             terminalError = error
+            logger.error("RPC transport failed", metadata: ["error": .string(String(describing: error))])
         } else if terminalError == nil {
             terminalError = makeTransportClosedError()
+            logger.warning("RPC transport closed unexpectedly", metadata: stderrTailLogMetadata())
         }
 
         let failure = terminalError ?? makeTransportClosedError()
@@ -199,12 +217,21 @@ actor CodexRPCTransport {
 
             if let errorPayload = message["error"] {
                 let error = try decode(JSONRPCErrorPayload.self, from: errorPayload)
+                logger.error(
+                    "Received JSON-RPC error response",
+                    metadata: [
+                        "request_id": .string(requestID),
+                        "error_code": .string(String(error.code)),
+                        "error_message": .string(error.message),
+                    ]
+                )
                 pendingRequests.removeValue(forKey: requestID)?.resume(
                     throwing: CodexRPCErrorMapper.map(code: error.code, message: error.message, data: error.data)
                 )
                 return
             }
 
+            logger.debug("Received RPC response", metadata: ["request_id": .string(requestID)])
             pendingRequests.removeValue(forKey: requestID)?.resume(returning: message["result"] ?? .null)
         } catch {
             finishTransport(error: error)
@@ -212,6 +239,13 @@ actor CodexRPCTransport {
     }
 
     private func handleServerRequest(method: String, requestID: String, params: JSONValue?) async throws {
+        logger.debug(
+            "Handling server request",
+            metadata: [
+                "method": .string(method),
+                "request_id": .string(requestID),
+            ]
+        )
         let result = await makeServerRequestResult(method: method, params: params)
         try send(
             .object([
@@ -224,6 +258,7 @@ actor CodexRPCTransport {
     private func makeServerRequestResult(method: String, params: JSONValue?) async -> ServerRequestResult {
         if let serverRequestHandler = config.serverRequestHandler {
             let request = makeServerRequest(method: method, params: params)
+            logger.info("Dispatching custom server request handler", metadata: ["method": .string(method)])
             return await serverRequestHandler(request)
         }
 
@@ -240,6 +275,16 @@ actor CodexRPCTransport {
                 reason: objectParams?.stringValue(forKey: "reason")
             )
             let decision = await config.commandApprovalHandler(request)
+            logger.info(
+                "Resolved command approval request",
+                metadata: [
+                    "thread_id": .string(request.threadID),
+                    "turn_id": .string(request.turnID),
+                    "item_id": .string(request.itemID),
+                    "approval_id": request.approvalID.map(Logger.MetadataValue.string),
+                    "decision": .string(decision.rawValue),
+                ].compactMapValues { $0 }
+            )
             return .approval(decision)
         case "item/fileChange/requestApproval":
             let request = FileChangeApprovalRequest(
@@ -250,20 +295,74 @@ actor CodexRPCTransport {
                 grantRoot: objectParams?.stringValue(forKey: "grantRoot")
             )
             let decision = await config.fileChangeApprovalHandler(request)
+            logger.info(
+                "Resolved file change approval request",
+                metadata: [
+                    "thread_id": .string(request.threadID),
+                    "turn_id": .string(request.turnID),
+                    "item_id": .string(request.itemID),
+                    "decision": .string(decision.rawValue),
+                ]
+            )
             return .approval(decision)
         default:
+            logger.warning("Returning default empty response for unknown server request", metadata: ["method": .string(method)])
             return .json(.object([:]))
         }
     }
 
     private func handleNotification(method: String, params: JSONValue) {
         let notification = CodexNotification(method: method, params: params)
+        logNotification(notification)
         if !pendingNotificationContinuations.isEmpty {
             let continuation = pendingNotificationContinuations.removeFirst()
             continuation.resume(returning: notification)
             return
         }
         pendingNotifications.append(notification)
+    }
+
+    private func logNotification(_ notification: CodexNotification) {
+        let metadata = [
+            "method": Logger.MetadataValue.string(notification.method),
+            "thread_id": notification.threadID.map(Logger.MetadataValue.string),
+            "turn_id": notification.turnID.map(Logger.MetadataValue.string),
+        ].compactMapValues { $0 }
+
+        switch notificationLevel(for: notification.method) {
+        case .error:
+            logger.error("Received RPC notification", metadata: metadata)
+        case .warning:
+            logger.warning("Received RPC notification", metadata: metadata)
+        case .info:
+            logger.info("Received RPC notification", metadata: metadata)
+        default:
+            logger.debug("Received RPC notification", metadata: metadata)
+        }
+    }
+
+    private func notificationLevel(for method: String) -> Logger.Level {
+        if method.contains("error") {
+            return .error
+        }
+        if method.contains("warning") {
+            return .warning
+        }
+        if method == "thread/started" || method == "turn/started" || method == "turn/completed" {
+            return .info
+        }
+        if method.contains("delta") || method.hasSuffix("/updated") || method == "item/completed" {
+            return .debug
+        }
+        return .info
+    }
+
+    private func stderrTailLogMetadata() -> Logger.Metadata {
+        let stderrTail = stderrTailText()
+        if stderrTail.isEmpty {
+            return [:]
+        }
+        return ["stderr_tail": .string(stderrTail)]
     }
 
     private func makeServerRequest(method: String, params: JSONValue?) -> ServerRequest {
