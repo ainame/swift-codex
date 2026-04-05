@@ -18,6 +18,7 @@ These instructions apply to the entire repository.
 
 ## Dependencies
 - Use `swift-subprocess` for subprocess execution.
+- Use `swift-log` for SDK logging and logger injection.
 - Use `swift-testing` by default for tests in this repository.
 - Avoid adding new dependencies unless they provide clear value beyond small in-repo helpers.
 
@@ -25,6 +26,9 @@ These instructions apply to the entire repository.
 - Keep CLI discovery Node-independent.
   - Prefer explicit binary override when provided.
   - Otherwise resolve `codex` from `PATH`.
+- Keep SDK logging on `swift-log`.
+  - Accept `Logger` at client construction boundaries rather than storing it in `CodexConfig`.
+  - Do not call `LoggingSystem.bootstrap(...)` from the library; that is application-owned setup.
 - Model MCP payloads generically unless stronger typing is required by a concrete use case.
 - Keep config override serialization compatible with Codex CLI `--config key=value` behavior.
 - Preserve important CLI argument ordering when behavior depends on it.

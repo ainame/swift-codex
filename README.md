@@ -73,16 +73,24 @@ Then depend on the `Codex` product:
 )
 ```
 
+If you want to pass a custom `swift-log` logger, also add the `Logging` product from `swift-log` in your target dependencies:
+
+```swift
+.target(
+    name: "MyTarget",
+    dependencies: [
+        .product(name: "Codex", package: "swift-codex"),
+        .product(name: "Logging", package: "swift-log"),
+    ]
+)
+```
+
 ## Quickstart
 
 ```swift
 import Codex
-import Logging
 
-let codex = try await Codex(
-    config: .init(),
-    logger: Codex.defaultLogger()
-)
+let codex = try await Codex(config: .init())
 let thread = try await codex.startThread(options: .init(
     model: "gpt-5-codex",
     sandbox: .workspaceWrite
@@ -97,6 +105,16 @@ print(result.finalResponse ?? "")
 print(result.items.count)
 
 await codex.close()
+```
+
+Custom logging:
+
+```swift
+import Codex
+import Logging
+
+let logger = Logger(label: "com.example.my-app.codex")
+let codex = try await Codex(config: .init(), logger: logger)
 ```
 
 Continue on the same thread:
@@ -242,6 +260,8 @@ await client.close()
 ```
 
 `Codex` and `CodexRPCClient` both accept a `swift-log` `Logger`. If you omit it, they use `Codex.defaultLogger()` with the label `swift-codex`.
+
+`swift-codex` does not call `LoggingSystem.bootstrap(...)` for you. Applications and test executables should bootstrap their preferred `swift-log` backend at process startup when they want logs routed to a specific sink.
 
 Known inbound approval requests are modeled as:
 
