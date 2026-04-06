@@ -13,6 +13,10 @@ let package = Package(
             name: "Codex",
             targets: ["Codex"]
         ),
+        .executable(
+            name: "CodexBridge",
+            targets: ["CodexBridge"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-system.git", from: "1.6.0"),
@@ -25,6 +29,13 @@ let package = Package(
             dependencies: [
                 .product(name: "SystemPackage", package: "swift-system"),
                 .product(name: "Subprocess", package: "swift-subprocess"),
+            ]
+        ),
+        .executableTarget(
+            name: "CodexBridge",
+            dependencies: [
+                .product(name: "Subprocess", package: "swift-subprocess"),
+                .product(name: "SystemPackage", package: "swift-system"),
             ]
         ),
         .testTarget(
