@@ -78,10 +78,10 @@ Then depend on the `Codex` product:
 `CodexBridge` is a small TCP bridge that runs `codex app-server --listen stdio://` per connection and forwards line-delimited JSON-RPC.
 
 ```bash
-swift run CodexBridge --port 31337 --token "$BRIDGE_TOKEN"
+swift run CodexBridge --host 100.x.y.z --port 31337
 ```
 
-If you want to reach it from iPhone over Tailscale, expose the local port with `tailscale serve`.
+For Tailscale, bind `--host` to the machine's Tailscale IP and connect to that address from your client.
 
 ## Quickstart
 

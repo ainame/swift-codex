@@ -22,8 +22,8 @@ struct CodexBridgeMain {
 }
 
 private struct BridgeOptions: Sendable {
+    var host: String = "127.0.0.1"
     var port: UInt16 = 31337
-    var token: String?
     var codexPath: String = "codex"
 
     static func parse(arguments: [String]) throws -> BridgeOptions {
@@ -45,14 +45,14 @@ private struct BridgeOptions: Sendable {
             case "-h", "--help":
                 print(Self.helpMessage)
                 exit(0)
+            case "--host":
+                options.host = try requireValue(for: argument)
             case "--port":
                 let value = try requireValue(for: argument)
                 guard let port = UInt16(value) else {
                     throw BridgeError.invalidPort(value)
                 }
                 options.port = port
-            case "--token":
-                options.token = try requireValue(for: argument)
             case "--codex":
                 options.codexPath = try requireValue(for: argument)
             default:
@@ -65,7 +65,7 @@ private struct BridgeOptions: Sendable {
     }
 
     private static let helpMessage = """
-    Usage: CodexBridge [--port PORT] [--token TOKEN] [--codex PATH]
+    Usage: CodexBridge [--host HOST] [--port PORT] [--codex PATH]
 
     Starts a TCP bridge that launches `codex app-server --listen stdio://`
     per connection and forwards newline-delimited JSON-RPC over the socket.
@@ -77,7 +77,6 @@ private enum BridgeError: LocalizedError {
     case invalidPort(String)
     case unknownArgument(String)
     case codexNotFound(String)
-    case authenticationFailed
 
     var errorDescription: String? {
         switch self {
@@ -89,8 +88,6 @@ private enum BridgeError: LocalizedError {
             return "unknown argument: \(argument)"
         case .codexNotFound(let path):
             return "could not find codex executable: \(path)"
-        case .authenticationFailed:
-            return "authentication failed"
         }
     }
 }
@@ -105,13 +102,19 @@ private final class BridgeServer {
     }
 
     func run() throws {
-        let listener = try NWListener(using: .tcp, on: NWEndpoint.Port(rawValue: options.port)!)
+        let parameters = NWParameters.tcp
+        parameters.requiredLocalEndpoint = .hostPort(
+            host: NWEndpoint.Host(options.host),
+            port: NWEndpoint.Port(rawValue: options.port)!
+        )
+        let listener = try NWListener(using: parameters)
         self.listener = listener
+        let host = options.host
         let port = options.port
         listener.stateUpdateHandler = { state in
             switch state {
             case .ready:
-                fputs("CodexBridge listening on 0.0.0.0:\(port)\n", stderr)
+                fputs("CodexBridge listening on \(host):\(port)\n", stderr)
             case .failed(let error):
                 fputs("CodexBridge listener failed: \(error)\n", stderr)
                 exit(1)
@@ -136,20 +139,7 @@ private final class BridgeServer {
     private static func handle(connection: NWConnection, options: BridgeOptions) async throws {
         let reader = SocketLineReader(connection: connection)
         let writer = SocketWriter(connection: connection)
-
-        guard let firstLine = try await reader.nextLine() else {
-            connection.cancel()
-            return
-        }
-        if let token = options.token {
-            guard firstLine == token else {
-                connection.cancel()
-                throw BridgeError.authenticationFailed
-            }
-        }
-
         try await runCodexBridge(
-            initialLine: options.token == nil ? firstLine : nil,
             reader: reader,
             writer: writer,
             options: options,
@@ -158,7 +148,6 @@ private final class BridgeServer {
     }
 
     private static func runCodexBridge(
-        initialLine: String?,
         reader: SocketLineReader,
         writer: SocketWriter,
         options: BridgeOptions,
@@ -175,9 +164,6 @@ private final class BridgeServer {
         _ = try await Subprocess.run(configuration, preferredBufferSize: 1) { _, standardInput, standardOutput, standardError in
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
-                    if let initialLine {
-                        _ = try await standardInput.write(initialLine + "\n", using: UTF8.self)
-                    }
                     while let line = try await reader.nextLine() {
                         _ = try await standardInput.write(line + "\n", using: UTF8.self)
                     }
@@ -249,7 +235,12 @@ private final class BridgeServer {
 
     private static func resolveExecutable(path: String) throws -> Executable {
         let executable = path.contains("/") ? Executable.path(FilePath(path)) : Executable.name(path)
-        return executable
+        do {
+            _ = try executable.resolveExecutablePath(in: .inherit)
+            return executable
+        } catch {
+            throw BridgeError.codexNotFound(path)
+        }
     }
 }
 
@@ -389,7 +380,7 @@ private actor SocketWriter {
                 if let error {
                     continuation.resume(throwing: error)
                 } else {
-                    continuation.resume()
+                    continuation.resume(returning: ())
                 }
             })
         }
