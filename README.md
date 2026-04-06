@@ -73,6 +73,17 @@ Then depend on the `Codex` product:
 )
 ```
 
+Remote clients that cannot spawn the Codex CLI should depend on `CodexBridgeClient` instead:
+
+```swift
+.target(
+    name: "MyRemoteTarget",
+    dependencies: [
+        .product(name: "CodexBridgeClient", package: "swift-codex"),
+    ]
+)
+```
+
 If you want to pass a custom `swift-log` logger, also add the `Logging` product from `swift-log` in your target dependencies:
 
 ```swift
@@ -83,6 +94,47 @@ If you want to pass a custom `swift-log` logger, also add the `Logging` product 
         .product(name: "Logging", package: "swift-log"),
     ]
 )
+```
+
+## CodexBridge
+
+`CodexBridge` is an optional HTTP bridge for clients that cannot spawn the `codex` CLI directly. A remote app can call a Mac on the same tailnet while the Mac keeps local `codex app-server --listen stdio://` sessions behind the bridge.
+
+Most Swift apps that run on the same machine as `codex` should use the `Codex` library API directly instead. Use `CodexBridge` when your actual app process is remote from the machine that has the Codex CLI installed.
+
+```bash
+swift run CodexBridge --host 127.0.0.1 --port 31337
+```
+
+The bridge exposes:
+
+- `GET /healthz`
+- `POST /sessions`
+- `POST /sessions/{sessionId}/rpc`
+- `POST /sessions/{sessionId}/server-requests/{requestId}/response`
+- `DELETE /sessions/{sessionId}`
+
+Each bridge session owns one persistent Codex app-server subprocess. `POST /sessions/{sessionId}/rpc` accepts a JSON body with `method`, `params`, and optional `notification`, then streams NDJSON envelopes for the RPC response, notifications, server approval requests, and bridge errors. Sequential calls against the same session can therefore use the same Codex thread; for `turn/start`, the response stream stays open through the matching `turn/completed` notification.
+
+Remote Swift clients should normally use `CodexBridgeClient` instead of calling these endpoints manually:
+
+```swift
+import CodexBridgeClient
+
+let codex = try await Codex(
+    bridgeURL: URL(string: "https://satoshis-macbook-pro.example.ts.net")!,
+    config: .init()
+)
+
+let thread = try await codex.startThread()
+let result = try await thread.run("Say hello in one short sentence.")
+print(result.finalResponse ?? "")
+```
+
+For Tailscale, keep the bridge bound to `127.0.0.1` and publish that local port with `tailscale serve`. The helper script does that wiring for this repository, and you can copy the same pattern into your own app or launch script:
+
+```bash
+Scripts/run_codex_bridge_tailscale.sh --port 31337
 ```
 
 ## Quickstart

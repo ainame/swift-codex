@@ -1,7 +1,7 @@
 import Foundation
 
-enum CodexConfigSerializer {
-    static func serialize(_ object: JSONObject) throws -> [String] {
+public enum CodexConfigSerializer {
+    public static func serialize(_ object: JSONObject) throws -> [String] {
         var overrides: [String] = []
         try flatten(value: .object(object), prefix: "", into: &overrides)
         return overrides
