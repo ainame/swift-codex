@@ -268,8 +268,14 @@ private actor SocketLineReader {
             return nil
         }
 
-        return try await withCheckedThrowingContinuation { continuation in
-            waiting.append(continuation)
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                waiting.append(continuation)
+            }
+        } onCancel: {
+            Task {
+                await self.cancelPendingRead()
+            }
         }
     }
 
@@ -344,7 +350,12 @@ private actor SocketLineReader {
     private func finish(error: Error) {
         guard !finished else { return }
         finished = true
+        connection.cancel()
         drainWaiters(throwing: error)
+    }
+
+    private func cancelPendingRead() {
+        finish(error: CancellationError())
     }
 
     private func drainWaiters(with value: String?) {
