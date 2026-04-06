@@ -83,6 +83,12 @@ swift run CodexBridge --host 100.x.y.z --port 31337
 
 For Tailscale, bind `--host` to the machine's Tailscale IP and connect to that address from your client.
 
+The repository also includes a helper script that discovers the local Tailscale IP and launches the bridge on it:
+
+```bash
+Scripts/run_codex_bridge_tailscale.sh --port 31337
+```
+
 ## Quickstart
 
 ```swift
