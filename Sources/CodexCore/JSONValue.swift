@@ -85,7 +85,7 @@ extension JSONValue: ExpressibleByStringLiteral,
 
 public typealias JSONObject = [String: JSONValue]
 
-extension JSONObject {
+public extension JSONObject {
     func stringValue(forKey key: String) -> String? {
         self[key]?.stringValue
     }
@@ -111,7 +111,7 @@ extension JSONObject {
     }
 }
 
-extension JSONValue {
+public extension JSONValue {
     var objectValue: JSONObject? {
         guard case .object(let value) = self else {
             return nil

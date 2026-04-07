@@ -1,4 +1,6 @@
+#if os(macOS)
 import Foundation
+import CodexCore
 import Logging
 import Subprocess
 #if canImport(System)
@@ -241,3 +243,19 @@ struct CodexRPCExec: Sendable {
         return collected
     }
 }
+
+extension CodexError {
+    static func fromTerminationStatus(_ status: TerminationStatus, stderr: String) -> CodexError {
+        let detail: String
+        switch status {
+        case .exited(let code):
+            detail = "code \(code)"
+        case .unhandledException(let code):
+            detail = "signal \(code)"
+        @unknown default:
+            detail = "\(status)"
+        }
+        return .processFailed(detail: "Codex process exited with \(detail): \(stderr)")
+    }
+}
+#endif

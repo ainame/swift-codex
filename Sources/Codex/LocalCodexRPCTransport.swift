@@ -1,7 +1,9 @@
+#if os(macOS)
 import Foundation
+import CodexCore
 import Logging
 
-actor CodexRPCTransport {
+actor LocalCodexRPCTransport: CodexRPCTransporting {
     private let config: CodexConfig
     private let logger: Logger
     private let exec: CodexRPCExec
@@ -30,7 +32,7 @@ actor CodexRPCTransport {
         )
     }
 
-    func startProcess() async throws {
+    func start() async throws {
         if runTask != nil {
             logger.debug("RPC transport already running")
             return
@@ -62,7 +64,7 @@ actor CodexRPCTransport {
         }
     }
 
-    func close() {
+    func close() async {
         isClosing = true
         logger.info("Closing RPC transport")
         outboundContinuation?.finish()
@@ -112,7 +114,7 @@ actor CodexRPCTransport {
         }
     }
 
-    func notify(method: String, params: JSONObject) throws {
+    func notify(method: String, params: JSONObject) async throws {
         logger.debug("Sending RPC notification", metadata: ["method": .string(method)])
         try send(
             .object([
@@ -411,60 +413,4 @@ private struct JSONRPCErrorPayload: Decodable {
     var message: String
     var data: JSONValue?
 }
-
-enum CodexRPCErrorMapper {
-    static func map(code: Int, message: String, data: JSONValue?) -> CodexError {
-        switch code {
-        case -32700:
-            return .parseError(message: message, data: data)
-        case -32600:
-            return .invalidRequest(message: message, data: data)
-        case -32601:
-            return .methodNotFound(message: message, data: data)
-        case -32602:
-            return .invalidParams(message: message, data: data)
-        case -32603:
-            return .internalRPC(message: message, data: data)
-        case -32099 ... -32000:
-            if containsRetryLimitText(message) {
-                return .retryLimitExceeded(message: message, data: data)
-            }
-            if isServerOverloaded(data) {
-                return .serverBusy(message: message, data: data)
-            }
-            return .jsonRPCError(code: code, message: message, data: data)
-        default:
-            return .jsonRPCError(code: code, message: message, data: data)
-        }
-    }
-
-    static func containsRetryLimitText(_ message: String) -> Bool {
-        let lowered = message.lowercased()
-        return lowered.contains("retry limit") || lowered.contains("too many failed attempts")
-    }
-
-    static func isServerOverloaded(_ data: JSONValue?) -> Bool {
-        guard let data else {
-            return false
-        }
-        switch data {
-        case .string(let value):
-            return value.lowercased() == "server_overloaded" || value.lowercased() == "serveroverloaded"
-        case .object(let object):
-            let directKeys = ["codex_error_info", "codexErrorInfo", "errorInfo"]
-            for key in directKeys {
-                if isServerOverloaded(object[key]) {
-                    return true
-                }
-            }
-            for value in object.values where isServerOverloaded(value) {
-                return true
-            }
-            return false
-        case .array(let values):
-            return values.contains(where: isServerOverloaded)
-        default:
-            return false
-        }
-    }
-}
+#endif

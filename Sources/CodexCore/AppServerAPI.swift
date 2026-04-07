@@ -66,7 +66,7 @@ public enum ServerRequestResult: Sendable, Hashable, Codable {
     case approval(ApprovalDecision)
     case json(JSONValue)
 
-    var jsonValue: JSONValue {
+    public var jsonValue: JSONValue {
         switch self {
         case .approval(let decision):
             return .object(["decision": .string(decision == .approve ? "accept" : "decline")])
@@ -150,7 +150,7 @@ public struct CodexNotification: Sendable, Hashable, Codable {
     public var payload: CodexNotificationPayload
     public var rawParams: JSONValue
 
-    init(method: String, params: JSONValue) {
+    public init(method: String, params: JSONValue) {
         self.method = method
         self.rawParams = params
         self.payload = (try? CodexNotificationPayload(method: method, params: params))
@@ -169,22 +169,18 @@ public struct CodexNotification: Sendable, Hashable, Codable {
 public actor CodexRPCClient {
     private let config: CodexConfig
     private let logger: Logger
-    private let transport: CodexRPCTransport
+    private let transport: any CodexRPCTransporting
     private var initializePayload: InitializeResponse?
     private var activeTurnConsumer: String?
 
-    public init(config: CodexConfig = .init(), logger: Logger) {
+    public init(config: CodexConfig = .init(), logger: Logger, transport: any CodexRPCTransporting) {
         self.config = config
         self.logger = logger.codexScope("rpc")
-        self.transport = CodexRPCTransport(config: config, logger: logger.codexScope("transport"))
-    }
-
-    public init(config: CodexConfig = .init()) {
-        self.init(config: config, logger: Codex.defaultLogger())
+        self.transport = transport
     }
 
     public func start() async throws {
-        try await transport.startProcess()
+        try await transport.start()
     }
 
     public func initialize() async throws -> InitializeResponse {
@@ -514,16 +510,16 @@ public actor Codex {
     private let initializePayload: InitializeResponse
     private let logger: Logger
 
-    public init(config: CodexConfig = .init(), logger: Logger) async throws {
+    public init(
+        config: CodexConfig = .init(),
+        logger: Logger,
+        transport: any CodexRPCTransporting
+    ) async throws {
         self.logger = logger.codexScope("codex")
-        let client = CodexRPCClient(config: config, logger: logger)
+        let client = CodexRPCClient(config: config, logger: logger, transport: transport)
         self.client = client
         self.initializePayload = try await client.initialize()
         self.logger.info("Codex session ready")
-    }
-
-    public init(config: CodexConfig = .init()) async throws {
-        try await self.init(config: config, logger: Self.defaultLogger())
     }
 
     public static func defaultLogger() -> Logger {

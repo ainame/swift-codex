@@ -1,14 +1,14 @@
 import Logging
 
-enum CodexLogging {
-    static let defaultLabel = "swift-codex"
+public enum CodexLogging {
+    public static let defaultLabel = "swift-codex"
 
-    static func makeDefaultLogger(label: String = defaultLabel) -> Logger {
+    public static func makeDefaultLogger(label: String = defaultLabel) -> Logger {
         Logger(label: label)
     }
 }
 
-extension Logger {
+public extension Logger {
     func codexScope(_ scope: String, metadata: Logger.Metadata = [:]) -> Logger {
         var logger = self
         logger[metadataKey: "codex_scope"] = .string(scope)
