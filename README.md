@@ -2,7 +2,7 @@
 
 Swift SDK for the [`codex`](https://github.com/openai/codex) CLI.
 
-`swift-codex` now uses the Codex JSON-RPC v2 app-server transport exclusively. The SDK starts `codex app-server --listen stdio://`, speaks JSON-RPC over stdio, and exposes both a high-level `Codex` API and a low-level `CodexRPCClient` with typed protocol models generated from the vendored upstream schema.
+`swift-codex` now uses the Codex JSON-RPC v2 app-server protocol exclusively. The local `Codex` product starts `codex app-server --listen stdio://` and speaks JSON-RPC over stdio. Remote clients can instead use `CodexBridgeClient`, which talks to a `CodexBridge` HTTP server that runs the Codex CLI on another machine.
 
 This repository still exists as a Swift port of the OpenAI Codex SDK work in [`openai/codex`](https://github.com/openai/codex), with upstream attribution and sync notes recorded in [`NOTICE`](NOTICE), [`LICENSE`](LICENSE), and [`UPSTREAM.md`](UPSTREAM.md).
 
@@ -12,6 +12,9 @@ Current implementation includes:
 
 - async `Codex`, `CodexThread`, and `CodexTurnHandle`
 - low-level `CodexRPCClient`
+- a subprocess-free `CodexCore` target shared by local and bridge clients
+- `CodexBridgeClient` for HTTP bridge clients that cannot spawn the Codex CLI directly
+- a `CodexBridge` executable that exposes HTTP sessions backed by local Codex app-server subprocesses
 - typed generated protocol models such as `Thread`, `Turn`, `ThreadItem`, `ModelListResponse`, and `CodexNotificationPayload`
 - thread start, resume, fork, archive, unarchive, rename, compact, list, and read
 - plugin list retrieval with typed marketplace metadata
@@ -44,7 +47,10 @@ See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files and Swift-specific
 ## Requirements
 
 - Swift 6.2
-- Installed `codex` CLI available on `PATH`, or an explicit binary path in `CodexConfig`
+- macOS 15+ for local `Codex` and `CodexBridge` usage
+- iOS 17+ for `CodexBridgeClient` usage
+- Installed `codex` CLI available on `PATH`, or an explicit binary path in `CodexConfig`, when using the local `Codex` product or running `CodexBridge`
+- A reachable `CodexBridge` server when using `CodexBridgeClient` from a remote app
 
 Example installation:
 
@@ -62,7 +68,9 @@ dependencies: [
 ]
 ```
 
-Then depend on the `Codex` product:
+Then choose the product that matches where the Codex CLI runs.
+
+For apps that run on the same Mac as the Codex CLI, depend on `Codex`:
 
 ```swift
 .target(
@@ -73,7 +81,7 @@ Then depend on the `Codex` product:
 )
 ```
 
-Remote clients that cannot spawn the Codex CLI should depend on `CodexBridgeClient` instead:
+For remote clients that cannot spawn the Codex CLI directly, depend on `CodexBridgeClient` instead. This product re-exports the shared SDK types from `CodexCore` and sends JSON-RPC over HTTP to a `CodexBridge` server:
 
 ```swift
 .target(
@@ -116,7 +124,7 @@ The bridge exposes:
 
 Each bridge session owns one persistent Codex app-server subprocess. `POST /sessions/{sessionId}/rpc` accepts a JSON body with `method`, `params`, and optional `notification`, then streams NDJSON envelopes for the RPC response, notifications, server approval requests, and bridge errors. Sequential calls against the same session can therefore use the same Codex thread; for `turn/start`, the response stream stays open through the matching `turn/completed` notification.
 
-Remote Swift clients should normally use `CodexBridgeClient` instead of calling these endpoints manually:
+Remote Swift clients should normally use `CodexBridgeClient` instead of calling these endpoints manually. `CodexBridgeClient` creates one bridge session per SDK client instance, buffers streamed notifications so `CodexTurnHandle.stream()` keeps working, and routes server approval requests back to the client-side approval handlers in `CodexConfig`:
 
 ```swift
 import CodexBridgeClient
@@ -292,7 +300,7 @@ let result = try await thread.run(
 
 ## Low-Level RPC Client
 
-`CodexRPCClient` exposes the raw JSON-RPC method surface with typed request and response models:
+`CodexRPCClient` exposes the raw JSON-RPC method surface with typed request and response models. With the `Codex` product it uses a local stdio app-server transport; with `CodexBridgeClient` it uses the HTTP bridge transport:
 
 ```swift
 let client = CodexRPCClient(config: .init())
@@ -328,10 +336,10 @@ Unknown request methods fall back to:
 
 Generated protocol models live in:
 
-- [`Sources/Codex/RPCModels/Generated`](Sources/Codex/RPCModels/Generated)
-- [`Sources/Codex/GeneratedModelSupport.swift`](Sources/Codex/GeneratedModelSupport.swift)
+- [`Sources/CodexCore/RPCModels/Generated`](Sources/CodexCore/RPCModels/Generated)
+- [`Sources/CodexCore/GeneratedModelSupport.swift`](Sources/CodexCore/GeneratedModelSupport.swift)
 
-The generator writes one Swift file per generated type plus [`CodexNotificationPayload.swift`](Sources/Codex/RPCModels/Generated/CodexNotificationPayload.swift) so the model layer stays editor-friendly.
+The generator writes one Swift file per generated type plus [`CodexNotificationPayload.swift`](Sources/CodexCore/RPCModels/Generated/CodexNotificationPayload.swift) so the model layer stays editor-friendly.
 
 Regenerate them with:
 
@@ -369,8 +377,12 @@ The suite uses `swift-testing` and a stub `codex` binary that simulates the JSON
 
 ## Repository Layout
 
-- [`Sources/Codex`](Sources/Codex): SDK implementation
+- [`Sources/CodexCore`](Sources/CodexCore): subprocess-free shared SDK API, RPC client, config, JSON model support, and generated protocol models
+- [`Sources/Codex`](Sources/Codex): macOS local subprocess transport and `Codex` product re-export
+- [`Sources/CodexBridgeClient`](Sources/CodexBridgeClient): HTTP bridge client transport and `CodexBridgeClient` product re-export
+- [`Sources/CodexBridge`](Sources/CodexBridge): Hummingbird HTTP bridge executable for remote clients
 - [`Tests/CodexTests`](Tests/CodexTests): tests and stub transport harness
 - [`Scripts/generate_app_server_v2.py`](Scripts/generate_app_server_v2.py): typed model generator
+- [`Scripts/run_codex_bridge_tailscale.sh`](Scripts/run_codex_bridge_tailscale.sh): local bridge launcher and Tailscale Serve helper
 - [`Examples`](Examples): executable example package
 - [`AGENTS.md`](AGENTS.md): repository instructions for coding agents

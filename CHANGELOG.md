@@ -10,6 +10,9 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Changed
 
+- Split subprocess-free SDK code into a new `CodexCore` target shared by the local SDK and bridge client.
+- Added `CodexBridgeClient` for remote HTTP clients and updated `CodexBridge` to expose explicit per-client HTTP sessions with streamed JSON-RPC envelopes.
+- Kept the existing `Codex` product as the macOS local subprocess-backed SDK while moving generated protocol models under `Sources/CodexCore`.
 - Updated `vendor/openai-codex` to `rust-v0.118.0` (`b630ce9a4e754d35a1f33e4366ba638d18626142`).
 - Regenerated app-server v2 models to include `fs/changed`, `mcpServer/startupStatus/updated`, and `thread/realtime/transcriptUpdated` notification payloads.
 - Added the new usage-based `PlanType` enum cases from the upstream app-server schema.
@@ -32,8 +35,8 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Added
 
-- Added a typed JSON-RPC v2 model layer generated into [`Sources/Codex/RPCModels/Generated`](Sources/Codex/RPCModels/Generated).
-- Added generated model support for `rawJSON`, `additionalFields`, and union `.unknown(JSONValue)` fallback in [`Sources/Codex/GeneratedModelSupport.swift`](Sources/Codex/GeneratedModelSupport.swift).
+- Added a typed JSON-RPC v2 model layer, now located under [`Sources/CodexCore/RPCModels/Generated`](Sources/CodexCore/RPCModels/Generated).
+- Added generated model support for `rawJSON`, `additionalFields`, and union `.unknown(JSONValue)` fallback, now located in [`Sources/CodexCore/GeneratedModelSupport.swift`](Sources/CodexCore/GeneratedModelSupport.swift).
 - Added `CodexRPCClient` as the low-level JSON-RPC client.
 - Added RPC-focused regression tests for typed model round-tripping, unknown union fallback, notification metadata fallback, retry behavior, initialize normalization, approval handling, and thread/turn lifecycle operations.
 - Added an updated executable example for startup, approvals, thread list/read, and streamed notifications.
@@ -46,7 +49,7 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 - Aligned response shapes with the vendored schema, including `ThreadListResponse.data`, `ModelListResponse.data`, integer token counts, typed `MessagePhase`, and empty typed interrupt/archive/name/compact responses.
 - Switched final-response extraction and notification metadata handling to the typed model layer.
 - Updated README, UPSTREAM notes, tests, and examples to document the RPC-only API.
-- Split generated RPC v2 models into one file per type under [`Sources/Codex/RPCModels/Generated`](Sources/Codex/RPCModels/Generated) so editors no longer need to open a single 17k+ line file.
+- Split generated RPC v2 models into one file per type, now under [`Sources/CodexCore/RPCModels/Generated`](Sources/CodexCore/RPCModels/Generated), so editors no longer need to open a single 17k+ line file.
 
 ### Removed
 

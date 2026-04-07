@@ -61,4 +61,5 @@ When porting new behavior from upstream or validating parity:
   - the repository still follows Swift API conventions and async/await rather than Python synchronous wrappers
   - `JSONValue.number(Double)` remains the raw escape hatch type, while generated typed models use integer fields where the schema requires them
   - the SDK keeps explicit `Codex`, `CodexThread`, and `CodexTurnHandle` handle types separate from protocol record types like `Thread` and `Turn`
+  - the Swift package splits shared protocol/client code into `CodexCore`, keeps local subprocess launch in the `Codex` product, and adds `CodexBridgeClient`/`CodexBridge` for HTTP remote-client usage
   - the Swift package still exists as a porting project derived from the broader `openai/codex` SDK work, but runtime semantics now come from the JSON-RPC app-server basis above
