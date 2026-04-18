@@ -13,9 +13,11 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 - Split subprocess-free SDK code into a new `CodexCore` target shared by the local SDK and bridge client.
 - Added `CodexBridgeClient` for remote HTTP clients and updated `CodexBridge` to expose explicit per-client HTTP sessions with streamed JSON-RPC envelopes.
 - Kept the existing `Codex` product as the macOS local subprocess-backed SDK while moving generated protocol models under `Sources/CodexCore`.
-- Updated `vendor/openai-codex` to `rust-v0.118.0` (`b630ce9a4e754d35a1f33e4366ba638d18626142`).
+- Updated `vendor/openai-codex` to `rust-v0.121.0` (`d65ed92a5e440972626965d0af9a6345179783bc`).
 - Regenerated app-server v2 models to include `fs/changed`, `mcpServer/startupStatus/updated`, and `thread/realtime/transcriptUpdated` notification payloads.
 - Added the new usage-based `PlanType` enum cases from the upstream app-server schema.
+- Regenerated typed models for newer schema fields, including `AbsolutePathBuf` path wrappers, `Thread.forkedFromId`, guardian review authorization/source metadata, MCP tool result `_meta`, model `additionalSpeedTiers`, and `PlanType.prolite`.
+- Reviewed the newer `rust-v0.121.0` raw app-server schema additions while keeping the Swift surface aligned to the unchanged Python `codex_app_server` SDK; no new public Swift APIs were added for raw-schema-only features in this sync.
 
 ## [0.0.3] - 2026-03-29
 

@@ -7,6 +7,7 @@ public enum GuardianApprovalReviewStatus: RawJSONRepresentable {
     case inProgress
     case approved
     case denied
+    case timedOut
     case aborted
     case unrecognized(String)
 
@@ -16,6 +17,7 @@ public enum GuardianApprovalReviewStatus: RawJSONRepresentable {
         case "inProgress": self = .inProgress
         case "approved": self = .approved
         case "denied": self = .denied
+        case "timedOut": self = .timedOut
         case "aborted": self = .aborted
         default:
             self = .unrecognized(value)
@@ -31,6 +33,7 @@ public enum GuardianApprovalReviewStatus: RawJSONRepresentable {
         case .inProgress: return "inProgress"
         case .approved: return "approved"
         case .denied: return "denied"
+        case .timedOut: return "timedOut"
         case .aborted: return "aborted"
         case .unrecognized(let value):
             return value

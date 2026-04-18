@@ -72,6 +72,15 @@ MANUAL_DEFINITIONS = {
             "version": {"type": ["string", "null"]},
         },
     },
+    "ThreadRealtimeTranscriptUpdatedNotification": {
+        "type": "object",
+        "properties": {
+            "role": {"type": "string"},
+            "text": {"type": "string"},
+            "threadId": {"type": "string"},
+        },
+        "required": ["role", "text", "threadId"],
+    },
     "InitializeResponse": {
         "type": "object",
         "properties": {

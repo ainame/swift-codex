@@ -3,20 +3,20 @@
 
 import Foundation
 
-public enum GuardianRiskLevel: RawJSONRepresentable {
-    case low
-    case medium
-    case high
-    case critical
+public enum NetworkApprovalProtocol: RawJSONRepresentable {
+    case http
+    case https
+    case socks5Tcp
+    case socks5Udp
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "low": self = .low
-        case "medium": self = .medium
-        case "high": self = .high
-        case "critical": self = .critical
+        case "http": self = .http
+        case "https": self = .https
+        case "socks5Tcp": self = .socks5Tcp
+        case "socks5Udp": self = .socks5Udp
         default:
             self = .unrecognized(value)
         }
@@ -28,10 +28,10 @@ public enum GuardianRiskLevel: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .low: return "low"
-        case .medium: return "medium"
-        case .high: return "high"
-        case .critical: return "critical"
+        case .http: return "http"
+        case .https: return "https"
+        case .socks5Tcp: return "socks5Tcp"
+        case .socks5Udp: return "socks5Udp"
         case .unrecognized(let value):
             return value
         }
