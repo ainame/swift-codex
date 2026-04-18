@@ -8,8 +8,9 @@ public struct Thread: ObjectModel {
     public var agentRole: String?
     public var cliVersion: String
     public var createdAt: Int
-    public var cwd: String
+    public var cwd: AbsolutePathBuf
     public var ephemeral: Bool
+    public var forkedFromId: String?
     public var gitInfo: GitInfo?
     public var id: String
     public var modelProvider: String
@@ -27,8 +28,9 @@ public struct Thread: ObjectModel {
         agentRole: String? = nil,
         cliVersion: String,
         createdAt: Int,
-        cwd: String,
+        cwd: AbsolutePathBuf,
         ephemeral: Bool,
+        forkedFromId: String? = nil,
         gitInfo: GitInfo? = nil,
         id: String,
         modelProvider: String,
@@ -47,6 +49,7 @@ public struct Thread: ObjectModel {
         self.createdAt = createdAt
         self.cwd = cwd
         self.ephemeral = ephemeral
+        self.forkedFromId = forkedFromId
         self.gitInfo = gitInfo
         self.id = id
         self.modelProvider = modelProvider
@@ -73,6 +76,7 @@ public struct Thread: ObjectModel {
         self.createdAt = payload.createdAt
         self.cwd = payload.cwd
         self.ephemeral = payload.ephemeral
+        self.forkedFromId = payload.forkedFromId
         self.gitInfo = payload.gitInfo
         self.id = payload.id
         self.modelProvider = payload.modelProvider
@@ -98,6 +102,7 @@ public struct Thread: ObjectModel {
             createdAt: createdAt,
             cwd: cwd,
             ephemeral: ephemeral,
+            forkedFromId: forkedFromId,
             gitInfo: gitInfo,
             id: id,
             modelProvider: modelProvider,
@@ -111,15 +116,16 @@ public struct Thread: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "gitInfo", "id", "modelProvider", "name", "path", "preview", "source", "status", "turns", "updatedAt"]
+    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "path", "preview", "source", "status", "turns", "updatedAt"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentNickname: String?
         var agentRole: String?
         var cliVersion: String
         var createdAt: Int
-        var cwd: String
+        var cwd: AbsolutePathBuf
         var ephemeral: Bool
+        var forkedFromId: String?
         var gitInfo: GitInfo?
         var id: String
         var modelProvider: String
@@ -138,6 +144,7 @@ public struct Thread: ObjectModel {
             case createdAt
             case cwd
             case ephemeral
+            case forkedFromId
             case gitInfo
             case id
             case modelProvider
@@ -156,8 +163,9 @@ public struct Thread: ObjectModel {
             agentRole: String?,
             cliVersion: String,
             createdAt: Int,
-            cwd: String,
+            cwd: AbsolutePathBuf,
             ephemeral: Bool,
+            forkedFromId: String?,
             gitInfo: GitInfo?,
             id: String,
             modelProvider: String,
@@ -175,6 +183,7 @@ public struct Thread: ObjectModel {
             self.createdAt = createdAt
             self.cwd = cwd
             self.ephemeral = ephemeral
+            self.forkedFromId = forkedFromId
             self.gitInfo = gitInfo
             self.id = id
             self.modelProvider = modelProvider
@@ -193,8 +202,9 @@ public struct Thread: ObjectModel {
             self.agentRole = try container.decodeIfPresent(String.self, forKey: .agentRole)
             self.cliVersion = try container.decode(String.self, forKey: .cliVersion)
             self.createdAt = try container.decode(Int.self, forKey: .createdAt)
-            self.cwd = try container.decode(String.self, forKey: .cwd)
+            self.cwd = try container.decode(AbsolutePathBuf.self, forKey: .cwd)
             self.ephemeral = try container.decodeIfPresent(Bool.self, forKey: .ephemeral) ?? false
+            self.forkedFromId = try container.decodeIfPresent(String.self, forKey: .forkedFromId)
             self.gitInfo = try container.decodeIfPresent(GitInfo.self, forKey: .gitInfo)
             self.id = try container.decode(String.self, forKey: .id)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)

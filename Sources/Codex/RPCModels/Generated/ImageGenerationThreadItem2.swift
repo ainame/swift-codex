@@ -7,7 +7,7 @@ public struct ImageGenerationThreadItem2: ObjectModel {
     public var id: String
     public var result: String
     public var revisedPrompt: String?
-    public var savedPath: String?
+    public var savedPath: AbsolutePathBuf?
     public var status: String
     public var type: ImageGenerationThreadItemType2
     public var additionalFields: JSONObject
@@ -16,7 +16,7 @@ public struct ImageGenerationThreadItem2: ObjectModel {
         id: String,
         result: String,
         revisedPrompt: String? = nil,
-        savedPath: String? = nil,
+        savedPath: AbsolutePathBuf? = nil,
         status: String,
         type: ImageGenerationThreadItemType2,
         additionalFields: JSONObject = [:]
@@ -67,7 +67,7 @@ public struct ImageGenerationThreadItem2: ObjectModel {
         var id: String
         var result: String
         var revisedPrompt: String?
-        var savedPath: String?
+        var savedPath: AbsolutePathBuf?
         var status: String
         var type: ImageGenerationThreadItemType2
 

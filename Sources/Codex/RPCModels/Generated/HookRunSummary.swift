@@ -13,7 +13,7 @@ public struct HookRunSummary: ObjectModel {
     public var handlerType: HookHandlerType
     public var id: String
     public var scope: HookScope
-    public var sourcePath: String
+    public var sourcePath: AbsolutePathBuf
     public var startedAt: Int
     public var status: HookRunStatus
     public var statusMessage: String?
@@ -29,7 +29,7 @@ public struct HookRunSummary: ObjectModel {
         handlerType: HookHandlerType,
         id: String,
         scope: HookScope,
-        sourcePath: String,
+        sourcePath: AbsolutePathBuf,
         startedAt: Int,
         status: HookRunStatus,
         statusMessage: String? = nil,
@@ -108,7 +108,7 @@ public struct HookRunSummary: ObjectModel {
         var handlerType: HookHandlerType
         var id: String
         var scope: HookScope
-        var sourcePath: String
+        var sourcePath: AbsolutePathBuf
         var startedAt: Int
         var status: HookRunStatus
         var statusMessage: String?

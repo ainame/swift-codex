@@ -6,7 +6,8 @@ import Foundation
 public struct ThreadForkResponse: ObjectModel {
     public var approvalPolicy: AskForApproval
     public var approvalsReviewer: ApprovalsReviewer
-    public var cwd: String
+    public var cwd: AbsolutePathBuf
+    public var instructionSources: [AbsolutePathBuf]?
     public var model: String
     public var modelProvider: String
     public var reasoningEffort: ReasoningEffort?
@@ -18,7 +19,8 @@ public struct ThreadForkResponse: ObjectModel {
     public init(
         approvalPolicy: AskForApproval,
         approvalsReviewer: ApprovalsReviewer,
-        cwd: String,
+        cwd: AbsolutePathBuf,
+        instructionSources: [AbsolutePathBuf]? = nil,
         model: String,
         modelProvider: String,
         reasoningEffort: ReasoningEffort? = nil,
@@ -30,6 +32,7 @@ public struct ThreadForkResponse: ObjectModel {
         self.approvalPolicy = approvalPolicy
         self.approvalsReviewer = approvalsReviewer
         self.cwd = cwd
+        self.instructionSources = instructionSources
         self.model = model
         self.modelProvider = modelProvider
         self.reasoningEffort = reasoningEffort
@@ -49,6 +52,7 @@ public struct ThreadForkResponse: ObjectModel {
         self.approvalPolicy = payload.approvalPolicy
         self.approvalsReviewer = payload.approvalsReviewer
         self.cwd = payload.cwd
+        self.instructionSources = payload.instructionSources
         self.model = payload.model
         self.modelProvider = payload.modelProvider
         self.reasoningEffort = payload.reasoningEffort
@@ -67,6 +71,7 @@ public struct ThreadForkResponse: ObjectModel {
             approvalPolicy: approvalPolicy,
             approvalsReviewer: approvalsReviewer,
             cwd: cwd,
+            instructionSources: instructionSources,
             model: model,
             modelProvider: modelProvider,
             reasoningEffort: reasoningEffort,
@@ -76,12 +81,13 @@ public struct ThreadForkResponse: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread"]
+    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "instructionSources", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var approvalPolicy: AskForApproval
         var approvalsReviewer: ApprovalsReviewer
-        var cwd: String
+        var cwd: AbsolutePathBuf
+        var instructionSources: [AbsolutePathBuf]?
         var model: String
         var modelProvider: String
         var reasoningEffort: ReasoningEffort?
@@ -93,6 +99,7 @@ public struct ThreadForkResponse: ObjectModel {
             case approvalPolicy
             case approvalsReviewer
             case cwd
+            case instructionSources
             case model
             case modelProvider
             case reasoningEffort
@@ -105,7 +112,8 @@ public struct ThreadForkResponse: ObjectModel {
         init(
             approvalPolicy: AskForApproval,
             approvalsReviewer: ApprovalsReviewer,
-            cwd: String,
+            cwd: AbsolutePathBuf,
+            instructionSources: [AbsolutePathBuf]?,
             model: String,
             modelProvider: String,
             reasoningEffort: ReasoningEffort?,
@@ -116,6 +124,7 @@ public struct ThreadForkResponse: ObjectModel {
             self.approvalPolicy = approvalPolicy
             self.approvalsReviewer = approvalsReviewer
             self.cwd = cwd
+            self.instructionSources = instructionSources
             self.model = model
             self.modelProvider = modelProvider
             self.reasoningEffort = reasoningEffort
@@ -128,7 +137,8 @@ public struct ThreadForkResponse: ObjectModel {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.approvalPolicy = try container.decode(AskForApproval.self, forKey: .approvalPolicy)
             self.approvalsReviewer = try container.decodeIfPresent(ApprovalsReviewer.self, forKey: .approvalsReviewer) ?? .user
-            self.cwd = try container.decode(String.self, forKey: .cwd)
+            self.cwd = try container.decode(AbsolutePathBuf.self, forKey: .cwd)
+            self.instructionSources = try container.decodeIfPresent([AbsolutePathBuf].self, forKey: .instructionSources)
             self.model = try container.decode(String.self, forKey: .model)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
             self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: .reasoningEffort)
