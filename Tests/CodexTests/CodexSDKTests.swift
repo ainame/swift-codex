@@ -96,6 +96,82 @@ struct CodexSDKTests {
     }
 
     @Test
+    func threadResponsesDecodeInstructionSourcesAndForkMetadata() throws {
+        var startRaw = appServerThreadStartResponse(id: "thread_start_paths")
+        startRaw["instructionSources"] = .array([
+            .string("/tmp/project/AGENTS.md"),
+            .string("/tmp/project/.codex/agents.md"),
+        ])
+        if var thread = startRaw["thread"]?.objectValue {
+            thread["forkedFromId"] = .string("thread_parent")
+            startRaw["thread"] = .object(thread)
+        }
+
+        let start = try decodeJSONValue(ThreadStartResponse.self, from: .object(startRaw))
+        #expect(start.instructionSources == [
+            AbsolutePathBuf(rawValue: "/tmp/project/AGENTS.md"),
+            AbsolutePathBuf(rawValue: "/tmp/project/.codex/agents.md"),
+        ])
+        #expect(start.thread.forkedFromId == "thread_parent")
+
+        let resumed = try decodeJSONValue(ThreadResumeResponse.self, from: .object(startRaw))
+        #expect(resumed.instructionSources == [
+            AbsolutePathBuf(rawValue: "/tmp/project/AGENTS.md"),
+            AbsolutePathBuf(rawValue: "/tmp/project/.codex/agents.md"),
+        ])
+
+        let forked = try decodeJSONValue(ThreadForkResponse.self, from: .object(startRaw))
+        #expect(forked.instructionSources == [
+            AbsolutePathBuf(rawValue: "/tmp/project/AGENTS.md"),
+            AbsolutePathBuf(rawValue: "/tmp/project/.codex/agents.md"),
+        ])
+    }
+
+    @Test
+    func guardianApprovalReviewNotificationsDecodeLatestFields() throws {
+        let notification = CodexNotification(
+            method: "item/autoApprovalReview/completed",
+            params: .object([
+                "action": .object([
+                    "type": .string("command"),
+                    "command": .string("git status"),
+                    "cwd": .string("/tmp/project"),
+                    "source": .string("shell"),
+                ]),
+                "decisionSource": .string("agent"),
+                "review": .object([
+                    "status": .string("approved"),
+                    "riskLevel": .string("medium"),
+                    "rationale": .string("Requires confirmation"),
+                    "userAuthorization": .string("medium"),
+                ]),
+                "reviewId": .string("review_123"),
+                "targetItemId": .string("item_123"),
+                "threadId": .string("thread_guardian"),
+                "turnId": .string("turn_guardian"),
+            ])
+        )
+
+        if case .itemGuardianApprovalReviewCompleted(let payload) = notification.payload {
+            #expect(payload.decisionSource == .agent)
+            #expect(payload.reviewId == "review_123")
+            #expect(payload.targetItemId == "item_123")
+            #expect(payload.review.userAuthorization == .medium)
+            if case .command(let action) = payload.action {
+                #expect(action.cwd == AbsolutePathBuf(rawValue: "/tmp/project"))
+                #expect(action.command == "git status")
+                #expect(action.source == .shell)
+            } else {
+                Issue.record("Expected command guardian review action")
+            }
+        } else {
+            Issue.record("Expected guardian approval review completed payload")
+        }
+        #expect(notification.threadID == "thread_guardian")
+        #expect(notification.turnID == "turn_guardian")
+    }
+
+    @Test
     func unknownNotificationFallbackStillExtractsMetadata() {
         let notification = CodexNotification(
             method: "future/event",
@@ -149,25 +225,30 @@ struct CodexSDKTests {
         }
 
         let transcript = CodexNotification(
-            method: "thread/realtime/transcriptUpdated",
+            method: "thread/realtime/transcript/delta",
             params: .object([
-                "role": .string("assistant"),
-                "text": .string("Partial transcript"),
+                "delta": .string("Partial transcript"),
                 "threadId": .string("thread_realtime"),
             ])
         )
-        if case .threadRealtimeTranscriptUpdated(let payload) = transcript.payload {
-            #expect(payload.role == "assistant")
-            #expect(payload.text == "Partial transcript")
-            #expect(payload.threadId == "thread_realtime")
+        if case .unknown(let method, let rawJSON) = transcript.payload {
+            #expect(method == "thread/realtime/transcript/delta")
+            #expect(rawJSON.objectValue?["delta"] == .string("Partial transcript"))
         } else {
-            Issue.record("Expected thread/realtime/transcriptUpdated payload")
+            Issue.record("Expected unknown payload for thread/realtime/transcript/delta until upstream registry includes it")
         }
         #expect(transcript.threadID == "thread_realtime")
     }
 
     @Test
     func latestPlanTypesRoundTrip() throws {
+        let prolite = try decodeJSONValue(
+            PlanType.self,
+            from: .string("prolite")
+        )
+        #expect(prolite == .prolite)
+        #expect(prolite.rawJSON == .string("prolite"))
+
         let selfServe = try decodeJSONValue(
             PlanType.self,
             from: .string("self_serve_business_usage_based")

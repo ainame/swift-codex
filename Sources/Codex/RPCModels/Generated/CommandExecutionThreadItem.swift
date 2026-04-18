@@ -7,7 +7,7 @@ public struct CommandExecutionThreadItem: ObjectModel {
     public var aggregatedOutput: String?
     public var command: String
     public var commandActions: [CommandAction]
-    public var cwd: String
+    public var cwd: AbsolutePathBuf
     public var durationMs: Int?
     public var exitCode: Int?
     public var id: String
@@ -21,7 +21,7 @@ public struct CommandExecutionThreadItem: ObjectModel {
         aggregatedOutput: String? = nil,
         command: String,
         commandActions: [CommandAction],
-        cwd: String,
+        cwd: AbsolutePathBuf,
         durationMs: Int? = nil,
         exitCode: Int? = nil,
         id: String,
@@ -92,7 +92,7 @@ public struct CommandExecutionThreadItem: ObjectModel {
         var aggregatedOutput: String?
         var command: String
         var commandActions: [CommandAction]
-        var cwd: String
+        var cwd: AbsolutePathBuf
         var durationMs: Int?
         var exitCode: Int?
         var id: String

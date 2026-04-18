@@ -4,23 +4,26 @@
 import Foundation
 
 public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
-    public var action: JSONValue?
+    public var action: GuardianApprovalReviewAction
     public var review: GuardianApprovalReview
-    public var targetItemId: String
+    public var reviewId: String
+    public var targetItemId: String?
     public var threadId: String
     public var turnId: String
     public var additionalFields: JSONObject
 
     public init(
-        action: JSONValue? = nil,
+        action: GuardianApprovalReviewAction,
         review: GuardianApprovalReview,
-        targetItemId: String,
+        reviewId: String,
+        targetItemId: String? = nil,
         threadId: String,
         turnId: String,
         additionalFields: JSONObject = [:]
     ) {
         self.action = action
         self.review = review
+        self.reviewId = reviewId
         self.targetItemId = targetItemId
         self.threadId = threadId
         self.turnId = turnId
@@ -36,6 +39,7 @@ public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.action = payload.action
         self.review = payload.review
+        self.reviewId = payload.reviewId
         self.targetItemId = payload.targetItemId
         self.threadId = payload.threadId
         self.turnId = payload.turnId
@@ -50,24 +54,27 @@ public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
         Payload(
             action: action,
             review: review,
+            reviewId: reviewId,
             targetItemId: targetItemId,
             threadId: threadId,
             turnId: turnId
         )
     }
 
-    private static let knownKeys: Set<String> = ["action", "review", "targetItemId", "threadId", "turnId"]
+    private static let knownKeys: Set<String> = ["action", "review", "reviewId", "targetItemId", "threadId", "turnId"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var action: JSONValue?
+        var action: GuardianApprovalReviewAction
         var review: GuardianApprovalReview
-        var targetItemId: String
+        var reviewId: String
+        var targetItemId: String?
         var threadId: String
         var turnId: String
 
         enum CodingKeys: String, CodingKey {
             case action
             case review
+            case reviewId
             case targetItemId
             case threadId
             case turnId

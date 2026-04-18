@@ -44,7 +44,6 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadRealtimeItemAdded(ThreadRealtimeItemAddedNotification)
     case threadRealtimeOutputAudioDelta(ThreadRealtimeOutputAudioDeltaNotification)
     case threadRealtimeStarted(ThreadRealtimeStartedNotification)
-    case threadRealtimeTranscriptUpdated(ThreadRealtimeTranscriptUpdatedNotification)
     case threadStarted(ThreadStartedNotification)
     case threadStatusChanged(ThreadStatusChangedNotification)
     case threadTokenUsageUpdated(ThreadTokenUsageUpdatedNotification)
@@ -99,7 +98,6 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/realtime/itemAdded": self = .threadRealtimeItemAdded(try decodeJSONValue(ThreadRealtimeItemAddedNotification.self, from: params))
         case "thread/realtime/outputAudio/delta": self = .threadRealtimeOutputAudioDelta(try decodeJSONValue(ThreadRealtimeOutputAudioDeltaNotification.self, from: params))
         case "thread/realtime/started": self = .threadRealtimeStarted(try decodeJSONValue(ThreadRealtimeStartedNotification.self, from: params))
-        case "thread/realtime/transcriptUpdated": self = .threadRealtimeTranscriptUpdated(try decodeJSONValue(ThreadRealtimeTranscriptUpdatedNotification.self, from: params))
         case "thread/started": self = .threadStarted(try decodeJSONValue(ThreadStartedNotification.self, from: params))
         case "thread/status/changed": self = .threadStatusChanged(try decodeJSONValue(ThreadStatusChangedNotification.self, from: params))
         case "thread/tokenUsage/updated": self = .threadTokenUsageUpdated(try decodeJSONValue(ThreadTokenUsageUpdatedNotification.self, from: params))
@@ -157,7 +155,6 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeItemAdded(let value): return value.rawJSON
         case .threadRealtimeOutputAudioDelta(let value): return value.rawJSON
         case .threadRealtimeStarted(let value): return value.rawJSON
-        case .threadRealtimeTranscriptUpdated(let value): return value.rawJSON
         case .threadStarted(let value): return value.rawJSON
         case .threadStatusChanged(let value): return value.rawJSON
         case .threadTokenUsageUpdated(let value): return value.rawJSON
@@ -202,7 +199,6 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeItemAdded(let value): return value.threadId
         case .threadRealtimeOutputAudioDelta(let value): return value.threadId
         case .threadRealtimeStarted(let value): return value.threadId
-        case .threadRealtimeTranscriptUpdated(let value): return value.threadId
         case .threadStarted(let value): return value.thread.id
         case .threadStatusChanged(let value): return value.threadId
         case .threadTokenUsageUpdated(let value): return value.threadId

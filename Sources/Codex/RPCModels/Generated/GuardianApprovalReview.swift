@@ -6,21 +6,21 @@ import Foundation
 public struct GuardianApprovalReview: ObjectModel {
     public var rationale: String?
     public var riskLevel: GuardianRiskLevel?
-    public var riskScore: Int?
     public var status: GuardianApprovalReviewStatus
+    public var userAuthorization: GuardianUserAuthorization?
     public var additionalFields: JSONObject
 
     public init(
         rationale: String? = nil,
         riskLevel: GuardianRiskLevel? = nil,
-        riskScore: Int? = nil,
         status: GuardianApprovalReviewStatus,
+        userAuthorization: GuardianUserAuthorization? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.rationale = rationale
         self.riskLevel = riskLevel
-        self.riskScore = riskScore
         self.status = status
+        self.userAuthorization = userAuthorization
         self.additionalFields = additionalFields
     }
 
@@ -33,8 +33,8 @@ public struct GuardianApprovalReview: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.rationale = payload.rationale
         self.riskLevel = payload.riskLevel
-        self.riskScore = payload.riskScore
         self.status = payload.status
+        self.userAuthorization = payload.userAuthorization
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -46,24 +46,24 @@ public struct GuardianApprovalReview: ObjectModel {
         Payload(
             rationale: rationale,
             riskLevel: riskLevel,
-            riskScore: riskScore,
-            status: status
+            status: status,
+            userAuthorization: userAuthorization
         )
     }
 
-    private static let knownKeys: Set<String> = ["rationale", "riskLevel", "riskScore", "status"]
+    private static let knownKeys: Set<String> = ["rationale", "riskLevel", "status", "userAuthorization"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var rationale: String?
         var riskLevel: GuardianRiskLevel?
-        var riskScore: Int?
         var status: GuardianApprovalReviewStatus
+        var userAuthorization: GuardianUserAuthorization?
 
         enum CodingKeys: String, CodingKey {
             case rationale
             case riskLevel
-            case riskScore
             case status
+            case userAuthorization
         }
     }
 }

@@ -436,7 +436,7 @@ func appServerThreadStartResponse(id: String) -> JSONObject {
         ThreadStartResponse(
             approvalPolicy: .never,
             approvalsReviewer: .user,
-            cwd: "/tmp/project",
+            cwd: AbsolutePathBuf(rawValue: "/tmp/project"),
             model: "gpt-5",
             modelProvider: "openai",
             sandbox: .workspaceWrite(
@@ -455,7 +455,7 @@ func appServerThreadResumeResponse(id: String) -> JSONObject {
         ThreadResumeResponse(
             approvalPolicy: .never,
             approvalsReviewer: .user,
-            cwd: "/tmp/project",
+            cwd: AbsolutePathBuf(rawValue: "/tmp/project"),
             model: "gpt-5",
             modelProvider: "openai",
             sandbox: .workspaceWrite(
@@ -474,7 +474,7 @@ func appServerThreadForkResponse(id: String) -> JSONObject {
         ThreadForkResponse(
             approvalPolicy: .never,
             approvalsReviewer: .user,
-            cwd: "/tmp/project",
+            cwd: AbsolutePathBuf(rawValue: "/tmp/project"),
             model: "gpt-5",
             modelProvider: "openai",
             sandbox: .workspaceWrite(
@@ -619,6 +619,7 @@ func appServerFileChangeApprovalParams(
 
 func makeThread(
     id: String,
+    forkedFromID: String? = nil,
     turns: [Turn] = [],
     source: SessionSource = .appServer,
     status: ThreadStatus = .idle(IdleThreadStatus(type: .idle))
@@ -626,8 +627,9 @@ func makeThread(
     Thread(
         cliVersion: "0.0.0-test",
         createdAt: 1,
-        cwd: "/tmp/project",
+        cwd: AbsolutePathBuf(rawValue: "/tmp/project"),
         ephemeral: false,
+        forkedFromId: forkedFromID,
         id: id,
         modelProvider: "openai",
         preview: "preview",

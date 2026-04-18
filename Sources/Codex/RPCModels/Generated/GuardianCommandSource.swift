@@ -3,20 +3,16 @@
 
 import Foundation
 
-public enum GuardianRiskLevel: RawJSONRepresentable {
-    case low
-    case medium
-    case high
-    case critical
+public enum GuardianCommandSource: RawJSONRepresentable {
+    case shell
+    case unifiedExec
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "low": self = .low
-        case "medium": self = .medium
-        case "high": self = .high
-        case "critical": self = .critical
+        case "shell": self = .shell
+        case "unifiedExec": self = .unifiedExec
         default:
             self = .unrecognized(value)
         }
@@ -28,10 +24,8 @@ public enum GuardianRiskLevel: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .low: return "low"
-        case .medium: return "medium"
-        case .high: return "high"
-        case .critical: return "critical"
+        case .shell: return "shell"
+        case .unifiedExec: return "unifiedExec"
         case .unrecognized(let value):
             return value
         }

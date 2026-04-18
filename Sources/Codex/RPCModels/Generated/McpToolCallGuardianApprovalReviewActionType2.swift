@@ -3,20 +3,14 @@
 
 import Foundation
 
-public enum GuardianRiskLevel: RawJSONRepresentable {
-    case low
-    case medium
-    case high
-    case critical
+public enum McpToolCallGuardianApprovalReviewActionType2: RawJSONRepresentable {
+    case mcpToolCall
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "low": self = .low
-        case "medium": self = .medium
-        case "high": self = .high
-        case "critical": self = .critical
+        case "mcpToolCall": self = .mcpToolCall
         default:
             self = .unrecognized(value)
         }
@@ -28,10 +22,7 @@ public enum GuardianRiskLevel: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .low: return "low"
-        case .medium: return "medium"
-        case .high: return "high"
-        case .critical: return "critical"
+        case .mcpToolCall: return "mcpToolCall"
         case .unrecognized(let value):
             return value
         }

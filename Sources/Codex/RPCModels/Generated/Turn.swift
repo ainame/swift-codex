@@ -4,22 +4,31 @@
 import Foundation
 
 public struct Turn: ObjectModel {
+    public var completedAt: Int?
+    public var durationMs: Int?
     public var error: TurnError?
     public var id: String
     public var items: [ThreadItem]
+    public var startedAt: Int?
     public var status: TurnStatus
     public var additionalFields: JSONObject
 
     public init(
+        completedAt: Int? = nil,
+        durationMs: Int? = nil,
         error: TurnError? = nil,
         id: String,
         items: [ThreadItem],
+        startedAt: Int? = nil,
         status: TurnStatus,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAt = completedAt
+        self.durationMs = durationMs
         self.error = error
         self.id = id
         self.items = items
+        self.startedAt = startedAt
         self.status = status
         self.additionalFields = additionalFields
     }
@@ -31,9 +40,12 @@ public struct Turn: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "Turn")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAt = payload.completedAt
+        self.durationMs = payload.durationMs
         self.error = payload.error
         self.id = payload.id
         self.items = payload.items
+        self.startedAt = payload.startedAt
         self.status = payload.status
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -44,25 +56,34 @@ public struct Turn: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAt: completedAt,
+            durationMs: durationMs,
             error: error,
             id: id,
             items: items,
+            startedAt: startedAt,
             status: status
         )
     }
 
-    private static let knownKeys: Set<String> = ["error", "id", "items", "status"]
+    private static let knownKeys: Set<String> = ["completedAt", "durationMs", "error", "id", "items", "startedAt", "status"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAt: Int?
+        var durationMs: Int?
         var error: TurnError?
         var id: String
         var items: [ThreadItem]
+        var startedAt: Int?
         var status: TurnStatus
 
         enum CodingKeys: String, CodingKey {
+            case completedAt
+            case durationMs
             case error
             case id
             case items
+            case startedAt
             case status
         }
     }
