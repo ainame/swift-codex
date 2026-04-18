@@ -11,7 +11,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = REPO_ROOT / "vendor" / "openai-codex" / "sdk" / "python" / "src" / "codex_app_server" / "generated" / "notification_registry.py"
 SCHEMA_PATH = REPO_ROOT / "vendor" / "openai-codex" / "codex-rs" / "app-server-protocol" / "schema" / "json" / "codex_app_server_protocol.v2.schemas.json"
-OUTPUT_DIR = REPO_ROOT / "Sources" / "Codex" / "RPCModels" / "Generated"
+OUTPUT_DIR = REPO_ROOT / "Sources" / "CodexCore" / "RPCModels" / "Generated"
 
 SWIFT_RESERVED = {
     "associatedtype", "class", "deinit", "enum", "extension", "fileprivate", "func",
