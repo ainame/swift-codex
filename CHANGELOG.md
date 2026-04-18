@@ -10,9 +10,10 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Changed
 
-- Updated `vendor/openai-codex` to `rust-v0.118.0` (`b630ce9a4e754d35a1f33e4366ba638d18626142`).
-- Regenerated app-server v2 models to include `fs/changed`, `mcpServer/startupStatus/updated`, and `thread/realtime/transcriptUpdated` notification payloads.
-- Added the new usage-based `PlanType` enum cases from the upstream app-server schema.
+- Updated `vendor/openai-codex` to `rust-v0.121.0` (`d65ed92a5e440972626965d0af9a6345179783bc`).
+- Regenerated app-server v2 models for the latest schema, adding typed `instructionSources`, `forkedFromId`, guardian auto-review action payloads, `PlanType.prolite`, `Model.additionalSpeedTiers`, and MCP tool call `_meta`.
+- Promoted path-valued schema fields such as thread `cwd` and guardian review action `cwd` to `AbsolutePathBuf`.
+- Removed the obsolete typed `thread/realtime/transcriptUpdated` payload; the newer realtime transcript and SDP notification methods currently remain unknown-fallback notifications until upstream refreshes `notification_registry.py`.
 
 ## [0.0.3] - 2026-03-29
 

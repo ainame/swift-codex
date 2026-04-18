@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `b630ce9a4e754d35a1f33e4366ba638d18626142`
-- Reviewed JSON-RPC basis commit SHA: `b630ce9a4e754d35a1f33e4366ba638d18626142`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/b630ce9a4e754d35a1f33e4366ba638d18626142`
-- Last reviewed date: `2026-04-03`
+- Vendored upstream commit: `d65ed92a5e440972626965d0af9a6345179783bc`
+- Reviewed JSON-RPC basis commit SHA: `d65ed92a5e440972626965d0af9a6345179783bc`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/d65ed92a5e440972626965d0af9a6345179783bc`
+- Last reviewed date: `2026-04-18`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `codex_app_server` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,7 +33,7 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `b630ce9a4e754d35a1f33e4366ba638d18626142` (`rust-v0.118.0`)
+- Vendored checkout: `vendor/openai-codex` at `d65ed92a5e440972626965d0af9a6345179783bc` (`rust-v0.121.0`)
 - Reviewed upstream files:
   - `sdk/python/src/codex_app_server/api.py`
   - `sdk/python/src/codex_app_server/async_client.py`
@@ -41,22 +41,21 @@ When porting new behavior from upstream or validating parity:
   - `sdk/python/src/codex_app_server/errors.py`
   - `sdk/python/src/codex_app_server/generated/v2_all.py`
   - `sdk/python/src/codex_app_server/generated/notification_registry.py`
-  - `sdk/python/examples/01_quickstart_constructor/sync.py`
-  - `sdk/python/examples/02_turn_run/sync.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
-  - initialize, thread, turn, model, and notification method shapes
-  - typed response payloads and notification payload mapping
-  - default approval behavior for known approval requests
-  - empty-object responses for interrupt/archive/name/compact style methods
-  - `data` collection fields on thread/model list responses
-  - server metadata normalization from initialize payloads
-  - process launch config parity for explicit `cwd` and full argv override
-  - typed plugin marketplace response support via `plugin/list`
-  - `PlanType.selfServeBusinessUsageBased` and `PlanType.enterpriseCbpUsageBased`
-  - `fs/changed`, `mcpServer/startupStatus/updated`, and `thread/realtime/transcriptUpdated` notification payloads
+  - Python `codex_app_server` client surface remained unchanged between `rust-v0.118.0` and `rust-v0.121.0`
+  - thread response metadata for `instructionSources` and thread records for `forkedFromId`
+  - guardian auto-review payload typing for `action`, `decisionSource`, `reviewId`, and `userAuthorization`
+  - `PlanType.prolite`
+  - `Model.additionalSpeedTiers`
+  - `_meta` on `McpToolCallResult`
+  - path-valued schema fields now emitted as `AbsolutePathBuf`
+  - realtime transcript schema moved from `thread/realtime/transcriptUpdated` to `thread/realtime/transcript/delta|done` plus `thread/realtime/sdp`
 - Parity target:
-  - Python SDK parity, with typed model generation refreshed from the vendored v2 schema used by the Python app-server
+  - Raw app-server schema parity for generated Swift models, while keeping notification decoding bounded by the upstream `notification_registry.py` mapping
+- Remaining upstream gaps not ported end to end:
+  - the vendored `notification_registry.py` at `rust-v0.121.0` still does not expose the newer realtime transcript or SDP notifications, so the Swift SDK currently treats those methods as unknown notifications even though the schema contains typed payload definitions
+  - the schema now includes additional request surfaces such as `thread/inject_items`, `marketplace/add`, `mcpServer/resource/read`, and `mcpServer/tool/call`, but this repository still only exposes the previously implemented RPC convenience methods
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than Python synchronous wrappers
   - `JSONValue.number(Double)` remains the raw escape hatch type, while generated typed models use integer fields where the schema requires them
