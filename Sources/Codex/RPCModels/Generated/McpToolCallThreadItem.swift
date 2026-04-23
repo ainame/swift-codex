@@ -8,6 +8,7 @@ public struct McpToolCallThreadItem: ObjectModel {
     public var durationMs: Int?
     public var error: McpToolCallError?
     public var id: String
+    public var mcpAppResourceUri: String?
     public var result: McpToolCallResult?
     public var server: String
     public var status: McpToolCallStatus
@@ -20,6 +21,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         durationMs: Int? = nil,
         error: McpToolCallError? = nil,
         id: String,
+        mcpAppResourceUri: String? = nil,
         result: McpToolCallResult? = nil,
         server: String,
         status: McpToolCallStatus,
@@ -31,6 +33,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         self.durationMs = durationMs
         self.error = error
         self.id = id
+        self.mcpAppResourceUri = mcpAppResourceUri
         self.result = result
         self.server = server
         self.status = status
@@ -50,6 +53,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         self.durationMs = payload.durationMs
         self.error = payload.error
         self.id = payload.id
+        self.mcpAppResourceUri = payload.mcpAppResourceUri
         self.result = payload.result
         self.server = payload.server
         self.status = payload.status
@@ -68,6 +72,7 @@ public struct McpToolCallThreadItem: ObjectModel {
             durationMs: durationMs,
             error: error,
             id: id,
+            mcpAppResourceUri: mcpAppResourceUri,
             result: result,
             server: server,
             status: status,
@@ -76,13 +81,14 @@ public struct McpToolCallThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["arguments", "durationMs", "error", "id", "result", "server", "status", "tool", "type"]
+    private static let knownKeys: Set<String> = ["arguments", "durationMs", "error", "id", "mcpAppResourceUri", "result", "server", "status", "tool", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var arguments: JSONValue
         var durationMs: Int?
         var error: McpToolCallError?
         var id: String
+        var mcpAppResourceUri: String?
         var result: McpToolCallResult?
         var server: String
         var status: McpToolCallStatus
@@ -94,6 +100,7 @@ public struct McpToolCallThreadItem: ObjectModel {
             case durationMs
             case error
             case id
+            case mcpAppResourceUri
             case result
             case server
             case status

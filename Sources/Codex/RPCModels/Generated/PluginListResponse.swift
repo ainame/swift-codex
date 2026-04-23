@@ -7,20 +7,17 @@ public struct PluginListResponse: ObjectModel {
     public var featuredPluginIds: [String]?
     public var marketplaceLoadErrors: [MarketplaceLoadErrorInfo]?
     public var marketplaces: [PluginMarketplaceEntry]
-    public var remoteSyncError: String?
     public var additionalFields: JSONObject
 
     public init(
         featuredPluginIds: [String]? = nil,
         marketplaceLoadErrors: [MarketplaceLoadErrorInfo]? = nil,
         marketplaces: [PluginMarketplaceEntry],
-        remoteSyncError: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.featuredPluginIds = featuredPluginIds
         self.marketplaceLoadErrors = marketplaceLoadErrors
         self.marketplaces = marketplaces
-        self.remoteSyncError = remoteSyncError
         self.additionalFields = additionalFields
     }
 
@@ -34,7 +31,6 @@ public struct PluginListResponse: ObjectModel {
         self.featuredPluginIds = payload.featuredPluginIds
         self.marketplaceLoadErrors = payload.marketplaceLoadErrors
         self.marketplaces = payload.marketplaces
-        self.remoteSyncError = payload.remoteSyncError
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -46,24 +42,21 @@ public struct PluginListResponse: ObjectModel {
         Payload(
             featuredPluginIds: featuredPluginIds,
             marketplaceLoadErrors: marketplaceLoadErrors,
-            marketplaces: marketplaces,
-            remoteSyncError: remoteSyncError
+            marketplaces: marketplaces
         )
     }
 
-    private static let knownKeys: Set<String> = ["featuredPluginIds", "marketplaceLoadErrors", "marketplaces", "remoteSyncError"]
+    private static let knownKeys: Set<String> = ["featuredPluginIds", "marketplaceLoadErrors", "marketplaces"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var featuredPluginIds: [String]?
         var marketplaceLoadErrors: [MarketplaceLoadErrorInfo]?
         var marketplaces: [PluginMarketplaceEntry]
-        var remoteSyncError: String?
 
         enum CodingKeys: String, CodingKey {
             case featuredPluginIds
             case marketplaceLoadErrors
             case marketplaces
-            case remoteSyncError
         }
     }
 }

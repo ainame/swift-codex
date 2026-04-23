@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `d65ed92a5e440972626965d0af9a6345179783bc`
-- Reviewed JSON-RPC basis commit SHA: `d65ed92a5e440972626965d0af9a6345179783bc`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/d65ed92a5e440972626965d0af9a6345179783bc`
-- Last reviewed date: `2026-04-18`
+- Vendored upstream commit: `e9fb49366c93a1478ec71cc41ecee415a197d036`
+- Reviewed JSON-RPC basis commit SHA: `e9fb49366c93a1478ec71cc41ecee415a197d036`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/e9fb49366c93a1478ec71cc41ecee415a197d036`
+- Last reviewed date: `2026-04-23`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `codex_app_server` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,7 +33,7 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `d65ed92a5e440972626965d0af9a6345179783bc` (`rust-v0.121.0`)
+- Vendored checkout: `vendor/openai-codex` at `e9fb49366c93a1478ec71cc41ecee415a197d036` (`rust-v0.124.0`)
 - Reviewed upstream files:
   - `sdk/python/src/codex_app_server/api.py`
   - `sdk/python/src/codex_app_server/async_client.py`
@@ -43,19 +43,15 @@ When porting new behavior from upstream or validating parity:
   - `sdk/python/src/codex_app_server/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
-  - Python `codex_app_server` client surface remained unchanged between `rust-v0.118.0` and `rust-v0.121.0`
-  - thread response metadata for `instructionSources` and thread records for `forkedFromId`
-  - guardian auto-review payload typing for `action`, `decisionSource`, `reviewId`, and `userAuthorization`
-  - `PlanType.prolite`
-  - `Model.additionalSpeedTiers`
-  - `_meta` on `McpToolCallResult`
-  - path-valued schema fields now emitted as `AbsolutePathBuf`
-  - realtime transcript schema moved from `thread/realtime/transcriptUpdated` to `thread/realtime/transcript/delta|done` plus `thread/realtime/sdp`
+  - Python `codex_app_server` thread APIs now expose `session_start_source` on `thread.start` and `sort_direction` on `thread.list`
+  - notification registry entries for `externalAgentConfig/import/completed`, `item/fileChange/patchUpdated`, `thread/realtime/transcript/delta`, `thread/realtime/transcript/done`, `thread/realtime/sdp`, and `warning`
+  - permission-profile and request-permission schema payloads used by guardian approval reviews
+  - remote plugin source variants and expanded plugin marketplace metadata
+  - refreshed thread/model/plugin response shapes and rate-limit typing in the generated schema surface
 - Parity target:
-  - Raw app-server schema parity for generated Swift models, while keeping notification decoding bounded by the upstream `notification_registry.py` mapping
+  - Python SDK parity for the handwritten thread-start and thread-list convenience surface, while continuing to regenerate Swift protocol models directly from the vendored v2 schema and upstream notification registry
 - Remaining upstream gaps not ported end to end:
-  - the vendored `notification_registry.py` at `rust-v0.121.0` still does not expose the newer realtime transcript or SDP notifications, so the Swift SDK currently treats those methods as unknown notifications even though the schema contains typed payload definitions
-  - the schema now includes additional request surfaces such as `thread/inject_items`, `marketplace/add`, `mcpServer/resource/read`, and `mcpServer/tool/call`, but this repository still only exposes the previously implemented RPC convenience methods
+  - the schema and Python SDK now include additional request surfaces such as `thread/turns/list`, `marketplace/remove`, `mcpServer/resource/read`, and `mcpServer/tool/call`, but this repository still only exposes the previously implemented RPC convenience methods
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than Python synchronous wrappers
   - `JSONValue.number(Double)` remains the raw escape hatch type, while generated typed models use integer fields where the schema requires them

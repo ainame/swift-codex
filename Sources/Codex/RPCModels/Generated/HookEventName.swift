@@ -5,6 +5,7 @@ import Foundation
 
 public enum HookEventName: RawJSONRepresentable {
     case preToolUse
+    case permissionRequest
     case postToolUse
     case sessionStart
     case userPromptSubmit
@@ -15,6 +16,7 @@ public enum HookEventName: RawJSONRepresentable {
         let value = try String(from: decoder)
         switch value {
         case "preToolUse": self = .preToolUse
+        case "permissionRequest": self = .permissionRequest
         case "postToolUse": self = .postToolUse
         case "sessionStart": self = .sessionStart
         case "userPromptSubmit": self = .userPromptSubmit
@@ -31,6 +33,7 @@ public enum HookEventName: RawJSONRepresentable {
     public var rawValue: String {
         switch self {
         case .preToolUse: return "preToolUse"
+        case .permissionRequest: return "permissionRequest"
         case .postToolUse: return "postToolUse"
         case .sessionStart: return "sessionStart"
         case .userPromptSubmit: return "userPromptSubmit"

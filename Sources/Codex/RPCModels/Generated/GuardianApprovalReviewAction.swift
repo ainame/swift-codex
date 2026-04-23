@@ -10,6 +10,7 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
     case applyPatch(ApplyPatchGuardianApprovalReviewAction)
     case networkAccess(NetworkAccessGuardianApprovalReviewAction)
     case mcpToolCall(McpToolCallGuardianApprovalReviewAction)
+    case requestPermissions(RequestPermissionsGuardianApprovalReviewAction)
     case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
@@ -48,6 +49,11 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
                     self = .mcpToolCall(value)
                     return
                 }
+            case "requestPermissions":
+                if let value = try? decodeJSONValue(RequestPermissionsGuardianApprovalReviewAction.self, from: raw) {
+                    self = .requestPermissions(value)
+                    return
+                }
             default:
                 break
             }
@@ -57,6 +63,7 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
         if let value = try? decodeJSONValue(ApplyPatchGuardianApprovalReviewAction.self, from: raw) { self = .applyPatch(value); return }
         if let value = try? decodeJSONValue(NetworkAccessGuardianApprovalReviewAction.self, from: raw) { self = .networkAccess(value); return }
         if let value = try? decodeJSONValue(McpToolCallGuardianApprovalReviewAction.self, from: raw) { self = .mcpToolCall(value); return }
+        if let value = try? decodeJSONValue(RequestPermissionsGuardianApprovalReviewAction.self, from: raw) { self = .requestPermissions(value); return }
         self = .unknown(raw)
     }
 
@@ -68,6 +75,7 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
         case .applyPatch(let value): try value.encode(to: encoder)
         case .networkAccess(let value): try value.encode(to: encoder)
         case .mcpToolCall(let value): try value.encode(to: encoder)
+        case .requestPermissions(let value): try value.encode(to: encoder)
         case .unknown(let value):
             try value.encode(to: encoder)
         }
@@ -81,6 +89,7 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
         case .applyPatch(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.applyPatch")
         case .networkAccess(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.networkAccess")
         case .mcpToolCall(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.mcpToolCall")
+        case .requestPermissions(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.requestPermissions")
         case .unknown(let value):
             return value
         }

@@ -12,6 +12,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case configWarning(ConfigWarningNotification)
     case deprecationNotice(DeprecationNoticeNotification)
     case error(ErrorNotification)
+    case externalAgentConfigImportCompleted(ExternalAgentConfigImportCompletedNotification)
     case fsChanged(FsChangedNotification)
     case fuzzyFileSearchSessionCompleted(FuzzyFileSearchSessionCompletedNotification)
     case fuzzyFileSearchSessionUpdated(FuzzyFileSearchSessionUpdatedNotification)
@@ -24,6 +25,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case terminalInteraction(TerminalInteractionNotification)
     case itemCompleted(ItemCompletedNotification)
     case fileChangeOutputDelta(FileChangeOutputDeltaNotification)
+    case fileChangePatchUpdated(FileChangePatchUpdatedNotification)
     case mcpToolCallProgress(McpToolCallProgressNotification)
     case planDelta(PlanDeltaNotification)
     case reasoningSummaryPartAdded(ReasoningSummaryPartAddedNotification)
@@ -43,7 +45,10 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadRealtimeError(ThreadRealtimeErrorNotification)
     case threadRealtimeItemAdded(ThreadRealtimeItemAddedNotification)
     case threadRealtimeOutputAudioDelta(ThreadRealtimeOutputAudioDeltaNotification)
+    case threadRealtimeSdp(ThreadRealtimeSdpNotification)
     case threadRealtimeStarted(ThreadRealtimeStartedNotification)
+    case threadRealtimeTranscriptDelta(ThreadRealtimeTranscriptDeltaNotification)
+    case threadRealtimeTranscriptDone(ThreadRealtimeTranscriptDoneNotification)
     case threadStarted(ThreadStartedNotification)
     case threadStatusChanged(ThreadStatusChangedNotification)
     case threadTokenUsageUpdated(ThreadTokenUsageUpdatedNotification)
@@ -52,6 +57,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case turnDiffUpdated(TurnDiffUpdatedNotification)
     case turnPlanUpdated(TurnPlanUpdatedNotification)
     case turnStarted(TurnStartedNotification)
+    case warning(WarningNotification)
     case windowsWorldWritableWarning(WindowsWorldWritableWarningNotification)
     case windowsSandboxSetupCompleted(WindowsSandboxSetupCompletedNotification)
     case unknown(method: String, rawJSON: JSONValue)
@@ -66,6 +72,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "configWarning": self = .configWarning(try decodeJSONValue(ConfigWarningNotification.self, from: params))
         case "deprecationNotice": self = .deprecationNotice(try decodeJSONValue(DeprecationNoticeNotification.self, from: params))
         case "error": self = .error(try decodeJSONValue(ErrorNotification.self, from: params))
+        case "externalAgentConfig/import/completed": self = .externalAgentConfigImportCompleted(try decodeJSONValue(ExternalAgentConfigImportCompletedNotification.self, from: params))
         case "fs/changed": self = .fsChanged(try decodeJSONValue(FsChangedNotification.self, from: params))
         case "fuzzyFileSearch/sessionCompleted": self = .fuzzyFileSearchSessionCompleted(try decodeJSONValue(FuzzyFileSearchSessionCompletedNotification.self, from: params))
         case "fuzzyFileSearch/sessionUpdated": self = .fuzzyFileSearchSessionUpdated(try decodeJSONValue(FuzzyFileSearchSessionUpdatedNotification.self, from: params))
@@ -78,6 +85,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "item/commandExecution/terminalInteraction": self = .terminalInteraction(try decodeJSONValue(TerminalInteractionNotification.self, from: params))
         case "item/completed": self = .itemCompleted(try decodeJSONValue(ItemCompletedNotification.self, from: params))
         case "item/fileChange/outputDelta": self = .fileChangeOutputDelta(try decodeJSONValue(FileChangeOutputDeltaNotification.self, from: params))
+        case "item/fileChange/patchUpdated": self = .fileChangePatchUpdated(try decodeJSONValue(FileChangePatchUpdatedNotification.self, from: params))
         case "item/mcpToolCall/progress": self = .mcpToolCallProgress(try decodeJSONValue(McpToolCallProgressNotification.self, from: params))
         case "item/plan/delta": self = .planDelta(try decodeJSONValue(PlanDeltaNotification.self, from: params))
         case "item/reasoning/summaryPartAdded": self = .reasoningSummaryPartAdded(try decodeJSONValue(ReasoningSummaryPartAddedNotification.self, from: params))
@@ -97,7 +105,10 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/realtime/error": self = .threadRealtimeError(try decodeJSONValue(ThreadRealtimeErrorNotification.self, from: params))
         case "thread/realtime/itemAdded": self = .threadRealtimeItemAdded(try decodeJSONValue(ThreadRealtimeItemAddedNotification.self, from: params))
         case "thread/realtime/outputAudio/delta": self = .threadRealtimeOutputAudioDelta(try decodeJSONValue(ThreadRealtimeOutputAudioDeltaNotification.self, from: params))
+        case "thread/realtime/sdp": self = .threadRealtimeSdp(try decodeJSONValue(ThreadRealtimeSdpNotification.self, from: params))
         case "thread/realtime/started": self = .threadRealtimeStarted(try decodeJSONValue(ThreadRealtimeStartedNotification.self, from: params))
+        case "thread/realtime/transcript/delta": self = .threadRealtimeTranscriptDelta(try decodeJSONValue(ThreadRealtimeTranscriptDeltaNotification.self, from: params))
+        case "thread/realtime/transcript/done": self = .threadRealtimeTranscriptDone(try decodeJSONValue(ThreadRealtimeTranscriptDoneNotification.self, from: params))
         case "thread/started": self = .threadStarted(try decodeJSONValue(ThreadStartedNotification.self, from: params))
         case "thread/status/changed": self = .threadStatusChanged(try decodeJSONValue(ThreadStatusChangedNotification.self, from: params))
         case "thread/tokenUsage/updated": self = .threadTokenUsageUpdated(try decodeJSONValue(ThreadTokenUsageUpdatedNotification.self, from: params))
@@ -106,6 +117,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "turn/diff/updated": self = .turnDiffUpdated(try decodeJSONValue(TurnDiffUpdatedNotification.self, from: params))
         case "turn/plan/updated": self = .turnPlanUpdated(try decodeJSONValue(TurnPlanUpdatedNotification.self, from: params))
         case "turn/started": self = .turnStarted(try decodeJSONValue(TurnStartedNotification.self, from: params))
+        case "warning": self = .warning(try decodeJSONValue(WarningNotification.self, from: params))
         case "windows/worldWritableWarning": self = .windowsWorldWritableWarning(try decodeJSONValue(WindowsWorldWritableWarningNotification.self, from: params))
         case "windowsSandbox/setupCompleted": self = .windowsSandboxSetupCompleted(try decodeJSONValue(WindowsSandboxSetupCompletedNotification.self, from: params))
         default:
@@ -123,6 +135,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .configWarning(let value): return value.rawJSON
         case .deprecationNotice(let value): return value.rawJSON
         case .error(let value): return value.rawJSON
+        case .externalAgentConfigImportCompleted(let value): return value.rawJSON
         case .fsChanged(let value): return value.rawJSON
         case .fuzzyFileSearchSessionCompleted(let value): return value.rawJSON
         case .fuzzyFileSearchSessionUpdated(let value): return value.rawJSON
@@ -135,6 +148,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .terminalInteraction(let value): return value.rawJSON
         case .itemCompleted(let value): return value.rawJSON
         case .fileChangeOutputDelta(let value): return value.rawJSON
+        case .fileChangePatchUpdated(let value): return value.rawJSON
         case .mcpToolCallProgress(let value): return value.rawJSON
         case .planDelta(let value): return value.rawJSON
         case .reasoningSummaryPartAdded(let value): return value.rawJSON
@@ -154,7 +168,10 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeError(let value): return value.rawJSON
         case .threadRealtimeItemAdded(let value): return value.rawJSON
         case .threadRealtimeOutputAudioDelta(let value): return value.rawJSON
+        case .threadRealtimeSdp(let value): return value.rawJSON
         case .threadRealtimeStarted(let value): return value.rawJSON
+        case .threadRealtimeTranscriptDelta(let value): return value.rawJSON
+        case .threadRealtimeTranscriptDone(let value): return value.rawJSON
         case .threadStarted(let value): return value.rawJSON
         case .threadStatusChanged(let value): return value.rawJSON
         case .threadTokenUsageUpdated(let value): return value.rawJSON
@@ -163,6 +180,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .turnDiffUpdated(let value): return value.rawJSON
         case .turnPlanUpdated(let value): return value.rawJSON
         case .turnStarted(let value): return value.rawJSON
+        case .warning(let value): return value.rawJSON
         case .windowsWorldWritableWarning(let value): return value.rawJSON
         case .windowsSandboxSetupCompleted(let value): return value.rawJSON
         case .unknown(_, let rawJSON):
@@ -182,6 +200,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .terminalInteraction(let value): return value.threadId
         case .itemCompleted(let value): return value.threadId
         case .fileChangeOutputDelta(let value): return value.threadId
+        case .fileChangePatchUpdated(let value): return value.threadId
         case .mcpToolCallProgress(let value): return value.threadId
         case .planDelta(let value): return value.threadId
         case .reasoningSummaryPartAdded(let value): return value.threadId
@@ -198,7 +217,10 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeError(let value): return value.threadId
         case .threadRealtimeItemAdded(let value): return value.threadId
         case .threadRealtimeOutputAudioDelta(let value): return value.threadId
+        case .threadRealtimeSdp(let value): return value.threadId
         case .threadRealtimeStarted(let value): return value.threadId
+        case .threadRealtimeTranscriptDelta(let value): return value.threadId
+        case .threadRealtimeTranscriptDone(let value): return value.threadId
         case .threadStarted(let value): return value.thread.id
         case .threadStatusChanged(let value): return value.threadId
         case .threadTokenUsageUpdated(let value): return value.threadId
@@ -207,6 +229,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .turnDiffUpdated(let value): return value.threadId
         case .turnPlanUpdated(let value): return value.threadId
         case .turnStarted(let value): return value.threadId
+        case .warning(let value): return value.threadId
         case .unknown(_, let rawJSON):
             if let direct = rawJSON.objectValue?.stringValue(forKey: "threadId") {
                 return direct
@@ -229,6 +252,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .terminalInteraction(let value): return value.turnId
         case .itemCompleted(let value): return value.turnId
         case .fileChangeOutputDelta(let value): return value.turnId
+        case .fileChangePatchUpdated(let value): return value.turnId
         case .mcpToolCallProgress(let value): return value.turnId
         case .planDelta(let value): return value.turnId
         case .reasoningSummaryPartAdded(let value): return value.turnId

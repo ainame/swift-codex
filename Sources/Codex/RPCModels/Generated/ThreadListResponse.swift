@@ -4,15 +4,18 @@
 import Foundation
 
 public struct ThreadListResponse: ObjectModel {
+    public var backwardsCursor: String?
     public var data: [Thread]
     public var nextCursor: String?
     public var additionalFields: JSONObject
 
     public init(
+        backwardsCursor: String? = nil,
         data: [Thread],
         nextCursor: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
+        self.backwardsCursor = backwardsCursor
         self.data = data
         self.nextCursor = nextCursor
         self.additionalFields = additionalFields
@@ -25,6 +28,7 @@ public struct ThreadListResponse: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ThreadListResponse")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.backwardsCursor = payload.backwardsCursor
         self.data = payload.data
         self.nextCursor = payload.nextCursor
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -36,18 +40,21 @@ public struct ThreadListResponse: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            backwardsCursor: backwardsCursor,
             data: data,
             nextCursor: nextCursor
         )
     }
 
-    private static let knownKeys: Set<String> = ["data", "nextCursor"]
+    private static let knownKeys: Set<String> = ["backwardsCursor", "data", "nextCursor"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var backwardsCursor: String?
         var data: [Thread]
         var nextCursor: String?
 
         enum CodingKeys: String, CodingKey {
+            case backwardsCursor
             case data
             case nextCursor
         }

@@ -425,6 +425,9 @@ public actor CodexRPCClient {
         if let serviceTier = options.serviceTier {
             params["serviceTier"] = serviceTier.rawJSON
         }
+        if let sessionStartSource = options.sessionStartSource {
+            params["sessionStartSource"] = sessionStartSource.rawJSON
+        }
         return params
     }
 
@@ -447,6 +450,9 @@ public actor CodexRPCClient {
         }
         if let searchTerm = options.searchTerm {
             params["searchTerm"] = .string(searchTerm)
+        }
+        if let sortDirection = options.sortDirection {
+            params["sortDirection"] = sortDirection.rawJSON
         }
         if let sortKey = options.sortKey {
             params["sortKey"] = sortKey.rawJSON

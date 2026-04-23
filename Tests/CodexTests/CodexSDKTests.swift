@@ -224,20 +224,52 @@ struct CodexSDKTests {
             Issue.record("Expected mcpServer/startupStatus/updated payload")
         }
 
-        let transcript = CodexNotification(
+        let transcriptDelta = CodexNotification(
             method: "thread/realtime/transcript/delta",
             params: .object([
-                "delta": .string("Partial transcript"),
+                "delta": .string("Partial "),
+                "role": .string("assistant"),
                 "threadId": .string("thread_realtime"),
             ])
         )
-        if case .unknown(let method, let rawJSON) = transcript.payload {
-            #expect(method == "thread/realtime/transcript/delta")
-            #expect(rawJSON.objectValue?["delta"] == .string("Partial transcript"))
+        if case .threadRealtimeTranscriptDelta(let payload) = transcriptDelta.payload {
+            #expect(payload.role == "assistant")
+            #expect(payload.delta == "Partial ")
+            #expect(payload.threadId == "thread_realtime")
         } else {
-            Issue.record("Expected unknown payload for thread/realtime/transcript/delta until upstream registry includes it")
+            Issue.record("Expected thread/realtime/transcript/delta payload")
         }
-        #expect(transcript.threadID == "thread_realtime")
+        #expect(transcriptDelta.threadID == "thread_realtime")
+
+        let transcriptDone = CodexNotification(
+            method: "thread/realtime/transcript/done",
+            params: .object([
+                "role": .string("assistant"),
+                "text": .string("Partial transcript"),
+                "threadId": .string("thread_realtime"),
+            ])
+        )
+        if case .threadRealtimeTranscriptDone(let payload) = transcriptDone.payload {
+            #expect(payload.role == "assistant")
+            #expect(payload.text == "Partial transcript")
+            #expect(payload.threadId == "thread_realtime")
+        } else {
+            Issue.record("Expected thread/realtime/transcript/done payload")
+        }
+
+        let realtimeSdp = CodexNotification(
+            method: "thread/realtime/sdp",
+            params: .object([
+                "sdp": .string("v=0"),
+                "threadId": .string("thread_realtime"),
+            ])
+        )
+        if case .threadRealtimeSdp(let payload) = realtimeSdp.payload {
+            #expect(payload.sdp == "v=0")
+            #expect(payload.threadId == "thread_realtime")
+        } else {
+            Issue.record("Expected thread/realtime/sdp payload")
+        }
     }
 
     @Test
@@ -323,7 +355,8 @@ struct CodexSDKTests {
             ],
             cwd: "/tmp/workspace",
             model: "gpt-test",
-            sandbox: .workspaceWrite
+            sandbox: .workspaceWrite,
+            sessionStartSource: .startup
         ))
 
         let env = try stub.environment(forInvocation: 0)
@@ -343,7 +376,37 @@ struct CodexSDKTests {
             messages.first { $0.stringValue(forKey: "method") == "thread/start" }?.objectValue(forKey: "params")
         )
         #expect(threadStartParams.objectValue(forKey: "config")?["custom_override"] == .string("enabled"))
+        #expect(threadStartParams["sessionStartSource"] == .string("startup"))
         await codex.close()
+    }
+
+    @Test
+    func threadListSerializesSortDirection() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadListResponses: [appServerThreadListResponse(threads: [makeThread(id: "thread_sorted")])]
+        ))
+
+        let client = CodexRPCClient(config: stub.makeConfig())
+        _ = try await client.initialize()
+
+        let response = try await client.threadList(options: .init(
+            searchTerm: "needle",
+            sortDirection: .asc,
+            sortKey: .updatedAt
+        ))
+        #expect(response.data.map(\.id) == ["thread_sorted"])
+
+        let params = try #require(
+            try stub.appServerMessages(forInvocation: 0)
+                .first { $0.stringValue(forKey: "method") == "thread/list" }?
+                .objectValue(forKey: "params")
+        )
+        #expect(params["searchTerm"] == .string("needle"))
+        #expect(params["sortDirection"] == .string("asc"))
+        #expect(params["sortKey"] == .string("updated_at"))
+        await client.close()
     }
 
     @Test

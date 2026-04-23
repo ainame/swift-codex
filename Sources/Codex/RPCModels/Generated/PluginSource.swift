@@ -6,6 +6,8 @@ import Foundation
 public enum PluginSource: RawJSONRepresentable {
 
     case local(LocalPluginSource)
+    case git(GitPluginSource)
+    case remote(RemotePluginSource)
     case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
@@ -24,11 +26,23 @@ public enum PluginSource: RawJSONRepresentable {
                     self = .local(value)
                     return
                 }
+            case "git":
+                if let value = try? decodeJSONValue(GitPluginSource.self, from: raw) {
+                    self = .git(value)
+                    return
+                }
+            case "remote":
+                if let value = try? decodeJSONValue(RemotePluginSource.self, from: raw) {
+                    self = .remote(value)
+                    return
+                }
             default:
                 break
             }
         }
         if let value = try? decodeJSONValue(LocalPluginSource.self, from: raw) { self = .local(value); return }
+        if let value = try? decodeJSONValue(GitPluginSource.self, from: raw) { self = .git(value); return }
+        if let value = try? decodeJSONValue(RemotePluginSource.self, from: raw) { self = .remote(value); return }
         self = .unknown(raw)
     }
 
@@ -36,6 +50,8 @@ public enum PluginSource: RawJSONRepresentable {
         switch self {
 
         case .local(let value): try value.encode(to: encoder)
+        case .git(let value): try value.encode(to: encoder)
+        case .remote(let value): try value.encode(to: encoder)
         case .unknown(let value):
             try value.encode(to: encoder)
         }
@@ -45,6 +61,8 @@ public enum PluginSource: RawJSONRepresentable {
         switch self {
 
         case .local(let value): return losslessEncodeJSONValue(value, context: "PluginSource.local")
+        case .git(let value): return losslessEncodeJSONValue(value, context: "PluginSource.git")
+        case .remote(let value): return losslessEncodeJSONValue(value, context: "PluginSource.remote")
         case .unknown(let value):
             return value
         }
