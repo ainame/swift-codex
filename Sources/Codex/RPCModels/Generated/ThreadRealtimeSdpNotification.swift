@@ -3,59 +3,52 @@
 
 import Foundation
 
-public struct ThreadRealtimeTranscriptUpdatedNotification: ObjectModel {
-    public var role: String
-    public var text: String
+public struct ThreadRealtimeSdpNotification: ObjectModel {
+    public var sdp: String
     public var threadId: String
     public var additionalFields: JSONObject
 
     public init(
-        role: String,
-        text: String,
+        sdp: String,
         threadId: String,
         additionalFields: JSONObject = [:]
     ) {
-        self.role = role
-        self.text = text
+        self.sdp = sdp
         self.threadId = threadId
         self.additionalFields = additionalFields
     }
 
     public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "ThreadRealtimeTranscriptUpdatedNotification"))
+        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "ThreadRealtimeSdpNotification"))
     }
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "ThreadRealtimeTranscriptUpdatedNotification")
+        let object = try decodeJSONObject(from: decoder, context: "ThreadRealtimeSdpNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.role = payload.role
-        self.text = payload.text
+        self.sdp = payload.sdp
         self.threadId = payload.threadId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "ThreadRealtimeTranscriptUpdatedNotification", to: encoder)
+        try encodeJSONObject(payload, additionalFields: additionalFields, context: "ThreadRealtimeSdpNotification", to: encoder)
     }
 
     private var payload: Payload {
         Payload(
-            role: role,
-            text: text,
+            sdp: sdp,
             threadId: threadId
         )
     }
 
-    private static let knownKeys: Set<String> = ["role", "text", "threadId"]
+    private static let knownKeys: Set<String> = ["sdp", "threadId"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var role: String
-        var text: String
+        var sdp: String
         var threadId: String
 
         enum CodingKeys: String, CodingKey {
-            case role
-            case text
+            case sdp
             case threadId
         }
     }

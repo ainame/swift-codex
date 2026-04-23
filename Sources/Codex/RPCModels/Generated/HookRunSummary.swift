@@ -13,7 +13,8 @@ public struct HookRunSummary: ObjectModel {
     public var handlerType: HookHandlerType
     public var id: String
     public var scope: HookScope
-    public var sourcePath: String
+    public var source: HookSource?
+    public var sourcePath: AbsolutePathBuf
     public var startedAt: Int
     public var status: HookRunStatus
     public var statusMessage: String?
@@ -29,7 +30,8 @@ public struct HookRunSummary: ObjectModel {
         handlerType: HookHandlerType,
         id: String,
         scope: HookScope,
-        sourcePath: String,
+        source: HookSource? = nil,
+        sourcePath: AbsolutePathBuf,
         startedAt: Int,
         status: HookRunStatus,
         statusMessage: String? = nil,
@@ -44,6 +46,7 @@ public struct HookRunSummary: ObjectModel {
         self.handlerType = handlerType
         self.id = id
         self.scope = scope
+        self.source = source
         self.sourcePath = sourcePath
         self.startedAt = startedAt
         self.status = status
@@ -67,6 +70,7 @@ public struct HookRunSummary: ObjectModel {
         self.handlerType = payload.handlerType
         self.id = payload.id
         self.scope = payload.scope
+        self.source = payload.source
         self.sourcePath = payload.sourcePath
         self.startedAt = payload.startedAt
         self.status = payload.status
@@ -89,6 +93,7 @@ public struct HookRunSummary: ObjectModel {
             handlerType: handlerType,
             id: id,
             scope: scope,
+            source: source,
             sourcePath: sourcePath,
             startedAt: startedAt,
             status: status,
@@ -96,7 +101,7 @@ public struct HookRunSummary: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["completedAt", "displayOrder", "durationMs", "entries", "eventName", "executionMode", "handlerType", "id", "scope", "sourcePath", "startedAt", "status", "statusMessage"]
+    private static let knownKeys: Set<String> = ["completedAt", "displayOrder", "durationMs", "entries", "eventName", "executionMode", "handlerType", "id", "scope", "source", "sourcePath", "startedAt", "status", "statusMessage"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var completedAt: Int?
@@ -108,7 +113,8 @@ public struct HookRunSummary: ObjectModel {
         var handlerType: HookHandlerType
         var id: String
         var scope: HookScope
-        var sourcePath: String
+        var source: HookSource?
+        var sourcePath: AbsolutePathBuf
         var startedAt: Int
         var status: HookRunStatus
         var statusMessage: String?
@@ -123,6 +129,7 @@ public struct HookRunSummary: ObjectModel {
             case handlerType
             case id
             case scope
+            case source
             case sourcePath
             case startedAt
             case status

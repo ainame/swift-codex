@@ -4,15 +4,18 @@
 import Foundation
 
 public struct McpToolCallResult: ObjectModel {
+    public var meta: JSONValue?
     public var content: [JSONValue]
     public var structuredContent: JSONValue?
     public var additionalFields: JSONObject
 
     public init(
+        meta: JSONValue? = nil,
         content: [JSONValue],
         structuredContent: JSONValue? = nil,
         additionalFields: JSONObject = [:]
     ) {
+        self.meta = meta
         self.content = content
         self.structuredContent = structuredContent
         self.additionalFields = additionalFields
@@ -25,6 +28,7 @@ public struct McpToolCallResult: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "McpToolCallResult")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.meta = payload.meta
         self.content = payload.content
         self.structuredContent = payload.structuredContent
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -36,18 +40,21 @@ public struct McpToolCallResult: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            meta: meta,
             content: content,
             structuredContent: structuredContent
         )
     }
 
-    private static let knownKeys: Set<String> = ["content", "structuredContent"]
+    private static let knownKeys: Set<String> = ["_meta", "content", "structuredContent"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var meta: JSONValue?
         var content: [JSONValue]
         var structuredContent: JSONValue?
 
         enum CodingKeys: String, CodingKey {
+            case meta = "_meta"
             case content
             case structuredContent
         }

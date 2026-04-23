@@ -4,6 +4,7 @@
 import Foundation
 
 public struct Model: ObjectModel {
+    public var additionalSpeedTiers: [String]?
     public var availabilityNux: ModelAvailabilityNux?
     public var defaultReasoningEffort: ReasoningEffort
     public var description: String
@@ -20,6 +21,7 @@ public struct Model: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        additionalSpeedTiers: [String]? = nil,
         availabilityNux: ModelAvailabilityNux? = nil,
         defaultReasoningEffort: ReasoningEffort,
         description: String,
@@ -35,6 +37,7 @@ public struct Model: ObjectModel {
         upgradeInfo: ModelUpgradeInfo? = nil,
         additionalFields: JSONObject = [:]
     ) {
+        self.additionalSpeedTiers = additionalSpeedTiers
         self.availabilityNux = availabilityNux
         self.defaultReasoningEffort = defaultReasoningEffort
         self.description = description
@@ -58,6 +61,7 @@ public struct Model: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "Model")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.additionalSpeedTiers = payload.additionalSpeedTiers
         self.availabilityNux = payload.availabilityNux
         self.defaultReasoningEffort = payload.defaultReasoningEffort
         self.description = payload.description
@@ -80,6 +84,7 @@ public struct Model: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            additionalSpeedTiers: additionalSpeedTiers,
             availabilityNux: availabilityNux,
             defaultReasoningEffort: defaultReasoningEffort,
             description: description,
@@ -96,9 +101,10 @@ public struct Model: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["availabilityNux", "defaultReasoningEffort", "description", "displayName", "hidden", "id", "inputModalities", "isDefault", "model", "supportedReasoningEfforts", "supportsPersonality", "upgrade", "upgradeInfo"]
+    private static let knownKeys: Set<String> = ["additionalSpeedTiers", "availabilityNux", "defaultReasoningEffort", "description", "displayName", "hidden", "id", "inputModalities", "isDefault", "model", "supportedReasoningEfforts", "supportsPersonality", "upgrade", "upgradeInfo"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var additionalSpeedTiers: [String]?
         var availabilityNux: ModelAvailabilityNux?
         var defaultReasoningEffort: ReasoningEffort
         var description: String
@@ -114,6 +120,7 @@ public struct Model: ObjectModel {
         var upgradeInfo: ModelUpgradeInfo?
 
         enum CodingKeys: String, CodingKey {
+            case additionalSpeedTiers
             case availabilityNux
             case defaultReasoningEffort
             case description

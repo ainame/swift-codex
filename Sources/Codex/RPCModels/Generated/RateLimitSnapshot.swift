@@ -9,6 +9,7 @@ public struct RateLimitSnapshot: ObjectModel {
     public var limitName: String?
     public var planType: PlanType?
     public var primary: RateLimitWindow?
+    public var rateLimitReachedType: RateLimitReachedType?
     public var secondary: RateLimitWindow?
     public var additionalFields: JSONObject
 
@@ -18,6 +19,7 @@ public struct RateLimitSnapshot: ObjectModel {
         limitName: String? = nil,
         planType: PlanType? = nil,
         primary: RateLimitWindow? = nil,
+        rateLimitReachedType: RateLimitReachedType? = nil,
         secondary: RateLimitWindow? = nil,
         additionalFields: JSONObject = [:]
     ) {
@@ -26,6 +28,7 @@ public struct RateLimitSnapshot: ObjectModel {
         self.limitName = limitName
         self.planType = planType
         self.primary = primary
+        self.rateLimitReachedType = rateLimitReachedType
         self.secondary = secondary
         self.additionalFields = additionalFields
     }
@@ -42,6 +45,7 @@ public struct RateLimitSnapshot: ObjectModel {
         self.limitName = payload.limitName
         self.planType = payload.planType
         self.primary = payload.primary
+        self.rateLimitReachedType = payload.rateLimitReachedType
         self.secondary = payload.secondary
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -57,11 +61,12 @@ public struct RateLimitSnapshot: ObjectModel {
             limitName: limitName,
             planType: planType,
             primary: primary,
+            rateLimitReachedType: rateLimitReachedType,
             secondary: secondary
         )
     }
 
-    private static let knownKeys: Set<String> = ["credits", "limitId", "limitName", "planType", "primary", "secondary"]
+    private static let knownKeys: Set<String> = ["credits", "limitId", "limitName", "planType", "primary", "rateLimitReachedType", "secondary"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var credits: CreditsSnapshot?
@@ -69,6 +74,7 @@ public struct RateLimitSnapshot: ObjectModel {
         var limitName: String?
         var planType: PlanType?
         var primary: RateLimitWindow?
+        var rateLimitReachedType: RateLimitReachedType?
         var secondary: RateLimitWindow?
 
         enum CodingKeys: String, CodingKey {
@@ -77,6 +83,7 @@ public struct RateLimitSnapshot: ObjectModel {
             case limitName
             case planType
             case primary
+            case rateLimitReachedType
             case secondary
         }
     }
