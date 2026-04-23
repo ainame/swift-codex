@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `b630ce9a4e754d35a1f33e4366ba638d18626142`
-- Reviewed JSON-RPC basis commit SHA: `b630ce9a4e754d35a1f33e4366ba638d18626142`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/b630ce9a4e754d35a1f33e4366ba638d18626142`
-- Last reviewed date: `2026-04-03`
+- Vendored upstream commit: `e9fb49366c93a1478ec71cc41ecee415a197d036`
+- Reviewed JSON-RPC basis commit SHA: `e9fb49366c93a1478ec71cc41ecee415a197d036`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/e9fb49366c93a1478ec71cc41ecee415a197d036`
+- Last reviewed date: `2026-04-23`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `codex_app_server` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,7 +33,7 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `b630ce9a4e754d35a1f33e4366ba638d18626142` (`rust-v0.118.0`)
+- Vendored checkout: `vendor/openai-codex` at `e9fb49366c93a1478ec71cc41ecee415a197d036` (`rust-v0.124.0`)
 - Reviewed upstream files:
   - `sdk/python/src/codex_app_server/api.py`
   - `sdk/python/src/codex_app_server/async_client.py`
@@ -41,22 +41,23 @@ When porting new behavior from upstream or validating parity:
   - `sdk/python/src/codex_app_server/errors.py`
   - `sdk/python/src/codex_app_server/generated/v2_all.py`
   - `sdk/python/src/codex_app_server/generated/notification_registry.py`
-  - `sdk/python/examples/01_quickstart_constructor/sync.py`
-  - `sdk/python/examples/02_turn_run/sync.py`
+  - `sdk/python/examples/README.md`
+  - `sdk/python/tests/test_artifact_workflow_and_binaries.py`
+  - `sdk/python/tests/test_client_rpc_methods.py`
+  - `sdk/python/tests/test_public_api_signatures.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
-  - initialize, thread, turn, model, and notification method shapes
-  - typed response payloads and notification payload mapping
-  - default approval behavior for known approval requests
-  - empty-object responses for interrupt/archive/name/compact style methods
-  - `data` collection fields on thread/model list responses
-  - server metadata normalization from initialize payloads
-  - process launch config parity for explicit `cwd` and full argv override
-  - typed plugin marketplace response support via `plugin/list`
-  - `PlanType.selfServeBusinessUsageBased` and `PlanType.enterpriseCbpUsageBased`
-  - `fs/changed`, `mcpServer/startupStatus/updated`, and `thread/realtime/transcriptUpdated` notification payloads
+  - generated thread-start parity for `sessionStartSource`
+  - generated thread-list parity for `sortDirection`
+  - typed `thread/realtime/sdp`, `thread/realtime/transcript/delta`, and `thread/realtime/transcript/done` payloads via the upstream notification registry
+  - guardian approval review action typing, permission-profile models, and remote plugin source variants from the updated schema
+  - plugin marketplace response updates including remote source metadata and larger result surfaces
+  - response payload additions across `Thread`, `Turn`, `Model`, and `PluginListResponse`
 - Parity target:
   - Python SDK parity, with typed model generation refreshed from the vendored v2 schema used by the Python app-server
+- Remaining upstream gaps not ported end to end:
+  - the schema and generated models now include additional permission-profile and filesystem-special-path shapes, but this repository still exposes them through typed RPC records rather than new handwritten convenience wrappers
+  - upstream plugin marketplace and artifact workflow additions are represented in generated models only; the Swift package still provides the existing `pluginList()` convenience method rather than higher-level workflow helpers
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than Python synchronous wrappers
   - `JSONValue.number(Double)` remains the raw escape hatch type, while generated typed models use integer fields where the schema requires them

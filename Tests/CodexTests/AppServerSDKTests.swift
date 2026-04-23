@@ -312,7 +312,7 @@ struct AppServerSDKTests {
         #expect(plugins.marketplaces.map(\.name) == ["local"])
         #expect(plugins.featuredPluginIds == ["plugin.alpha"])
         #expect(plugins.marketplaceLoadErrors?.map(\.message) == ["failed to load"])
-        #expect(plugins.remoteSyncError == "sync failed")
+        #expect(plugins.additionalFields["remoteSyncError"] == .string("sync failed"))
 
         let methods = try stub.appServerMessages(forInvocation: 0).compactMap { $0.stringValue(forKey: "method") }
         #expect(methods == ["initialize", "initialized", "plugin/list"])

@@ -10,9 +10,10 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Changed
 
-- Updated `vendor/openai-codex` to `rust-v0.118.0` (`b630ce9a4e754d35a1f33e4366ba638d18626142`).
-- Regenerated app-server v2 models to include `fs/changed`, `mcpServer/startupStatus/updated`, and `thread/realtime/transcriptUpdated` notification payloads.
-- Added the new usage-based `PlanType` enum cases from the upstream app-server schema.
+- Updated `vendor/openai-codex` to `rust-v0.124.0` (`e9fb49366c93a1478ec71cc41ecee415a197d036`).
+- Regenerated app-server v2 models for the latest schema, including guardian approval review actions, permission-profile payloads, remote plugin source variants, and refreshed thread/model/plugin response shapes.
+- Switched realtime transcript notification decoding from the removed `thread/realtime/transcriptUpdated` payload to the upstream `thread/realtime/transcript/delta`, `thread/realtime/transcript/done`, and `thread/realtime/sdp` payloads.
+- Added `ThreadOptions.sessionStartSource` and `ThreadListOptions.sortDirection` to match the current Python app-server client surface.
 
 ## [0.0.3] - 2026-03-29
 
