@@ -68,7 +68,7 @@ extension CodexError {
         switch status {
         case .exited(let code):
             detail = "code \(code)"
-        case .unhandledException(let code):
+        case .signaled(let code):
             detail = "signal \(code)"
         @unknown default:
             detail = "\(status)"
