@@ -7,6 +7,7 @@ public enum AuthMode: RawJSONRepresentable {
     case apikey
     case chatgpt
     case chatgptAuthTokens
+    case agentIdentity
 
     case unknown(JSONValue)
 
@@ -17,6 +18,7 @@ public enum AuthMode: RawJSONRepresentable {
             case "apikey": self = .apikey; return
             case "chatgpt": self = .chatgpt; return
             case "chatgptAuthTokens": self = .chatgptAuthTokens; return
+            case "agentIdentity": self = .agentIdentity; return
             default:
                 break
             }
@@ -29,6 +31,7 @@ public enum AuthMode: RawJSONRepresentable {
         case .apikey: try "apikey".encode(to: encoder)
         case .chatgpt: try "chatgpt".encode(to: encoder)
         case .chatgptAuthTokens: try "chatgptAuthTokens".encode(to: encoder)
+        case .agentIdentity: try "agentIdentity".encode(to: encoder)
 
         case .unknown(let value):
             try value.encode(to: encoder)
@@ -40,6 +43,7 @@ public enum AuthMode: RawJSONRepresentable {
         case .apikey: return .string("apikey")
         case .chatgpt: return .string("chatgpt")
         case .chatgptAuthTokens: return .string("chatgptAuthTokens")
+        case .agentIdentity: return .string("agentIdentity")
 
         case .unknown(let value):
             return value

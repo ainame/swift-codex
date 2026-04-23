@@ -5,6 +5,7 @@ import Foundation
 
 public enum ApprovalsReviewer: RawJSONRepresentable {
     case user
+    case autoReview
     case guardianSubagent
     case unrecognized(String)
 
@@ -12,6 +13,7 @@ public enum ApprovalsReviewer: RawJSONRepresentable {
         let value = try String(from: decoder)
         switch value {
         case "user": self = .user
+        case "auto_review": self = .autoReview
         case "guardian_subagent": self = .guardianSubagent
         default:
             self = .unrecognized(value)
@@ -25,6 +27,7 @@ public enum ApprovalsReviewer: RawJSONRepresentable {
     public var rawValue: String {
         switch self {
         case .user: return "user"
+        case .autoReview: return "auto_review"
         case .guardianSubagent: return "guardian_subagent"
         case .unrecognized(let value):
             return value

@@ -8,6 +8,7 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
     public var contentItems: [DynamicToolCallOutputContentItem]?
     public var durationMs: Int?
     public var id: String
+    public var namespace: String?
     public var status: DynamicToolCallStatus
     public var success: Bool?
     public var tool: String
@@ -19,6 +20,7 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
         contentItems: [DynamicToolCallOutputContentItem]? = nil,
         durationMs: Int? = nil,
         id: String,
+        namespace: String? = nil,
         status: DynamicToolCallStatus,
         success: Bool? = nil,
         tool: String,
@@ -29,6 +31,7 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
         self.contentItems = contentItems
         self.durationMs = durationMs
         self.id = id
+        self.namespace = namespace
         self.status = status
         self.success = success
         self.tool = tool
@@ -47,6 +50,7 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
         self.contentItems = payload.contentItems
         self.durationMs = payload.durationMs
         self.id = payload.id
+        self.namespace = payload.namespace
         self.status = payload.status
         self.success = payload.success
         self.tool = payload.tool
@@ -64,6 +68,7 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
             contentItems: contentItems,
             durationMs: durationMs,
             id: id,
+            namespace: namespace,
             status: status,
             success: success,
             tool: tool,
@@ -71,13 +76,14 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["arguments", "contentItems", "durationMs", "id", "status", "success", "tool", "type"]
+    private static let knownKeys: Set<String> = ["arguments", "contentItems", "durationMs", "id", "namespace", "status", "success", "tool", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var arguments: JSONValue
         var contentItems: [DynamicToolCallOutputContentItem]?
         var durationMs: Int?
         var id: String
+        var namespace: String?
         var status: DynamicToolCallStatus
         var success: Bool?
         var tool: String
@@ -88,6 +94,7 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
             case contentItems
             case durationMs
             case id
+            case namespace
             case status
             case success
             case tool

@@ -6,14 +6,14 @@ import Foundation
 public struct PluginMarketplaceEntry: ObjectModel {
     public var interface: MarketplaceInterface?
     public var name: String
-    public var path: AbsolutePathBuf
+    public var path: AbsolutePathBuf?
     public var plugins: [PluginSummary]
     public var additionalFields: JSONObject
 
     public init(
         interface: MarketplaceInterface? = nil,
         name: String,
-        path: AbsolutePathBuf,
+        path: AbsolutePathBuf? = nil,
         plugins: [PluginSummary],
         additionalFields: JSONObject = [:]
     ) {
@@ -56,7 +56,7 @@ public struct PluginMarketplaceEntry: ObjectModel {
     private struct Payload: Codable, Hashable, Sendable {
         var interface: MarketplaceInterface?
         var name: String
-        var path: AbsolutePathBuf
+        var path: AbsolutePathBuf?
         var plugins: [PluginSummary]
 
         enum CodingKeys: String, CodingKey {

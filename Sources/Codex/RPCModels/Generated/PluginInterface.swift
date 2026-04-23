@@ -8,12 +8,15 @@ public struct PluginInterface: ObjectModel {
     public var capabilities: [String]
     public var category: String?
     public var composerIcon: AbsolutePathBuf?
+    public var composerIconUrl: String?
     public var defaultPrompt: [String]?
     public var developerName: String?
     public var displayName: String?
     public var logo: AbsolutePathBuf?
+    public var logoUrl: String?
     public var longDescription: String?
     public var privacyPolicyUrl: String?
+    public var screenshotUrls: [String]
     public var screenshots: [AbsolutePathBuf]
     public var shortDescription: String?
     public var termsOfServiceUrl: String?
@@ -25,12 +28,15 @@ public struct PluginInterface: ObjectModel {
         capabilities: [String],
         category: String? = nil,
         composerIcon: AbsolutePathBuf? = nil,
+        composerIconUrl: String? = nil,
         defaultPrompt: [String]? = nil,
         developerName: String? = nil,
         displayName: String? = nil,
         logo: AbsolutePathBuf? = nil,
+        logoUrl: String? = nil,
         longDescription: String? = nil,
         privacyPolicyUrl: String? = nil,
+        screenshotUrls: [String],
         screenshots: [AbsolutePathBuf],
         shortDescription: String? = nil,
         termsOfServiceUrl: String? = nil,
@@ -41,12 +47,15 @@ public struct PluginInterface: ObjectModel {
         self.capabilities = capabilities
         self.category = category
         self.composerIcon = composerIcon
+        self.composerIconUrl = composerIconUrl
         self.defaultPrompt = defaultPrompt
         self.developerName = developerName
         self.displayName = displayName
         self.logo = logo
+        self.logoUrl = logoUrl
         self.longDescription = longDescription
         self.privacyPolicyUrl = privacyPolicyUrl
+        self.screenshotUrls = screenshotUrls
         self.screenshots = screenshots
         self.shortDescription = shortDescription
         self.termsOfServiceUrl = termsOfServiceUrl
@@ -65,12 +74,15 @@ public struct PluginInterface: ObjectModel {
         self.capabilities = payload.capabilities
         self.category = payload.category
         self.composerIcon = payload.composerIcon
+        self.composerIconUrl = payload.composerIconUrl
         self.defaultPrompt = payload.defaultPrompt
         self.developerName = payload.developerName
         self.displayName = payload.displayName
         self.logo = payload.logo
+        self.logoUrl = payload.logoUrl
         self.longDescription = payload.longDescription
         self.privacyPolicyUrl = payload.privacyPolicyUrl
+        self.screenshotUrls = payload.screenshotUrls
         self.screenshots = payload.screenshots
         self.shortDescription = payload.shortDescription
         self.termsOfServiceUrl = payload.termsOfServiceUrl
@@ -88,12 +100,15 @@ public struct PluginInterface: ObjectModel {
             capabilities: capabilities,
             category: category,
             composerIcon: composerIcon,
+            composerIconUrl: composerIconUrl,
             defaultPrompt: defaultPrompt,
             developerName: developerName,
             displayName: displayName,
             logo: logo,
+            logoUrl: logoUrl,
             longDescription: longDescription,
             privacyPolicyUrl: privacyPolicyUrl,
+            screenshotUrls: screenshotUrls,
             screenshots: screenshots,
             shortDescription: shortDescription,
             termsOfServiceUrl: termsOfServiceUrl,
@@ -101,19 +116,22 @@ public struct PluginInterface: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["brandColor", "capabilities", "category", "composerIcon", "defaultPrompt", "developerName", "displayName", "logo", "longDescription", "privacyPolicyUrl", "screenshots", "shortDescription", "termsOfServiceUrl", "websiteUrl"]
+    private static let knownKeys: Set<String> = ["brandColor", "capabilities", "category", "composerIcon", "composerIconUrl", "defaultPrompt", "developerName", "displayName", "logo", "logoUrl", "longDescription", "privacyPolicyUrl", "screenshotUrls", "screenshots", "shortDescription", "termsOfServiceUrl", "websiteUrl"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var brandColor: String?
         var capabilities: [String]
         var category: String?
         var composerIcon: AbsolutePathBuf?
+        var composerIconUrl: String?
         var defaultPrompt: [String]?
         var developerName: String?
         var displayName: String?
         var logo: AbsolutePathBuf?
+        var logoUrl: String?
         var longDescription: String?
         var privacyPolicyUrl: String?
+        var screenshotUrls: [String]
         var screenshots: [AbsolutePathBuf]
         var shortDescription: String?
         var termsOfServiceUrl: String?
@@ -124,12 +142,15 @@ public struct PluginInterface: ObjectModel {
             case capabilities
             case category
             case composerIcon
+            case composerIconUrl
             case defaultPrompt
             case developerName
             case displayName
             case logo
+            case logoUrl
             case longDescription
             case privacyPolicyUrl
+            case screenshotUrls
             case screenshots
             case shortDescription
             case termsOfServiceUrl
