@@ -87,6 +87,11 @@ struct AppServerSDKTests {
             threadStartResponses: [appServerThreadStartResponse(id: "thread_levels")],
             turnStartResponses: [appServerTurnStartResponse(id: "turn_levels")],
             turnStartSequences: [[
+                .notification(method: "item/started", params: appServerItemStarted(
+                    threadID: "thread_levels",
+                    turnID: "turn_levels",
+                    item: appServerAgentMessageItem(id: "msg_started", text: "Interim", phase: .commentary)
+                )),
                 .notification(method: "item/completed", params: appServerItemCompleted(
                     threadID: "thread_levels",
                     turnID: "turn_levels",
@@ -110,11 +115,19 @@ struct AppServerSDKTests {
             $0.label == "custom-codex"
                 && $0.level == .debug
                 && $0.message == "Received RPC notification"
+                && $0.metadata["method"] == "item/started"
+                && $0.metadata["item_id"] == "msg_started"
+                && $0.metadata["item_type"] == "agentMessage"
+        })
+        #expect(entries.contains {
+            $0.label == "custom-codex"
+                && $0.level == .debug
+                && $0.message == "Received RPC notification"
                 && $0.metadata["method"] == "item/completed"
         })
         #expect(entries.contains {
             $0.label == "custom-codex"
-                && $0.level == .info
+                && $0.level == .debug
                 && $0.message == "Received RPC notification"
                 && $0.metadata["method"] == "turn/completed"
         })

@@ -164,6 +164,14 @@ public struct CodexNotification: Sendable, Hashable, Codable {
     public var turnID: String? {
         payload.turnID
     }
+
+    var itemID: String? {
+        rawParams.objectValue?["item"]?.objectValue?.stringValue(forKey: "id")
+    }
+
+    var itemType: String? {
+        rawParams.objectValue?["item"]?.objectValue?.stringValue(forKey: "type")
+    }
 }
 
 public actor CodexRPCClient {

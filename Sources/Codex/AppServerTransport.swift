@@ -332,6 +332,8 @@ actor CodexRPCTransport {
             "method": Logger.MetadataValue.string(notification.method),
             "thread_id": notification.threadID.map(Logger.MetadataValue.string),
             "turn_id": notification.turnID.map(Logger.MetadataValue.string),
+            "item_id": notification.itemID.map(Logger.MetadataValue.string),
+            "item_type": notification.itemType.map(Logger.MetadataValue.string),
         ].compactMapValues { $0 }
 
         switch notificationLevel(for: notification.method) {
@@ -353,13 +355,7 @@ actor CodexRPCTransport {
         if method.contains("warning") {
             return .warning
         }
-        if method == "thread/started" || method == "turn/started" || method == "turn/completed" {
-            return .info
-        }
-        if method.contains("delta") || method.hasSuffix("/updated") || method == "item/completed" {
-            return .debug
-        }
-        return .info
+        return .debug
     }
 
     private func stderrTailLogMetadata() -> Logger.Metadata {

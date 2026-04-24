@@ -564,6 +564,16 @@ func appServerItemCompleted(threadID: String, turnID: String, item: ThreadItem) 
     )
 }
 
+func appServerItemStarted(threadID: String, turnID: String, item: ThreadItem) -> JSONObject {
+    jsonObject(
+        ItemStartedNotification(
+            item: item,
+            threadId: threadID,
+            turnId: turnID
+        )
+    )
+}
+
 func appServerAgentMessageItem(id: String = "msg_1", text: String, phase: MessagePhase? = nil) -> ThreadItem {
     .agentMessage(
         AgentMessageThreadItem(
