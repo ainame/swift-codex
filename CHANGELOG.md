@@ -8,13 +8,19 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.130.0] - 2026-05-09
+
+Starting with `0.130.0`, `swift-codex` release versions follow the shipped upstream `openai/codex` SDK release number when an upstream sync is released.
+
+### Added
+
+- Added `swift-log` logger injection and structured lifecycle logging across the RPC client, transport, exec, thread, and turn layers. [#5](https://github.com/ainame/swift-codex/pull/5)
+
 ### Changed
 
-- Updated `vendor/openai-codex` to `rust-v0.130.0` (`58573da43ab697e8b79f152c53df4b42230395a8`).
-- Regenerated app-server v2 models for the latest schema, including `Thread.sessionId`, `Thread.threadSource`, plugin share metadata, model service-tier metadata, and the current sandbox/path unions.
-- Added typed notification decoding for `guardianWarning`, `model/verification`, `remoteControl/status/changed`, `thread/goal/cleared`, and `thread/goal/updated`.
-- Updated `ThreadListOptions` to support multi-path `cwd` filters and `useStateDBOnly`, matching the current Python app-server client surface.
-- Preserved the public Swift `ServiceTier` wrapper as a compatibility enum even though the upstream schema now treats those request fields as raw strings.
+- Synced the app-server schema to `rust-v0.121.0`, adding typed instruction sources, fork metadata, guardian auto-review payloads, and path-typed `cwd` fields. [#8](https://github.com/ainame/swift-codex/pull/8)
+- Synced the app-server schema to `rust-v0.124.0`, adding `ThreadOptions.sessionStartSource`, `ThreadListOptions.sortDirection`, permission-profile payloads, and broader notification-registry coverage. [#10](https://github.com/ainame/swift-codex/pull/10)
+- Synced the app-server schema to `rust-v0.130.0`, adding multi-path `thread.list` cwd filters, `useStateDBOnly`, plugin share metadata, thread goal and model-verification notifications, and a `.swift-version` pin for Swift `6.3.1`. [#11](https://github.com/ainame/swift-codex/pull/11)
 
 ## [0.0.3] - 2026-03-29
 

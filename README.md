@@ -6,6 +6,8 @@ Swift SDK for the [`codex`](https://github.com/openai/codex) CLI.
 
 This repository still exists as a Swift port of the OpenAI Codex SDK work in [`openai/codex`](https://github.com/openai/codex), with upstream attribution and sync notes recorded in [`NOTICE`](NOTICE), [`LICENSE`](LICENSE), and [`UPSTREAM.md`](UPSTREAM.md).
 
+Starting with release `0.130.0`, `swift-codex` version numbers follow the shipped upstream `openai/codex` SDK release number when an upstream sync is released.
+
 ## Status
 
 Current implementation includes:
@@ -60,7 +62,7 @@ Add the package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.0.3")
+    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.130.0")
 ]
 ```
 
