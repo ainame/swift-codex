@@ -62,6 +62,7 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
 - Update `README.md` if supported features, scope, or install guidance changed.
 - Update package version references only if the repo is taking a new release because of the sync.
 - Update `NOTICE` only if legal attribution changed.
+- If the repo versions releases to match upstream, update the visible release version references to that same upstream version.
 
 ## 6. Verify
 
@@ -69,7 +70,13 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
 - Run `swift build` if tests are not the right verification target.
 - Build examples if public API changed.
 
-## 7. Report
+## 7. Ship Flow
+
+- If the sync should ship immediately, open a PR for the sync branch first.
+- Merge the PR before creating the release tag.
+- Switch to the latest `main` and prepare the matching repository release there.
+
+## 8. Report
 
 Include:
 

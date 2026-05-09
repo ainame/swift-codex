@@ -40,10 +40,15 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - Update `README.md` when supported features, scope, or upstream wording changed.
    - Update package or release version references only when the repository’s version should move because of the sync.
    - Update `NOTICE` only when attribution requirements actually changed.
+   - If this repository intentionally versions releases to match stable upstream `openai/codex` releases, update those visible version references to the matching upstream version during the sync.
 7. Verify before concluding.
    - Run `swift test` for behavior changes. Use `swift build` only when tests are unavailable or the change is documentation-only.
    - If there is an examples package, build it when the sync touches user-facing API.
-8. Finish with a focused summary.
+8. Handle the ship flow when requested.
+   - If the requested automation should ship the sync immediately, create a PR for the sync branch first.
+   - After the PR is merged, switch to the latest `main`, prepare the matching repository release version, tag it without a `v` prefix, and publish the GitHub release from `main`.
+   - Do not create the release tag from the topic branch or from a pre-merge commit.
+9. Finish with a focused summary.
    - State the upstream commit and release tag used.
    - State whether the work targeted Python SDK parity or raw schema parity.
    - State the main features or files synced.
