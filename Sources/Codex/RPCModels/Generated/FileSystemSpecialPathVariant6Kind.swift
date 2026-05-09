@@ -3,14 +3,14 @@
 
 import Foundation
 
-public enum FullAccessReadOnlyAccessType2: RawJSONRepresentable {
-    case fullAccess
+public enum FileSystemSpecialPathVariant6Kind: RawJSONRepresentable {
+    case unknown
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "fullAccess": self = .fullAccess
+        case "unknown": self = .unknown
         default:
             self = .unrecognized(value)
         }
@@ -22,7 +22,7 @@ public enum FullAccessReadOnlyAccessType2: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .fullAccess: return "fullAccess"
+        case .unknown: return "unknown"
         case .unrecognized(let value):
             return value
         }

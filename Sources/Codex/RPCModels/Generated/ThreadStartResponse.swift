@@ -10,10 +10,9 @@ public struct ThreadStartResponse: ObjectModel {
     public var instructionSources: [AbsolutePathBuf]?
     public var model: String
     public var modelProvider: String
-    public var permissionProfile: PermissionProfile?
     public var reasoningEffort: ReasoningEffort?
     public var sandbox: SandboxPolicy
-    public var serviceTier: ServiceTier?
+    public var serviceTier: String?
     public var thread: Thread
     public var additionalFields: JSONObject
 
@@ -24,10 +23,9 @@ public struct ThreadStartResponse: ObjectModel {
         instructionSources: [AbsolutePathBuf]? = nil,
         model: String,
         modelProvider: String,
-        permissionProfile: PermissionProfile? = nil,
         reasoningEffort: ReasoningEffort? = nil,
         sandbox: SandboxPolicy,
-        serviceTier: ServiceTier? = nil,
+        serviceTier: String? = nil,
         thread: Thread,
         additionalFields: JSONObject = [:]
     ) {
@@ -37,7 +35,6 @@ public struct ThreadStartResponse: ObjectModel {
         self.instructionSources = instructionSources
         self.model = model
         self.modelProvider = modelProvider
-        self.permissionProfile = permissionProfile
         self.reasoningEffort = reasoningEffort
         self.sandbox = sandbox
         self.serviceTier = serviceTier
@@ -58,7 +55,6 @@ public struct ThreadStartResponse: ObjectModel {
         self.instructionSources = payload.instructionSources
         self.model = payload.model
         self.modelProvider = payload.modelProvider
-        self.permissionProfile = payload.permissionProfile
         self.reasoningEffort = payload.reasoningEffort
         self.sandbox = payload.sandbox
         self.serviceTier = payload.serviceTier
@@ -78,7 +74,6 @@ public struct ThreadStartResponse: ObjectModel {
             instructionSources: instructionSources,
             model: model,
             modelProvider: modelProvider,
-            permissionProfile: permissionProfile,
             reasoningEffort: reasoningEffort,
             sandbox: sandbox,
             serviceTier: serviceTier,
@@ -86,7 +81,7 @@ public struct ThreadStartResponse: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "instructionSources", "model", "modelProvider", "permissionProfile", "reasoningEffort", "sandbox", "serviceTier", "thread"]
+    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "instructionSources", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var approvalPolicy: AskForApproval
@@ -95,10 +90,9 @@ public struct ThreadStartResponse: ObjectModel {
         var instructionSources: [AbsolutePathBuf]?
         var model: String
         var modelProvider: String
-        var permissionProfile: PermissionProfile?
         var reasoningEffort: ReasoningEffort?
         var sandbox: SandboxPolicy
-        var serviceTier: ServiceTier?
+        var serviceTier: String?
         var thread: Thread
 
         enum CodingKeys: String, CodingKey {
@@ -108,7 +102,6 @@ public struct ThreadStartResponse: ObjectModel {
             case instructionSources
             case model
             case modelProvider
-            case permissionProfile
             case reasoningEffort
             case sandbox
             case serviceTier
@@ -123,10 +116,9 @@ public struct ThreadStartResponse: ObjectModel {
             instructionSources: [AbsolutePathBuf]?,
             model: String,
             modelProvider: String,
-            permissionProfile: PermissionProfile?,
             reasoningEffort: ReasoningEffort?,
             sandbox: SandboxPolicy,
-            serviceTier: ServiceTier?,
+            serviceTier: String?,
             thread: Thread
         ) {
             self.approvalPolicy = approvalPolicy
@@ -135,7 +127,6 @@ public struct ThreadStartResponse: ObjectModel {
             self.instructionSources = instructionSources
             self.model = model
             self.modelProvider = modelProvider
-            self.permissionProfile = permissionProfile
             self.reasoningEffort = reasoningEffort
             self.sandbox = sandbox
             self.serviceTier = serviceTier
@@ -150,10 +141,9 @@ public struct ThreadStartResponse: ObjectModel {
             self.instructionSources = try container.decodeIfPresent([AbsolutePathBuf].self, forKey: .instructionSources)
             self.model = try container.decode(String.self, forKey: .model)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
-            self.permissionProfile = try container.decodeIfPresent(PermissionProfile.self, forKey: .permissionProfile)
             self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: .reasoningEffort)
             self.sandbox = try container.decode(SandboxPolicy.self, forKey: .sandbox)
-            self.serviceTier = try container.decodeIfPresent(ServiceTier.self, forKey: .serviceTier)
+            self.serviceTier = try container.decodeIfPresent(String.self, forKey: .serviceTier)
             self.thread = try container.decode(Thread.self, forKey: .thread)
         }
     }

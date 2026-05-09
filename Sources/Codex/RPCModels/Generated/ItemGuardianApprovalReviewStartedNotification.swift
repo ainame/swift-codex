@@ -7,6 +7,7 @@ public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
     public var action: GuardianApprovalReviewAction
     public var review: GuardianApprovalReview
     public var reviewId: String
+    public var startedAtMs: Int
     public var targetItemId: String?
     public var threadId: String
     public var turnId: String
@@ -16,6 +17,7 @@ public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
         action: GuardianApprovalReviewAction,
         review: GuardianApprovalReview,
         reviewId: String,
+        startedAtMs: Int,
         targetItemId: String? = nil,
         threadId: String,
         turnId: String,
@@ -24,6 +26,7 @@ public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
         self.action = action
         self.review = review
         self.reviewId = reviewId
+        self.startedAtMs = startedAtMs
         self.targetItemId = targetItemId
         self.threadId = threadId
         self.turnId = turnId
@@ -40,6 +43,7 @@ public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
         self.action = payload.action
         self.review = payload.review
         self.reviewId = payload.reviewId
+        self.startedAtMs = payload.startedAtMs
         self.targetItemId = payload.targetItemId
         self.threadId = payload.threadId
         self.turnId = payload.turnId
@@ -55,18 +59,20 @@ public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
             action: action,
             review: review,
             reviewId: reviewId,
+            startedAtMs: startedAtMs,
             targetItemId: targetItemId,
             threadId: threadId,
             turnId: turnId
         )
     }
 
-    private static let knownKeys: Set<String> = ["action", "review", "reviewId", "targetItemId", "threadId", "turnId"]
+    private static let knownKeys: Set<String> = ["action", "review", "reviewId", "startedAtMs", "targetItemId", "threadId", "turnId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var action: GuardianApprovalReviewAction
         var review: GuardianApprovalReview
         var reviewId: String
+        var startedAtMs: Int
         var targetItemId: String?
         var threadId: String
         var turnId: String
@@ -75,6 +81,7 @@ public struct ItemGuardianApprovalReviewStartedNotification: ObjectModel {
             case action
             case review
             case reviewId
+            case startedAtMs
             case targetItemId
             case threadId
             case turnId

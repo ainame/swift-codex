@@ -3,14 +3,14 @@
 
 import Foundation
 
-public struct FileSystemSpecialPathVariant7: ObjectModel {
-    public var kind: FileSystemSpecialPathVariant7Kind
+public struct FileSystemSpecialPathVariant6: ObjectModel {
+    public var kind: FileSystemSpecialPathVariant6Kind
     public var path: String
     public var subpath: String?
     public var additionalFields: JSONObject
 
     public init(
-        kind: FileSystemSpecialPathVariant7Kind,
+        kind: FileSystemSpecialPathVariant6Kind,
         path: String,
         subpath: String? = nil,
         additionalFields: JSONObject = [:]
@@ -22,11 +22,11 @@ public struct FileSystemSpecialPathVariant7: ObjectModel {
     }
 
     public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "FileSystemSpecialPathVariant7"))
+        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "FileSystemSpecialPathVariant6"))
     }
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "FileSystemSpecialPathVariant7")
+        let object = try decodeJSONObject(from: decoder, context: "FileSystemSpecialPathVariant6")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.kind = payload.kind
         self.path = payload.path
@@ -35,7 +35,7 @@ public struct FileSystemSpecialPathVariant7: ObjectModel {
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "FileSystemSpecialPathVariant7", to: encoder)
+        try encodeJSONObject(payload, additionalFields: additionalFields, context: "FileSystemSpecialPathVariant6", to: encoder)
     }
 
     private var payload: Payload {
@@ -49,7 +49,7 @@ public struct FileSystemSpecialPathVariant7: ObjectModel {
     private static let knownKeys: Set<String> = ["kind", "path", "subpath"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var kind: FileSystemSpecialPathVariant7Kind
+        var kind: FileSystemSpecialPathVariant6Kind
         var path: String
         var subpath: String?
 

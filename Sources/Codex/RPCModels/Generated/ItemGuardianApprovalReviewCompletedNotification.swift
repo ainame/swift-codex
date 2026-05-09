@@ -5,9 +5,11 @@ import Foundation
 
 public struct ItemGuardianApprovalReviewCompletedNotification: ObjectModel {
     public var action: GuardianApprovalReviewAction
+    public var completedAtMs: Int
     public var decisionSource: AutoReviewDecisionSource
     public var review: GuardianApprovalReview
     public var reviewId: String
+    public var startedAtMs: Int
     public var targetItemId: String?
     public var threadId: String
     public var turnId: String
@@ -15,18 +17,22 @@ public struct ItemGuardianApprovalReviewCompletedNotification: ObjectModel {
 
     public init(
         action: GuardianApprovalReviewAction,
+        completedAtMs: Int,
         decisionSource: AutoReviewDecisionSource,
         review: GuardianApprovalReview,
         reviewId: String,
+        startedAtMs: Int,
         targetItemId: String? = nil,
         threadId: String,
         turnId: String,
         additionalFields: JSONObject = [:]
     ) {
         self.action = action
+        self.completedAtMs = completedAtMs
         self.decisionSource = decisionSource
         self.review = review
         self.reviewId = reviewId
+        self.startedAtMs = startedAtMs
         self.targetItemId = targetItemId
         self.threadId = threadId
         self.turnId = turnId
@@ -41,9 +47,11 @@ public struct ItemGuardianApprovalReviewCompletedNotification: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "ItemGuardianApprovalReviewCompletedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.action = payload.action
+        self.completedAtMs = payload.completedAtMs
         self.decisionSource = payload.decisionSource
         self.review = payload.review
         self.reviewId = payload.reviewId
+        self.startedAtMs = payload.startedAtMs
         self.targetItemId = payload.targetItemId
         self.threadId = payload.threadId
         self.turnId = payload.turnId
@@ -57,31 +65,37 @@ public struct ItemGuardianApprovalReviewCompletedNotification: ObjectModel {
     private var payload: Payload {
         Payload(
             action: action,
+            completedAtMs: completedAtMs,
             decisionSource: decisionSource,
             review: review,
             reviewId: reviewId,
+            startedAtMs: startedAtMs,
             targetItemId: targetItemId,
             threadId: threadId,
             turnId: turnId
         )
     }
 
-    private static let knownKeys: Set<String> = ["action", "decisionSource", "review", "reviewId", "targetItemId", "threadId", "turnId"]
+    private static let knownKeys: Set<String> = ["action", "completedAtMs", "decisionSource", "review", "reviewId", "startedAtMs", "targetItemId", "threadId", "turnId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var action: GuardianApprovalReviewAction
+        var completedAtMs: Int
         var decisionSource: AutoReviewDecisionSource
         var review: GuardianApprovalReview
         var reviewId: String
+        var startedAtMs: Int
         var targetItemId: String?
         var threadId: String
         var turnId: String
 
         enum CodingKeys: String, CodingKey {
             case action
+            case completedAtMs
             case decisionSource
             case review
             case reviewId
+            case startedAtMs
             case targetItemId
             case threadId
             case turnId

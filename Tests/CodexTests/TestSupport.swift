@@ -557,6 +557,7 @@ func appServerThreadTokenUsageUpdated(threadID: String, turnID: String) -> JSONO
 func appServerItemCompleted(threadID: String, turnID: String, item: ThreadItem) -> JSONObject {
     jsonObject(
         ItemCompletedNotification(
+            completedAtMs: 1,
             item: item,
             threadId: threadID,
             turnId: turnID
@@ -633,6 +634,7 @@ func makeThread(
         id: id,
         modelProvider: "openai",
         preview: "preview",
+        sessionId: "session_\(id)",
         source: source,
         status: status,
         turns: turns,

@@ -440,7 +440,7 @@ public actor CodexRPCClient {
             params["cursor"] = .string(cursor)
         }
         if let cwd = options.cwd {
-            params["cwd"] = .string(cwd)
+            params["cwd"] = cwd.rawJSON
         }
         if let limit = options.limit {
             params["limit"] = .number(Double(limit))
@@ -459,6 +459,9 @@ public actor CodexRPCClient {
         }
         if let sourceKinds = options.sourceKinds {
             params["sourceKinds"] = .array(sourceKinds.map(\.rawJSON))
+        }
+        if let useStateDBOnly = options.useStateDBOnly {
+            params["useStateDbOnly"] = .bool(useStateDBOnly)
         }
         return params
     }

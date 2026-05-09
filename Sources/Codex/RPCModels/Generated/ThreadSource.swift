@@ -3,14 +3,18 @@
 
 import Foundation
 
-public enum FullAccessReadOnlyAccessType: RawJSONRepresentable {
-    case fullAccess
+public enum ThreadSource: RawJSONRepresentable {
+    case user
+    case subagent
+    case memoryConsolidation
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "fullAccess": self = .fullAccess
+        case "user": self = .user
+        case "subagent": self = .subagent
+        case "memory_consolidation": self = .memoryConsolidation
         default:
             self = .unrecognized(value)
         }
@@ -22,7 +26,9 @@ public enum FullAccessReadOnlyAccessType: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .fullAccess: return "fullAccess"
+        case .user: return "user"
+        case .subagent: return "subagent"
+        case .memoryConsolidation: return "memory_consolidation"
         case .unrecognized(let value):
             return value
         }

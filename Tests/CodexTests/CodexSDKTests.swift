@@ -145,6 +145,8 @@ struct CodexSDKTests {
                     "rationale": .string("Requires confirmation"),
                     "userAuthorization": .string("medium"),
                 ]),
+                "startedAtMs": .number(1000),
+                "completedAtMs": .number(1200),
                 "reviewId": .string("review_123"),
                 "targetItemId": .string("item_123"),
                 "threadId": .string("thread_guardian"),
@@ -406,6 +408,32 @@ struct CodexSDKTests {
         #expect(params["searchTerm"] == .string("needle"))
         #expect(params["sortDirection"] == .string("asc"))
         #expect(params["sortKey"] == .string("updated_at"))
+        await client.close()
+    }
+
+    @Test
+    func threadListSerializesCwdFilterArrayAndStateDBFlag() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadListResponses: [appServerThreadListResponse(threads: [makeThread(id: "thread_filtered")])]
+        ))
+
+        let client = CodexRPCClient(config: stub.makeConfig())
+        _ = try await client.initialize()
+
+        _ = try await client.threadList(options: .init(
+            cwd: .paths(["/tmp/a", "/tmp/b"]),
+            useStateDBOnly: true
+        ))
+
+        let params = try #require(
+            try stub.appServerMessages(forInvocation: 0)
+                .first { $0.stringValue(forKey: "method") == "thread/list" }?
+                .objectValue(forKey: "params")
+        )
+        #expect(params["cwd"] == .array([.string("/tmp/a"), .string("/tmp/b")]))
+        #expect(params["useStateDbOnly"] == .bool(true))
         await client.close()
     }
 

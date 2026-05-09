@@ -7,11 +7,10 @@ public enum FileSystemSpecialPath: RawJSONRepresentable {
 
     case root(RootFileSystemSpecialPath)
     case minimal(MinimalFileSystemSpecialPath)
-    case currentWorkingDirectory(CurrentWorkingDirectoryFileSystemSpecialPath)
     case kind(KindFileSystemSpecialPath)
     case tmpdir(TmpdirFileSystemSpecialPath)
     case slashTmp(SlashTmpFileSystemSpecialPath)
-    case fileSystemSpecialPathVariant7(FileSystemSpecialPathVariant7)
+    case fileSystemSpecialPathVariant6(FileSystemSpecialPathVariant6)
     case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
@@ -35,11 +34,6 @@ public enum FileSystemSpecialPath: RawJSONRepresentable {
                     self = .minimal(value)
                     return
                 }
-            case "current_working_directory":
-                if let value = try? decodeJSONValue(CurrentWorkingDirectoryFileSystemSpecialPath.self, from: raw) {
-                    self = .currentWorkingDirectory(value)
-                    return
-                }
             case "project_roots":
                 if let value = try? decodeJSONValue(KindFileSystemSpecialPath.self, from: raw) {
                     self = .kind(value)
@@ -56,8 +50,8 @@ public enum FileSystemSpecialPath: RawJSONRepresentable {
                     return
                 }
             case "unknown":
-                if let value = try? decodeJSONValue(FileSystemSpecialPathVariant7.self, from: raw) {
-                    self = .fileSystemSpecialPathVariant7(value)
+                if let value = try? decodeJSONValue(FileSystemSpecialPathVariant6.self, from: raw) {
+                    self = .fileSystemSpecialPathVariant6(value)
                     return
                 }
             default:
@@ -66,11 +60,10 @@ public enum FileSystemSpecialPath: RawJSONRepresentable {
         }
         if let value = try? decodeJSONValue(RootFileSystemSpecialPath.self, from: raw) { self = .root(value); return }
         if let value = try? decodeJSONValue(MinimalFileSystemSpecialPath.self, from: raw) { self = .minimal(value); return }
-        if let value = try? decodeJSONValue(CurrentWorkingDirectoryFileSystemSpecialPath.self, from: raw) { self = .currentWorkingDirectory(value); return }
         if let value = try? decodeJSONValue(KindFileSystemSpecialPath.self, from: raw) { self = .kind(value); return }
         if let value = try? decodeJSONValue(TmpdirFileSystemSpecialPath.self, from: raw) { self = .tmpdir(value); return }
         if let value = try? decodeJSONValue(SlashTmpFileSystemSpecialPath.self, from: raw) { self = .slashTmp(value); return }
-        if let value = try? decodeJSONValue(FileSystemSpecialPathVariant7.self, from: raw) { self = .fileSystemSpecialPathVariant7(value); return }
+        if let value = try? decodeJSONValue(FileSystemSpecialPathVariant6.self, from: raw) { self = .fileSystemSpecialPathVariant6(value); return }
         self = .unknown(raw)
     }
 
@@ -79,11 +72,10 @@ public enum FileSystemSpecialPath: RawJSONRepresentable {
 
         case .root(let value): try value.encode(to: encoder)
         case .minimal(let value): try value.encode(to: encoder)
-        case .currentWorkingDirectory(let value): try value.encode(to: encoder)
         case .kind(let value): try value.encode(to: encoder)
         case .tmpdir(let value): try value.encode(to: encoder)
         case .slashTmp(let value): try value.encode(to: encoder)
-        case .fileSystemSpecialPathVariant7(let value): try value.encode(to: encoder)
+        case .fileSystemSpecialPathVariant6(let value): try value.encode(to: encoder)
         case .unknown(let value):
             try value.encode(to: encoder)
         }
@@ -94,11 +86,10 @@ public enum FileSystemSpecialPath: RawJSONRepresentable {
 
         case .root(let value): return losslessEncodeJSONValue(value, context: "FileSystemSpecialPath.root")
         case .minimal(let value): return losslessEncodeJSONValue(value, context: "FileSystemSpecialPath.minimal")
-        case .currentWorkingDirectory(let value): return losslessEncodeJSONValue(value, context: "FileSystemSpecialPath.currentWorkingDirectory")
         case .kind(let value): return losslessEncodeJSONValue(value, context: "FileSystemSpecialPath.kind")
         case .tmpdir(let value): return losslessEncodeJSONValue(value, context: "FileSystemSpecialPath.tmpdir")
         case .slashTmp(let value): return losslessEncodeJSONValue(value, context: "FileSystemSpecialPath.slashTmp")
-        case .fileSystemSpecialPathVariant7(let value): return losslessEncodeJSONValue(value, context: "FileSystemSpecialPath.fileSystemSpecialPathVariant7")
+        case .fileSystemSpecialPathVariant6(let value): return losslessEncodeJSONValue(value, context: "FileSystemSpecialPath.fileSystemSpecialPathVariant6")
         case .unknown(let value):
             return value
         }

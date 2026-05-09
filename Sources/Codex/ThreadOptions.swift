@@ -50,24 +50,26 @@ public struct ThreadOptions: Sendable, Hashable, Codable {
 public struct ThreadListOptions: Sendable, Hashable, Codable {
     public var archived: Bool?
     public var cursor: String?
-    public var cwd: String?
+    public var cwd: ThreadListCwdFilter?
     public var limit: Int?
     public var modelProviders: [String]?
     public var searchTerm: String?
     public var sortDirection: SortDirection?
     public var sortKey: ThreadSortKey?
     public var sourceKinds: [ThreadSourceKind]?
+    public var useStateDBOnly: Bool?
 
     public init(
         archived: Bool? = nil,
         cursor: String? = nil,
-        cwd: String? = nil,
+        cwd: ThreadListCwdFilter? = nil,
         limit: Int? = nil,
         modelProviders: [String]? = nil,
         searchTerm: String? = nil,
         sortDirection: SortDirection? = nil,
         sortKey: ThreadSortKey? = nil,
-        sourceKinds: [ThreadSourceKind]? = nil
+        sourceKinds: [ThreadSourceKind]? = nil,
+        useStateDBOnly: Bool? = nil
     ) {
         self.archived = archived
         self.cursor = cursor
@@ -78,5 +80,37 @@ public struct ThreadListOptions: Sendable, Hashable, Codable {
         self.sortDirection = sortDirection
         self.sortKey = sortKey
         self.sourceKinds = sourceKinds
+        self.useStateDBOnly = useStateDBOnly
+    }
+}
+
+public enum ThreadListCwdFilter: Sendable, Hashable, Codable {
+    case path(String)
+    case paths([String])
+
+    public init(from decoder: any Decoder) throws {
+        if let value = try? String(from: decoder) {
+            self = .path(value)
+            return
+        }
+        self = .paths(try [String](from: decoder))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        switch self {
+        case .path(let value):
+            try value.encode(to: encoder)
+        case .paths(let values):
+            try values.encode(to: encoder)
+        }
+    }
+
+    public var rawJSON: JSONValue {
+        switch self {
+        case .path(let value):
+            return .string(value)
+        case .paths(let values):
+            return .array(values.map(JSONValue.string))
+        }
     }
 }

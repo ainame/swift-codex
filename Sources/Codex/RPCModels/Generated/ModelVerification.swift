@@ -3,14 +3,14 @@
 
 import Foundation
 
-public enum RestrictedReadOnlyAccessType: RawJSONRepresentable {
-    case restricted
+public enum ModelVerification: RawJSONRepresentable {
+    case trustedAccessForCyber
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "restricted": self = .restricted
+        case "trustedAccessForCyber": self = .trustedAccessForCyber
         default:
             self = .unrecognized(value)
         }
@@ -22,7 +22,7 @@ public enum RestrictedReadOnlyAccessType: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .restricted: return "restricted"
+        case .trustedAccessForCyber: return "trustedAccessForCyber"
         case .unrecognized(let value):
             return value
         }

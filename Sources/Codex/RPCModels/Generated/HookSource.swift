@@ -9,6 +9,8 @@ public enum HookSource: RawJSONRepresentable {
     case project
     case mdm
     case sessionFlags
+    case plugin
+    case cloudRequirements
     case legacyManagedConfigFile
     case legacyManagedConfigMdm
     case unknown
@@ -22,6 +24,8 @@ public enum HookSource: RawJSONRepresentable {
         case "project": self = .project
         case "mdm": self = .mdm
         case "sessionFlags": self = .sessionFlags
+        case "plugin": self = .plugin
+        case "cloudRequirements": self = .cloudRequirements
         case "legacyManagedConfigFile": self = .legacyManagedConfigFile
         case "legacyManagedConfigMdm": self = .legacyManagedConfigMdm
         case "unknown": self = .unknown
@@ -41,6 +45,8 @@ public enum HookSource: RawJSONRepresentable {
         case .project: return "project"
         case .mdm: return "mdm"
         case .sessionFlags: return "sessionFlags"
+        case .plugin: return "plugin"
+        case .cloudRequirements: return "cloudRequirements"
         case .legacyManagedConfigFile: return "legacyManagedConfigFile"
         case .legacyManagedConfigMdm: return "legacyManagedConfigMdm"
         case .unknown: return "unknown"

@@ -7,6 +7,8 @@ public enum HookEventName: RawJSONRepresentable {
     case preToolUse
     case permissionRequest
     case postToolUse
+    case preCompact
+    case postCompact
     case sessionStart
     case userPromptSubmit
     case stop
@@ -18,6 +20,8 @@ public enum HookEventName: RawJSONRepresentable {
         case "preToolUse": self = .preToolUse
         case "permissionRequest": self = .permissionRequest
         case "postToolUse": self = .postToolUse
+        case "preCompact": self = .preCompact
+        case "postCompact": self = .postCompact
         case "sessionStart": self = .sessionStart
         case "userPromptSubmit": self = .userPromptSubmit
         case "stop": self = .stop
@@ -35,6 +39,8 @@ public enum HookEventName: RawJSONRepresentable {
         case .preToolUse: return "preToolUse"
         case .permissionRequest: return "permissionRequest"
         case .postToolUse: return "postToolUse"
+        case .preCompact: return "preCompact"
+        case .postCompact: return "postCompact"
         case .sessionStart: return "sessionStart"
         case .userPromptSubmit: return "userPromptSubmit"
         case .stop: return "stop"
