@@ -13,6 +13,7 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - Work in the target Swift port repository.
    - Prefer the vendored upstream checkout at `vendor/openai-codex` when the repository includes it.
    - If the repo does not vendor upstream, ensure a local checkout of `openai/codex` exists. Use [$ghq-get](/Users/ainame/.codex/skills/ghq-get/SKILL.md) when the upstream repo is only referenced by GitHub URL or is not present locally.
+   - When the upstream basis will come from a `ghq-get` checkout, run `git fetch --tags origin` in that local checkout before resolving the latest release or comparing ancestry so the tag set is current.
 2. Resolve the upstream basis before editing.
    - Fetch upstream tags and remote state.
    - If the user asks for the latest release, use the latest stable GitHub release, not alpha or pre-release tags.
@@ -72,6 +73,7 @@ Use fast local inspection tools first.
 
 ```bash
 git -C vendor/openai-codex fetch --tags origin
+git -C /path/to/ghq/github.com/openai/codex fetch --tags origin
 gh release list --repo openai/codex --limit 10
 git -C vendor/openai-codex merge-base --is-ancestor <target-release-or-commit> <current-pin>
 git -C vendor/openai-codex log -n 20 -- sdk/python/src/codex_app_server

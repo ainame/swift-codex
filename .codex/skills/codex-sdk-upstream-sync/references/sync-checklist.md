@@ -6,6 +6,7 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
 
 - Prefer the vendored upstream checkout at `vendor/openai-codex` when available.
 - Fetch upstream remote state and tags.
+- If the sync uses a `ghq-get` checkout instead of `vendor/openai-codex`, run `git fetch --tags origin` in that local repo before picking the release tag.
 - If the request says latest release, resolve the latest stable GitHub release first.
 - Record:
   - release tag, if applicable
