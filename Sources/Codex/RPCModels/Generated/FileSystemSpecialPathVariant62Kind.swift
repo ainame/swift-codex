@@ -3,14 +3,14 @@
 
 import Foundation
 
-public enum CurrentWorkingDirectoryFileSystemSpecialPath2Kind: RawJSONRepresentable {
-    case currentWorkingDirectory
+public enum FileSystemSpecialPathVariant62Kind: RawJSONRepresentable {
+    case unknown
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "current_working_directory": self = .currentWorkingDirectory
+        case "unknown": self = .unknown
         default:
             self = .unrecognized(value)
         }
@@ -22,7 +22,7 @@ public enum CurrentWorkingDirectoryFileSystemSpecialPath2Kind: RawJSONRepresenta
 
     public var rawValue: String {
         switch self {
-        case .currentWorkingDirectory: return "current_working_directory"
+        case .unknown: return "unknown"
         case .unrecognized(let value):
             return value
         }

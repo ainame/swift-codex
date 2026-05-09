@@ -16,6 +16,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case fsChanged(FsChangedNotification)
     case fuzzyFileSearchSessionCompleted(FuzzyFileSearchSessionCompletedNotification)
     case fuzzyFileSearchSessionUpdated(FuzzyFileSearchSessionUpdatedNotification)
+    case guardianWarning(GuardianWarningNotification)
     case hookCompleted(HookCompletedNotification)
     case hookStarted(HookStartedNotification)
     case agentMessageDelta(AgentMessageDeltaNotification)
@@ -35,11 +36,15 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case mcpServerOauthLoginCompleted(McpServerOauthLoginCompletedNotification)
     case mcpServerStatusUpdated(McpServerStatusUpdatedNotification)
     case modelRerouted(ModelReroutedNotification)
+    case modelVerification(ModelVerificationNotification)
+    case remoteControlStatusChanged(RemoteControlStatusChangedNotification)
     case serverRequestResolved(ServerRequestResolvedNotification)
     case skillsChanged(SkillsChangedNotification)
     case threadArchived(ThreadArchivedNotification)
     case threadClosed(ThreadClosedNotification)
     case contextCompacted(ContextCompactedNotification)
+    case threadGoalCleared(ThreadGoalClearedNotification)
+    case threadGoalUpdated(ThreadGoalUpdatedNotification)
     case threadNameUpdated(ThreadNameUpdatedNotification)
     case threadRealtimeClosed(ThreadRealtimeClosedNotification)
     case threadRealtimeError(ThreadRealtimeErrorNotification)
@@ -76,6 +81,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "fs/changed": self = .fsChanged(try decodeJSONValue(FsChangedNotification.self, from: params))
         case "fuzzyFileSearch/sessionCompleted": self = .fuzzyFileSearchSessionCompleted(try decodeJSONValue(FuzzyFileSearchSessionCompletedNotification.self, from: params))
         case "fuzzyFileSearch/sessionUpdated": self = .fuzzyFileSearchSessionUpdated(try decodeJSONValue(FuzzyFileSearchSessionUpdatedNotification.self, from: params))
+        case "guardianWarning": self = .guardianWarning(try decodeJSONValue(GuardianWarningNotification.self, from: params))
         case "hook/completed": self = .hookCompleted(try decodeJSONValue(HookCompletedNotification.self, from: params))
         case "hook/started": self = .hookStarted(try decodeJSONValue(HookStartedNotification.self, from: params))
         case "item/agentMessage/delta": self = .agentMessageDelta(try decodeJSONValue(AgentMessageDeltaNotification.self, from: params))
@@ -95,11 +101,15 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "mcpServer/oauthLogin/completed": self = .mcpServerOauthLoginCompleted(try decodeJSONValue(McpServerOauthLoginCompletedNotification.self, from: params))
         case "mcpServer/startupStatus/updated": self = .mcpServerStatusUpdated(try decodeJSONValue(McpServerStatusUpdatedNotification.self, from: params))
         case "model/rerouted": self = .modelRerouted(try decodeJSONValue(ModelReroutedNotification.self, from: params))
+        case "model/verification": self = .modelVerification(try decodeJSONValue(ModelVerificationNotification.self, from: params))
+        case "remoteControl/status/changed": self = .remoteControlStatusChanged(try decodeJSONValue(RemoteControlStatusChangedNotification.self, from: params))
         case "serverRequest/resolved": self = .serverRequestResolved(try decodeJSONValue(ServerRequestResolvedNotification.self, from: params))
         case "skills/changed": self = .skillsChanged(try decodeJSONValue(SkillsChangedNotification.self, from: params))
         case "thread/archived": self = .threadArchived(try decodeJSONValue(ThreadArchivedNotification.self, from: params))
         case "thread/closed": self = .threadClosed(try decodeJSONValue(ThreadClosedNotification.self, from: params))
         case "thread/compacted": self = .contextCompacted(try decodeJSONValue(ContextCompactedNotification.self, from: params))
+        case "thread/goal/cleared": self = .threadGoalCleared(try decodeJSONValue(ThreadGoalClearedNotification.self, from: params))
+        case "thread/goal/updated": self = .threadGoalUpdated(try decodeJSONValue(ThreadGoalUpdatedNotification.self, from: params))
         case "thread/name/updated": self = .threadNameUpdated(try decodeJSONValue(ThreadNameUpdatedNotification.self, from: params))
         case "thread/realtime/closed": self = .threadRealtimeClosed(try decodeJSONValue(ThreadRealtimeClosedNotification.self, from: params))
         case "thread/realtime/error": self = .threadRealtimeError(try decodeJSONValue(ThreadRealtimeErrorNotification.self, from: params))
@@ -139,6 +149,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .fsChanged(let value): return value.rawJSON
         case .fuzzyFileSearchSessionCompleted(let value): return value.rawJSON
         case .fuzzyFileSearchSessionUpdated(let value): return value.rawJSON
+        case .guardianWarning(let value): return value.rawJSON
         case .hookCompleted(let value): return value.rawJSON
         case .hookStarted(let value): return value.rawJSON
         case .agentMessageDelta(let value): return value.rawJSON
@@ -158,11 +169,15 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .mcpServerOauthLoginCompleted(let value): return value.rawJSON
         case .mcpServerStatusUpdated(let value): return value.rawJSON
         case .modelRerouted(let value): return value.rawJSON
+        case .modelVerification(let value): return value.rawJSON
+        case .remoteControlStatusChanged(let value): return value.rawJSON
         case .serverRequestResolved(let value): return value.rawJSON
         case .skillsChanged(let value): return value.rawJSON
         case .threadArchived(let value): return value.rawJSON
         case .threadClosed(let value): return value.rawJSON
         case .contextCompacted(let value): return value.rawJSON
+        case .threadGoalCleared(let value): return value.rawJSON
+        case .threadGoalUpdated(let value): return value.rawJSON
         case .threadNameUpdated(let value): return value.rawJSON
         case .threadRealtimeClosed(let value): return value.rawJSON
         case .threadRealtimeError(let value): return value.rawJSON
@@ -191,6 +206,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     var threadID: String? {
         switch self {
         case .error(let value): return value.threadId
+        case .guardianWarning(let value): return value.threadId
         case .hookCompleted(let value): return value.threadId
         case .hookStarted(let value): return value.threadId
         case .agentMessageDelta(let value): return value.threadId
@@ -208,10 +224,13 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .reasoningTextDelta(let value): return value.threadId
         case .itemStarted(let value): return value.threadId
         case .modelRerouted(let value): return value.threadId
+        case .modelVerification(let value): return value.threadId
         case .serverRequestResolved(let value): return value.threadId
         case .threadArchived(let value): return value.threadId
         case .threadClosed(let value): return value.threadId
         case .contextCompacted(let value): return value.threadId
+        case .threadGoalCleared(let value): return value.threadId
+        case .threadGoalUpdated(let value): return value.threadId
         case .threadNameUpdated(let value): return value.threadId
         case .threadRealtimeClosed(let value): return value.threadId
         case .threadRealtimeError(let value): return value.threadId
@@ -260,7 +279,9 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .reasoningTextDelta(let value): return value.turnId
         case .itemStarted(let value): return value.turnId
         case .modelRerouted(let value): return value.turnId
+        case .modelVerification(let value): return value.turnId
         case .contextCompacted(let value): return value.turnId
+        case .threadGoalUpdated(let value): return value.turnId
         case .threadTokenUsageUpdated(let value): return value.turnId
         case .turnCompleted(let value): return value.turn.id
         case .turnDiffUpdated(let value): return value.turnId

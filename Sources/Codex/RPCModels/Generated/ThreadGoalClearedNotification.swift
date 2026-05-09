@@ -3,46 +3,46 @@
 
 import Foundation
 
-public struct PermissionProfileNetworkPermissions: ObjectModel {
-    public var enabled: Bool?
+public struct ThreadGoalClearedNotification: ObjectModel {
+    public var threadId: String
     public var additionalFields: JSONObject
 
     public init(
-        enabled: Bool? = nil,
+        threadId: String,
         additionalFields: JSONObject = [:]
     ) {
-        self.enabled = enabled
+        self.threadId = threadId
         self.additionalFields = additionalFields
     }
 
     public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "PermissionProfileNetworkPermissions"))
+        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "ThreadGoalClearedNotification"))
     }
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "PermissionProfileNetworkPermissions")
+        let object = try decodeJSONObject(from: decoder, context: "ThreadGoalClearedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.enabled = payload.enabled
+        self.threadId = payload.threadId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "PermissionProfileNetworkPermissions", to: encoder)
+        try encodeJSONObject(payload, additionalFields: additionalFields, context: "ThreadGoalClearedNotification", to: encoder)
     }
 
     private var payload: Payload {
         Payload(
-            enabled: enabled
+            threadId: threadId
         )
     }
 
-    private static let knownKeys: Set<String> = ["enabled"]
+    private static let knownKeys: Set<String> = ["threadId"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var enabled: Bool?
+        var threadId: String
 
         enum CodingKeys: String, CodingKey {
-            case enabled
+            case threadId
         }
     }
 }

@@ -3,14 +3,18 @@
 
 import Foundation
 
-public enum FileSystemSpecialPathVariant7Kind: RawJSONRepresentable {
-    case unknown
+public enum PluginSharePrincipalType: RawJSONRepresentable {
+    case user
+    case group
+    case workspace
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "unknown": self = .unknown
+        case "user": self = .user
+        case "group": self = .group
+        case "workspace": self = .workspace
         default:
             self = .unrecognized(value)
         }
@@ -22,7 +26,9 @@ public enum FileSystemSpecialPathVariant7Kind: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .unknown: return "unknown"
+        case .user: return "user"
+        case .group: return "group"
+        case .workspace: return "workspace"
         case .unrecognized(let value):
             return value
         }

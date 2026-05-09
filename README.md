@@ -14,9 +14,10 @@ Current implementation includes:
 - low-level `CodexRPCClient`
 - typed generated protocol models such as `Thread`, `Turn`, `ThreadItem`, `ModelListResponse`, and `CodexNotificationPayload`
 - thread start, resume, fork, archive, unarchive, rename, compact, list, and read
-- thread instruction source metadata, fork ancestry, and typed guardian auto-review payloads from the latest v2 schema
+- thread instruction source metadata, fork ancestry, multi-cwd list filtering, and typed guardian auto-review payloads from the latest v2 schema
 - plugin list retrieval with typed marketplace metadata
 - turn start, steer, interrupt, buffered run, and streamed notifications
+- typed goal, model-verification, remote-control, and guardian-warning notifications from the latest upstream registry
 - typed approval handling for command and file-change requests
 - structured input items with text, remote images, local images, skills, and mentions
 - transport launch overrides for explicit process `cwd` and full argv replacement
@@ -35,7 +36,7 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `e9fb49366c93a1478ec71cc41ecee415a197d036` (`rust-v0.124.0`)
+- Vendored upstream commit: `58573da43ab697e8b79f152c53df4b42230395a8` (`rust-v0.130.0`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/codex_app_server`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`

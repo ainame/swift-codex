@@ -4,18 +4,18 @@
 import Foundation
 
 public struct ThreadRealtimeStartedNotification: ObjectModel {
-    public var sessionId: String?
+    public var realtimeSessionId: String?
     public var threadId: String
     public var version: RealtimeConversationVersion
     public var additionalFields: JSONObject
 
     public init(
-        sessionId: String? = nil,
+        realtimeSessionId: String? = nil,
         threadId: String,
         version: RealtimeConversationVersion,
         additionalFields: JSONObject = [:]
     ) {
-        self.sessionId = sessionId
+        self.realtimeSessionId = realtimeSessionId
         self.threadId = threadId
         self.version = version
         self.additionalFields = additionalFields
@@ -28,7 +28,7 @@ public struct ThreadRealtimeStartedNotification: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ThreadRealtimeStartedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.sessionId = payload.sessionId
+        self.realtimeSessionId = payload.realtimeSessionId
         self.threadId = payload.threadId
         self.version = payload.version
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -40,21 +40,21 @@ public struct ThreadRealtimeStartedNotification: ObjectModel {
 
     private var payload: Payload {
         Payload(
-            sessionId: sessionId,
+            realtimeSessionId: realtimeSessionId,
             threadId: threadId,
             version: version
         )
     }
 
-    private static let knownKeys: Set<String> = ["sessionId", "threadId", "version"]
+    private static let knownKeys: Set<String> = ["realtimeSessionId", "threadId", "version"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var sessionId: String?
+        var realtimeSessionId: String?
         var threadId: String
         var version: RealtimeConversationVersion
 
         enum CodingKeys: String, CodingKey {
-            case sessionId
+            case realtimeSessionId
             case threadId
             case version
         }

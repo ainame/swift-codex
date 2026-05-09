@@ -3,65 +3,58 @@
 
 import Foundation
 
-public struct ItemCompletedNotification: ObjectModel {
-    public var completedAtMs: Int
-    public var item: ThreadItem
+public struct ThreadGoalUpdatedNotification: ObjectModel {
+    public var goal: ThreadGoal
     public var threadId: String
-    public var turnId: String
+    public var turnId: String?
     public var additionalFields: JSONObject
 
     public init(
-        completedAtMs: Int,
-        item: ThreadItem,
+        goal: ThreadGoal,
         threadId: String,
-        turnId: String,
+        turnId: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
-        self.completedAtMs = completedAtMs
-        self.item = item
+        self.goal = goal
         self.threadId = threadId
         self.turnId = turnId
         self.additionalFields = additionalFields
     }
 
     public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "ItemCompletedNotification"))
+        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "ThreadGoalUpdatedNotification"))
     }
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "ItemCompletedNotification")
+        let object = try decodeJSONObject(from: decoder, context: "ThreadGoalUpdatedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.completedAtMs = payload.completedAtMs
-        self.item = payload.item
+        self.goal = payload.goal
         self.threadId = payload.threadId
         self.turnId = payload.turnId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "ItemCompletedNotification", to: encoder)
+        try encodeJSONObject(payload, additionalFields: additionalFields, context: "ThreadGoalUpdatedNotification", to: encoder)
     }
 
     private var payload: Payload {
         Payload(
-            completedAtMs: completedAtMs,
-            item: item,
+            goal: goal,
             threadId: threadId,
             turnId: turnId
         )
     }
 
-    private static let knownKeys: Set<String> = ["completedAtMs", "item", "threadId", "turnId"]
+    private static let knownKeys: Set<String> = ["goal", "threadId", "turnId"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var completedAtMs: Int
-        var item: ThreadItem
+        var goal: ThreadGoal
         var threadId: String
-        var turnId: String
+        var turnId: String?
 
         enum CodingKeys: String, CodingKey {
-            case completedAtMs
-            case item
+            case goal
             case threadId
             case turnId
         }

@@ -5,17 +5,20 @@ import Foundation
 
 public struct ItemStartedNotification: ObjectModel {
     public var item: ThreadItem
+    public var startedAtMs: Int
     public var threadId: String
     public var turnId: String
     public var additionalFields: JSONObject
 
     public init(
         item: ThreadItem,
+        startedAtMs: Int,
         threadId: String,
         turnId: String,
         additionalFields: JSONObject = [:]
     ) {
         self.item = item
+        self.startedAtMs = startedAtMs
         self.threadId = threadId
         self.turnId = turnId
         self.additionalFields = additionalFields
@@ -29,6 +32,7 @@ public struct ItemStartedNotification: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "ItemStartedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.item = payload.item
+        self.startedAtMs = payload.startedAtMs
         self.threadId = payload.threadId
         self.turnId = payload.turnId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -41,20 +45,23 @@ public struct ItemStartedNotification: ObjectModel {
     private var payload: Payload {
         Payload(
             item: item,
+            startedAtMs: startedAtMs,
             threadId: threadId,
             turnId: turnId
         )
     }
 
-    private static let knownKeys: Set<String> = ["item", "threadId", "turnId"]
+    private static let knownKeys: Set<String> = ["item", "startedAtMs", "threadId", "turnId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var item: ThreadItem
+        var startedAtMs: Int
         var threadId: String
         var turnId: String
 
         enum CodingKeys: String, CodingKey {
             case item
+            case startedAtMs
             case threadId
             case turnId
         }

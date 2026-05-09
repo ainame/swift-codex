@@ -7,7 +7,6 @@ public struct WorkspaceWriteSandboxPolicy: ObjectModel {
     public var excludeSlashTmp: Bool?
     public var excludeTmpdirEnvVar: Bool?
     public var networkAccess: Bool?
-    public var readOnlyAccess: ReadOnlyAccess?
     public var type: WorkspaceWriteSandboxPolicyType
     public var writableRoots: [AbsolutePathBuf]?
     public var additionalFields: JSONObject
@@ -16,7 +15,6 @@ public struct WorkspaceWriteSandboxPolicy: ObjectModel {
         excludeSlashTmp: Bool? = nil,
         excludeTmpdirEnvVar: Bool? = nil,
         networkAccess: Bool? = nil,
-        readOnlyAccess: ReadOnlyAccess? = nil,
         type: WorkspaceWriteSandboxPolicyType,
         writableRoots: [AbsolutePathBuf]? = nil,
         additionalFields: JSONObject = [:]
@@ -24,7 +22,6 @@ public struct WorkspaceWriteSandboxPolicy: ObjectModel {
         self.excludeSlashTmp = excludeSlashTmp
         self.excludeTmpdirEnvVar = excludeTmpdirEnvVar
         self.networkAccess = networkAccess
-        self.readOnlyAccess = readOnlyAccess
         self.type = type
         self.writableRoots = writableRoots
         self.additionalFields = additionalFields
@@ -40,7 +37,6 @@ public struct WorkspaceWriteSandboxPolicy: ObjectModel {
         self.excludeSlashTmp = payload.excludeSlashTmp
         self.excludeTmpdirEnvVar = payload.excludeTmpdirEnvVar
         self.networkAccess = payload.networkAccess
-        self.readOnlyAccess = payload.readOnlyAccess
         self.type = payload.type
         self.writableRoots = payload.writableRoots
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -55,19 +51,17 @@ public struct WorkspaceWriteSandboxPolicy: ObjectModel {
             excludeSlashTmp: excludeSlashTmp,
             excludeTmpdirEnvVar: excludeTmpdirEnvVar,
             networkAccess: networkAccess,
-            readOnlyAccess: readOnlyAccess,
             type: type,
             writableRoots: writableRoots
         )
     }
 
-    private static let knownKeys: Set<String> = ["excludeSlashTmp", "excludeTmpdirEnvVar", "networkAccess", "readOnlyAccess", "type", "writableRoots"]
+    private static let knownKeys: Set<String> = ["excludeSlashTmp", "excludeTmpdirEnvVar", "networkAccess", "type", "writableRoots"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var excludeSlashTmp: Bool?
         var excludeTmpdirEnvVar: Bool?
         var networkAccess: Bool?
-        var readOnlyAccess: ReadOnlyAccess?
         var type: WorkspaceWriteSandboxPolicyType
         var writableRoots: [AbsolutePathBuf]?
 
@@ -75,7 +69,6 @@ public struct WorkspaceWriteSandboxPolicy: ObjectModel {
             case excludeSlashTmp
             case excludeTmpdirEnvVar
             case networkAccess
-            case readOnlyAccess
             case type
             case writableRoots
         }

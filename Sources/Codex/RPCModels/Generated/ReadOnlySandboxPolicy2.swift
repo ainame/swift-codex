@@ -4,18 +4,15 @@
 import Foundation
 
 public struct ReadOnlySandboxPolicy2: ObjectModel {
-    public var access: ReadOnlyAccess?
     public var networkAccess: Bool?
     public var type: ReadOnlySandboxPolicyType2
     public var additionalFields: JSONObject
 
     public init(
-        access: ReadOnlyAccess? = nil,
         networkAccess: Bool? = nil,
         type: ReadOnlySandboxPolicyType2,
         additionalFields: JSONObject = [:]
     ) {
-        self.access = access
         self.networkAccess = networkAccess
         self.type = type
         self.additionalFields = additionalFields
@@ -28,7 +25,6 @@ public struct ReadOnlySandboxPolicy2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ReadOnlySandboxPolicy2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.access = payload.access
         self.networkAccess = payload.networkAccess
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -40,21 +36,18 @@ public struct ReadOnlySandboxPolicy2: ObjectModel {
 
     private var payload: Payload {
         Payload(
-            access: access,
             networkAccess: networkAccess,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["access", "networkAccess", "type"]
+    private static let knownKeys: Set<String> = ["networkAccess", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var access: ReadOnlyAccess?
         var networkAccess: Bool?
         var type: ReadOnlySandboxPolicyType2
 
         enum CodingKeys: String, CodingKey {
-            case access
             case networkAccess
             case type
         }

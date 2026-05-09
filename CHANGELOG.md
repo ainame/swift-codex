@@ -10,10 +10,11 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Changed
 
-- Updated `vendor/openai-codex` to `rust-v0.124.0` (`e9fb49366c93a1478ec71cc41ecee415a197d036`).
-- Regenerated app-server v2 models for the latest schema, including permission-profile payloads, remote plugin source variants, refreshed thread/model/plugin response shapes, and new rate-limit typing.
-- Added typed notification decoding for `externalAgentConfig/import/completed`, `item/fileChange/patchUpdated`, `thread/realtime/transcript/delta`, `thread/realtime/transcript/done`, `thread/realtime/sdp`, and `warning`.
-- Added `ThreadOptions.sessionStartSource` and `ThreadListOptions.sortDirection` to match the current Python app-server client surface.
+- Updated `vendor/openai-codex` to `rust-v0.130.0` (`58573da43ab697e8b79f152c53df4b42230395a8`).
+- Regenerated app-server v2 models for the latest schema, including `Thread.sessionId`, `Thread.threadSource`, plugin share metadata, model service-tier metadata, and the current sandbox/path unions.
+- Added typed notification decoding for `guardianWarning`, `model/verification`, `remoteControl/status/changed`, `thread/goal/cleared`, and `thread/goal/updated`.
+- Updated `ThreadListOptions` to support multi-path `cwd` filters and `useStateDBOnly`, matching the current Python app-server client surface.
+- Preserved the public Swift `ServiceTier` wrapper as a compatibility enum even though the upstream schema now treats those request fields as raw strings.
 
 ## [0.0.3] - 2026-03-29
 

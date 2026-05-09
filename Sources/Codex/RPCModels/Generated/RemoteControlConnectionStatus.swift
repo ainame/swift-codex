@@ -3,16 +3,20 @@
 
 import Foundation
 
-public enum ServiceTier: RawJSONRepresentable {
-    case fast
-    case flex
+public enum RemoteControlConnectionStatus: RawJSONRepresentable {
+    case disabled
+    case connecting
+    case connected
+    case errored
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "fast": self = .fast
-        case "flex": self = .flex
+        case "disabled": self = .disabled
+        case "connecting": self = .connecting
+        case "connected": self = .connected
+        case "errored": self = .errored
         default:
             self = .unrecognized(value)
         }
@@ -24,8 +28,10 @@ public enum ServiceTier: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .fast: return "fast"
-        case .flex: return "flex"
+        case .disabled: return "disabled"
+        case .connecting: return "connecting"
+        case .connected: return "connected"
+        case .errored: return "errored"
         case .unrecognized(let value):
             return value
         }

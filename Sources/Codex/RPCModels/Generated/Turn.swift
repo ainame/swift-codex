@@ -9,6 +9,7 @@ public struct Turn: ObjectModel {
     public var error: TurnError?
     public var id: String
     public var items: [ThreadItem]
+    public var itemsView: TurnItemsView?
     public var startedAt: Int?
     public var status: TurnStatus
     public var additionalFields: JSONObject
@@ -19,6 +20,7 @@ public struct Turn: ObjectModel {
         error: TurnError? = nil,
         id: String,
         items: [ThreadItem],
+        itemsView: TurnItemsView? = nil,
         startedAt: Int? = nil,
         status: TurnStatus,
         additionalFields: JSONObject = [:]
@@ -28,6 +30,7 @@ public struct Turn: ObjectModel {
         self.error = error
         self.id = id
         self.items = items
+        self.itemsView = itemsView
         self.startedAt = startedAt
         self.status = status
         self.additionalFields = additionalFields
@@ -45,6 +48,7 @@ public struct Turn: ObjectModel {
         self.error = payload.error
         self.id = payload.id
         self.items = payload.items
+        self.itemsView = payload.itemsView
         self.startedAt = payload.startedAt
         self.status = payload.status
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -61,12 +65,13 @@ public struct Turn: ObjectModel {
             error: error,
             id: id,
             items: items,
+            itemsView: itemsView,
             startedAt: startedAt,
             status: status
         )
     }
 
-    private static let knownKeys: Set<String> = ["completedAt", "durationMs", "error", "id", "items", "startedAt", "status"]
+    private static let knownKeys: Set<String> = ["completedAt", "durationMs", "error", "id", "items", "itemsView", "startedAt", "status"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var completedAt: Int?
@@ -74,6 +79,7 @@ public struct Turn: ObjectModel {
         var error: TurnError?
         var id: String
         var items: [ThreadItem]
+        var itemsView: TurnItemsView?
         var startedAt: Int?
         var status: TurnStatus
 
@@ -83,6 +89,7 @@ public struct Turn: ObjectModel {
             case error
             case id
             case items
+            case itemsView
             case startedAt
             case status
         }

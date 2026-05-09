@@ -3,14 +3,20 @@
 
 import Foundation
 
-public enum CurrentWorkingDirectoryFileSystemSpecialPathKind: RawJSONRepresentable {
-    case currentWorkingDirectory
+public enum ThreadGoalStatus: RawJSONRepresentable {
+    case active
+    case paused
+    case budgetLimited
+    case complete
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "current_working_directory": self = .currentWorkingDirectory
+        case "active": self = .active
+        case "paused": self = .paused
+        case "budgetLimited": self = .budgetLimited
+        case "complete": self = .complete
         default:
             self = .unrecognized(value)
         }
@@ -22,7 +28,10 @@ public enum CurrentWorkingDirectoryFileSystemSpecialPathKind: RawJSONRepresentab
 
     public var rawValue: String {
         switch self {
-        case .currentWorkingDirectory: return "current_working_directory"
+        case .active: return "active"
+        case .paused: return "paused"
+        case .budgetLimited: return "budgetLimited"
+        case .complete: return "complete"
         case .unrecognized(let value):
             return value
         }

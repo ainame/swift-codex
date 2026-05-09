@@ -17,8 +17,10 @@ public struct Thread: ObjectModel {
     public var name: String?
     public var path: String?
     public var preview: String
+    public var sessionId: String
     public var source: SessionSource
     public var status: ThreadStatus
+    public var threadSource: ThreadSource?
     public var turns: [Turn]
     public var updatedAt: Int
     public var additionalFields: JSONObject
@@ -37,8 +39,10 @@ public struct Thread: ObjectModel {
         name: String? = nil,
         path: String? = nil,
         preview: String,
+        sessionId: String,
         source: SessionSource,
         status: ThreadStatus,
+        threadSource: ThreadSource? = nil,
         turns: [Turn],
         updatedAt: Int,
         additionalFields: JSONObject = [:]
@@ -56,8 +60,10 @@ public struct Thread: ObjectModel {
         self.name = name
         self.path = path
         self.preview = preview
+        self.sessionId = sessionId
         self.source = source
         self.status = status
+        self.threadSource = threadSource
         self.turns = turns
         self.updatedAt = updatedAt
         self.additionalFields = additionalFields
@@ -83,8 +89,10 @@ public struct Thread: ObjectModel {
         self.name = payload.name
         self.path = payload.path
         self.preview = payload.preview
+        self.sessionId = payload.sessionId
         self.source = payload.source
         self.status = payload.status
+        self.threadSource = payload.threadSource
         self.turns = payload.turns
         self.updatedAt = payload.updatedAt
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -109,14 +117,16 @@ public struct Thread: ObjectModel {
             name: name,
             path: path,
             preview: preview,
+            sessionId: sessionId,
             source: source,
             status: status,
+            threadSource: threadSource,
             turns: turns,
             updatedAt: updatedAt
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "path", "preview", "source", "status", "turns", "updatedAt"]
+    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "path", "preview", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentNickname: String?
@@ -132,8 +142,10 @@ public struct Thread: ObjectModel {
         var name: String?
         var path: String?
         var preview: String
+        var sessionId: String
         var source: SessionSource
         var status: ThreadStatus
+        var threadSource: ThreadSource?
         var turns: [Turn]
         var updatedAt: Int
 
@@ -151,8 +163,10 @@ public struct Thread: ObjectModel {
             case name
             case path
             case preview
+            case sessionId
             case source
             case status
+            case threadSource
             case turns
             case updatedAt
         }
@@ -172,8 +186,10 @@ public struct Thread: ObjectModel {
             name: String?,
             path: String?,
             preview: String,
+            sessionId: String,
             source: SessionSource,
             status: ThreadStatus,
+            threadSource: ThreadSource?,
             turns: [Turn],
             updatedAt: Int
         ) {
@@ -190,8 +206,10 @@ public struct Thread: ObjectModel {
             self.name = name
             self.path = path
             self.preview = preview
+            self.sessionId = sessionId
             self.source = source
             self.status = status
+            self.threadSource = threadSource
             self.turns = turns
             self.updatedAt = updatedAt
         }
@@ -211,8 +229,10 @@ public struct Thread: ObjectModel {
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.path = try container.decodeIfPresent(String.self, forKey: .path)
             self.preview = try container.decode(String.self, forKey: .preview)
+            self.sessionId = try container.decode(String.self, forKey: .sessionId)
             self.source = try container.decode(SessionSource.self, forKey: .source)
             self.status = try container.decodeIfPresent(ThreadStatus.self, forKey: .status) ?? .idle(IdleThreadStatus(type: .idle))
+            self.threadSource = try container.decodeIfPresent(ThreadSource.self, forKey: .threadSource)
             self.turns = try container.decode([Turn].self, forKey: .turns)
             self.updatedAt = try container.decode(Int.self, forKey: .updatedAt)
         }

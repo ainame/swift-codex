@@ -5,33 +5,42 @@ import Foundation
 
 public struct PluginSummary: ObjectModel {
     public var authPolicy: PluginAuthPolicy
+    public var availability: PluginAvailability?
     public var enabled: Bool
     public var id: String
     public var installPolicy: PluginInstallPolicy
     public var installed: Bool
     public var interface: PluginInterface?
+    public var keywords: [String]?
     public var name: String
+    public var shareContext: PluginShareContext?
     public var source: PluginSource
     public var additionalFields: JSONObject
 
     public init(
         authPolicy: PluginAuthPolicy,
+        availability: PluginAvailability? = nil,
         enabled: Bool,
         id: String,
         installPolicy: PluginInstallPolicy,
         installed: Bool,
         interface: PluginInterface? = nil,
+        keywords: [String]? = nil,
         name: String,
+        shareContext: PluginShareContext? = nil,
         source: PluginSource,
         additionalFields: JSONObject = [:]
     ) {
         self.authPolicy = authPolicy
+        self.availability = availability
         self.enabled = enabled
         self.id = id
         self.installPolicy = installPolicy
         self.installed = installed
         self.interface = interface
+        self.keywords = keywords
         self.name = name
+        self.shareContext = shareContext
         self.source = source
         self.additionalFields = additionalFields
     }
@@ -44,12 +53,15 @@ public struct PluginSummary: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "PluginSummary")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.authPolicy = payload.authPolicy
+        self.availability = payload.availability
         self.enabled = payload.enabled
         self.id = payload.id
         self.installPolicy = payload.installPolicy
         self.installed = payload.installed
         self.interface = payload.interface
+        self.keywords = payload.keywords
         self.name = payload.name
+        self.shareContext = payload.shareContext
         self.source = payload.source
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -61,36 +73,45 @@ public struct PluginSummary: ObjectModel {
     private var payload: Payload {
         Payload(
             authPolicy: authPolicy,
+            availability: availability,
             enabled: enabled,
             id: id,
             installPolicy: installPolicy,
             installed: installed,
             interface: interface,
+            keywords: keywords,
             name: name,
+            shareContext: shareContext,
             source: source
         )
     }
 
-    private static let knownKeys: Set<String> = ["authPolicy", "enabled", "id", "installPolicy", "installed", "interface", "name", "source"]
+    private static let knownKeys: Set<String> = ["authPolicy", "availability", "enabled", "id", "installPolicy", "installed", "interface", "keywords", "name", "shareContext", "source"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var authPolicy: PluginAuthPolicy
+        var availability: PluginAvailability?
         var enabled: Bool
         var id: String
         var installPolicy: PluginInstallPolicy
         var installed: Bool
         var interface: PluginInterface?
+        var keywords: [String]?
         var name: String
+        var shareContext: PluginShareContext?
         var source: PluginSource
 
         enum CodingKeys: String, CodingKey {
             case authPolicy
+            case availability
             case enabled
             case id
             case installPolicy
             case installed
             case interface
+            case keywords
             case name
+            case shareContext
             case source
         }
     }
