@@ -35,9 +35,11 @@ These instructions apply to the entire repository.
 
 ## Upstream Sync
 - Use the vendored `openai/codex` checkout at [`vendor/openai-codex`](vendor/openai-codex) as the default upstream source in this repository.
+- If `vendor/openai-codex` is empty, uninitialized, or otherwise invalid in the current worktree, do not use it to decide whether a new upstream release exists.
 - Record the exact `openai/codex` commit SHA used for any sync or parity work in [`UPSTREAM.md`](UPSTREAM.md).
 - Treat `sdk/typescript` as the primary upstream source unless the change clearly depends on another upstream path.
 - Keep the `vendor/openai-codex` submodule updated intentionally. When changing its pinned commit, update [`UPSTREAM.md`](UPSTREAM.md), [`CHANGELOG.md`](CHANGELOG.md), and any related documentation in the same change.
+- When the task depends on the latest upstream release, resolve that release from a current upstream source first, then use local checkouts for file comparison and syncing.
 - When syncing with upstream, update [`UPSTREAM.md`](UPSTREAM.md) with the commit SHA, commit URL, review date, reviewed files or features, and intentional Swift-specific deviations.
 - Update [`README.md`](README.md) when the recorded upstream basis changes the documented status, supported features, or scope.
 - Do not claim a new upstream basis unless you verified the referenced commit against the implemented Swift behavior.

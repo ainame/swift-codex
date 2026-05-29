@@ -12,11 +12,14 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
 1. Resolve the repositories first.
    - Work in the target Swift port repository.
    - Prefer the vendored upstream checkout at `vendor/openai-codex` when the repository includes it.
+   - If `vendor/openai-codex` is missing, empty, or otherwise not a valid upstream checkout, do not trust it for release resolution. Fall back to a real local `openai/codex` checkout for file diffs and to a live upstream release source for the latest stable tag.
    - If the repo does not vendor upstream, ensure a local checkout of `openai/codex` exists. Use [$ghq-get](/Users/ainame/.codex/skills/ghq-get/SKILL.md) when the upstream repo is only referenced by GitHub URL or is not present locally.
    - When the upstream basis will come from a `ghq-get` checkout, run `git fetch --tags origin` in that local checkout before resolving the latest release or comparing ancestry so the tag set is current.
 2. Resolve the upstream basis before editing.
-   - Fetch upstream tags and remote state.
-   - If the user asks for the latest release, use the latest stable GitHub release, not alpha or pre-release tags.
+   - If the user asks for the latest release, resolve the latest stable GitHub release first, not alpha or pre-release tags.
+   - Verify the release tag against a current upstream source such as the GitHub releases page or `gh release view` before trusting local tags.
+   - Fetch upstream tags and remote state after that when the environment allows it.
+   - If tag refresh is blocked, treat local tags as a stale fallback only. Say that explicitly and do not report a no-op result as authoritative when a live release source was not checked.
    - Expect upstream release tags to be named like `rust-v0.117.0`.
    - Compare the current vendored commit against the target release with ancestry checks before moving the submodule pointer. The current pin may already contain newer commits than the latest stable release for some paths.
    - Record the exact `openai/codex` commit SHA used as the basis, not just the tag name or branch.
@@ -77,6 +80,7 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
 Use fast local inspection tools first.
 
 ```bash
+gh release view rust-v0.135.0 --repo openai/codex
 git -C vendor/openai-codex fetch --tags origin
 git -C /path/to/ghq/github.com/openai/codex fetch --tags origin
 gh release list --repo openai/codex --limit 10
