@@ -7,6 +7,7 @@ public struct Model: ObjectModel {
     public var additionalSpeedTiers: [String]?
     public var availabilityNux: ModelAvailabilityNux?
     public var defaultReasoningEffort: ReasoningEffort
+    public var defaultServiceTier: String?
     public var description: String
     public var displayName: String
     public var hidden: Bool
@@ -25,6 +26,7 @@ public struct Model: ObjectModel {
         additionalSpeedTiers: [String]? = nil,
         availabilityNux: ModelAvailabilityNux? = nil,
         defaultReasoningEffort: ReasoningEffort,
+        defaultServiceTier: String? = nil,
         description: String,
         displayName: String,
         hidden: Bool,
@@ -42,6 +44,7 @@ public struct Model: ObjectModel {
         self.additionalSpeedTiers = additionalSpeedTiers
         self.availabilityNux = availabilityNux
         self.defaultReasoningEffort = defaultReasoningEffort
+        self.defaultServiceTier = defaultServiceTier
         self.description = description
         self.displayName = displayName
         self.hidden = hidden
@@ -67,6 +70,7 @@ public struct Model: ObjectModel {
         self.additionalSpeedTiers = payload.additionalSpeedTiers
         self.availabilityNux = payload.availabilityNux
         self.defaultReasoningEffort = payload.defaultReasoningEffort
+        self.defaultServiceTier = payload.defaultServiceTier
         self.description = payload.description
         self.displayName = payload.displayName
         self.hidden = payload.hidden
@@ -91,6 +95,7 @@ public struct Model: ObjectModel {
             additionalSpeedTiers: additionalSpeedTiers,
             availabilityNux: availabilityNux,
             defaultReasoningEffort: defaultReasoningEffort,
+            defaultServiceTier: defaultServiceTier,
             description: description,
             displayName: displayName,
             hidden: hidden,
@@ -106,12 +111,13 @@ public struct Model: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["additionalSpeedTiers", "availabilityNux", "defaultReasoningEffort", "description", "displayName", "hidden", "id", "inputModalities", "isDefault", "model", "serviceTiers", "supportedReasoningEfforts", "supportsPersonality", "upgrade", "upgradeInfo"]
+    private static let knownKeys: Set<String> = ["additionalSpeedTiers", "availabilityNux", "defaultReasoningEffort", "defaultServiceTier", "description", "displayName", "hidden", "id", "inputModalities", "isDefault", "model", "serviceTiers", "supportedReasoningEfforts", "supportsPersonality", "upgrade", "upgradeInfo"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var additionalSpeedTiers: [String]?
         var availabilityNux: ModelAvailabilityNux?
         var defaultReasoningEffort: ReasoningEffort
+        var defaultServiceTier: String?
         var description: String
         var displayName: String
         var hidden: Bool
@@ -129,6 +135,7 @@ public struct Model: ObjectModel {
             case additionalSpeedTiers
             case availabilityNux
             case defaultReasoningEffort
+            case defaultServiceTier
             case description
             case displayName
             case hidden

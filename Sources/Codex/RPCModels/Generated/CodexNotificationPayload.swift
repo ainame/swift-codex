@@ -37,6 +37,8 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case mcpServerStatusUpdated(McpServerStatusUpdatedNotification)
     case modelRerouted(ModelReroutedNotification)
     case modelVerification(ModelVerificationNotification)
+    case processExited(ProcessExitedNotification)
+    case processOutputDelta(ProcessOutputDeltaNotification)
     case remoteControlStatusChanged(RemoteControlStatusChangedNotification)
     case serverRequestResolved(ServerRequestResolvedNotification)
     case skillsChanged(SkillsChangedNotification)
@@ -102,6 +104,8 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "mcpServer/startupStatus/updated": self = .mcpServerStatusUpdated(try decodeJSONValue(McpServerStatusUpdatedNotification.self, from: params))
         case "model/rerouted": self = .modelRerouted(try decodeJSONValue(ModelReroutedNotification.self, from: params))
         case "model/verification": self = .modelVerification(try decodeJSONValue(ModelVerificationNotification.self, from: params))
+        case "process/exited": self = .processExited(try decodeJSONValue(ProcessExitedNotification.self, from: params))
+        case "process/outputDelta": self = .processOutputDelta(try decodeJSONValue(ProcessOutputDeltaNotification.self, from: params))
         case "remoteControl/status/changed": self = .remoteControlStatusChanged(try decodeJSONValue(RemoteControlStatusChangedNotification.self, from: params))
         case "serverRequest/resolved": self = .serverRequestResolved(try decodeJSONValue(ServerRequestResolvedNotification.self, from: params))
         case "skills/changed": self = .skillsChanged(try decodeJSONValue(SkillsChangedNotification.self, from: params))
@@ -170,6 +174,8 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .mcpServerStatusUpdated(let value): return value.rawJSON
         case .modelRerouted(let value): return value.rawJSON
         case .modelVerification(let value): return value.rawJSON
+        case .processExited(let value): return value.rawJSON
+        case .processOutputDelta(let value): return value.rawJSON
         case .remoteControlStatusChanged(let value): return value.rawJSON
         case .serverRequestResolved(let value): return value.rawJSON
         case .skillsChanged(let value): return value.rawJSON

@@ -9,6 +9,7 @@ public struct McpToolCallThreadItem: ObjectModel {
     public var error: McpToolCallError?
     public var id: String
     public var mcpAppResourceUri: String?
+    public var pluginId: String?
     public var result: McpToolCallResult?
     public var server: String
     public var status: McpToolCallStatus
@@ -22,6 +23,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         error: McpToolCallError? = nil,
         id: String,
         mcpAppResourceUri: String? = nil,
+        pluginId: String? = nil,
         result: McpToolCallResult? = nil,
         server: String,
         status: McpToolCallStatus,
@@ -34,6 +36,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         self.error = error
         self.id = id
         self.mcpAppResourceUri = mcpAppResourceUri
+        self.pluginId = pluginId
         self.result = result
         self.server = server
         self.status = status
@@ -54,6 +57,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         self.error = payload.error
         self.id = payload.id
         self.mcpAppResourceUri = payload.mcpAppResourceUri
+        self.pluginId = payload.pluginId
         self.result = payload.result
         self.server = payload.server
         self.status = payload.status
@@ -73,6 +77,7 @@ public struct McpToolCallThreadItem: ObjectModel {
             error: error,
             id: id,
             mcpAppResourceUri: mcpAppResourceUri,
+            pluginId: pluginId,
             result: result,
             server: server,
             status: status,
@@ -81,7 +86,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["arguments", "durationMs", "error", "id", "mcpAppResourceUri", "result", "server", "status", "tool", "type"]
+    private static let knownKeys: Set<String> = ["arguments", "durationMs", "error", "id", "mcpAppResourceUri", "pluginId", "result", "server", "status", "tool", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var arguments: JSONValue
@@ -89,6 +94,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         var error: McpToolCallError?
         var id: String
         var mcpAppResourceUri: String?
+        var pluginId: String?
         var result: McpToolCallResult?
         var server: String
         var status: McpToolCallStatus
@@ -101,6 +107,7 @@ public struct McpToolCallThreadItem: ObjectModel {
             case error
             case id
             case mcpAppResourceUri
+            case pluginId
             case result
             case server
             case status

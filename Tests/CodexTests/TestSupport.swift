@@ -569,6 +569,7 @@ func appServerItemStarted(threadID: String, turnID: String, item: ThreadItem) ->
     jsonObject(
         ItemStartedNotification(
             item: item,
+            startedAtMs: 1,
             threadId: threadID,
             turnId: turnID
         )

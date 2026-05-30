@@ -6,6 +6,8 @@ import Foundation
 public enum ThreadGoalStatus: RawJSONRepresentable {
     case active
     case paused
+    case blocked
+    case usageLimited
     case budgetLimited
     case complete
     case unrecognized(String)
@@ -15,6 +17,8 @@ public enum ThreadGoalStatus: RawJSONRepresentable {
         switch value {
         case "active": self = .active
         case "paused": self = .paused
+        case "blocked": self = .blocked
+        case "usageLimited": self = .usageLimited
         case "budgetLimited": self = .budgetLimited
         case "complete": self = .complete
         default:
@@ -30,6 +34,8 @@ public enum ThreadGoalStatus: RawJSONRepresentable {
         switch self {
         case .active: return "active"
         case .paused: return "paused"
+        case .blocked: return "blocked"
+        case .usageLimited: return "usageLimited"
         case .budgetLimited: return "budgetLimited"
         case .complete: return "complete"
         case .unrecognized(let value):

@@ -6,23 +6,29 @@ import Foundation
 public struct PluginShareContext: ObjectModel {
     public var creatorAccountUserId: String?
     public var creatorName: String?
+    public var discoverability: PluginShareDiscoverability?
     public var remotePluginId: String
-    public var shareTargets: [PluginSharePrincipal]?
+    public var remoteVersion: String?
+    public var sharePrincipals: [PluginSharePrincipal]?
     public var shareUrl: String?
     public var additionalFields: JSONObject
 
     public init(
         creatorAccountUserId: String? = nil,
         creatorName: String? = nil,
+        discoverability: PluginShareDiscoverability? = nil,
         remotePluginId: String,
-        shareTargets: [PluginSharePrincipal]? = nil,
+        remoteVersion: String? = nil,
+        sharePrincipals: [PluginSharePrincipal]? = nil,
         shareUrl: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.creatorAccountUserId = creatorAccountUserId
         self.creatorName = creatorName
+        self.discoverability = discoverability
         self.remotePluginId = remotePluginId
-        self.shareTargets = shareTargets
+        self.remoteVersion = remoteVersion
+        self.sharePrincipals = sharePrincipals
         self.shareUrl = shareUrl
         self.additionalFields = additionalFields
     }
@@ -36,8 +42,10 @@ public struct PluginShareContext: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.creatorAccountUserId = payload.creatorAccountUserId
         self.creatorName = payload.creatorName
+        self.discoverability = payload.discoverability
         self.remotePluginId = payload.remotePluginId
-        self.shareTargets = payload.shareTargets
+        self.remoteVersion = payload.remoteVersion
+        self.sharePrincipals = payload.sharePrincipals
         self.shareUrl = payload.shareUrl
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -50,26 +58,32 @@ public struct PluginShareContext: ObjectModel {
         Payload(
             creatorAccountUserId: creatorAccountUserId,
             creatorName: creatorName,
+            discoverability: discoverability,
             remotePluginId: remotePluginId,
-            shareTargets: shareTargets,
+            remoteVersion: remoteVersion,
+            sharePrincipals: sharePrincipals,
             shareUrl: shareUrl
         )
     }
 
-    private static let knownKeys: Set<String> = ["creatorAccountUserId", "creatorName", "remotePluginId", "shareTargets", "shareUrl"]
+    private static let knownKeys: Set<String> = ["creatorAccountUserId", "creatorName", "discoverability", "remotePluginId", "remoteVersion", "sharePrincipals", "shareUrl"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var creatorAccountUserId: String?
         var creatorName: String?
+        var discoverability: PluginShareDiscoverability?
         var remotePluginId: String
-        var shareTargets: [PluginSharePrincipal]?
+        var remoteVersion: String?
+        var sharePrincipals: [PluginSharePrincipal]?
         var shareUrl: String?
 
         enum CodingKeys: String, CodingKey {
             case creatorAccountUserId
             case creatorName
+            case discoverability
             case remotePluginId
-            case shareTargets
+            case remoteVersion
+            case sharePrincipals
             case shareUrl
         }
     }

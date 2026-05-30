@@ -3,18 +3,20 @@
 
 import Foundation
 
-public enum FileSystemAccessMode: RawJSONRepresentable {
-    case read
-    case write
-    case deny
+public enum ImageDetail: RawJSONRepresentable {
+    case auto
+    case low
+    case high
+    case original
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "read": self = .read
-        case "write": self = .write
-        case "deny": self = .deny
+        case "auto": self = .auto
+        case "low": self = .low
+        case "high": self = .high
+        case "original": self = .original
         default:
             self = .unrecognized(value)
         }
@@ -26,9 +28,10 @@ public enum FileSystemAccessMode: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .read: return "read"
-        case .write: return "write"
-        case .deny: return "deny"
+        case .auto: return "auto"
+        case .low: return "low"
+        case .high: return "high"
+        case .original: return "original"
         case .unrecognized(let value):
             return value
         }
