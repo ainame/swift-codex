@@ -8,15 +8,18 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.135.0] - 2026-05-30
+
 ### Added
 
-- Synced the app-server schema to `rust-v0.135.0`, adding typed process notifications, image detail fields, plugin share metadata, MCP tool plugin IDs, and remote-control status metadata.
-- Added friendly `Sandbox` presets for thread and turn APIs, matching the upstream Python SDK's `read_only`, `workspace_write`, and `full_access` presets.
+- Synced the app-server schema to `rust-v0.135.0`, adding typed process notifications, image detail fields, plugin share metadata, MCP tool plugin IDs, and remote-control status metadata. [#13](https://github.com/ainame/swift-codex/pull/13)
+- Added friendly `Sandbox` presets for thread and turn APIs, matching the upstream Python SDK's `read_only`, `workspace_write`, and `full_access` presets. [#13](https://github.com/ainame/swift-codex/pull/13)
 
 ### Changed
 
-- Updated the vendored upstream checkout to `rust-v0.135.0` (`4daceea869704f9f35e0a3949fc34711ef978a4e`).
-- Updated the schema generator and sync workflow to handle the upstream Python package rename from `codex_app_server` to `openai_codex`, and to repair empty submodule checkouts before falling back to external local checkouts.
+- Updated the vendored upstream checkout to `rust-v0.135.0` (`4daceea869704f9f35e0a3949fc34711ef978a4e`). [#13](https://github.com/ainame/swift-codex/pull/13)
+- Updated the schema generator and sync workflow to handle the upstream Python package rename from `codex_app_server` to `openai_codex`, and to repair empty submodule checkouts before falling back to external local checkouts. [#13](https://github.com/ainame/swift-codex/pull/13)
+- Updated the Swift toolchain pin to `6.3.2`. [#13](https://github.com/ainame/swift-codex/pull/13)
 
 ## [0.130.0] - 2026-05-09
 
