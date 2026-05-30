@@ -5,15 +5,21 @@ import Foundation
 
 public struct RemoteControlStatusChangedNotification: ObjectModel {
     public var environmentId: String?
+    public var installationId: String
+    public var serverName: String
     public var status: RemoteControlConnectionStatus
     public var additionalFields: JSONObject
 
     public init(
         environmentId: String? = nil,
+        installationId: String,
+        serverName: String,
         status: RemoteControlConnectionStatus,
         additionalFields: JSONObject = [:]
     ) {
         self.environmentId = environmentId
+        self.installationId = installationId
+        self.serverName = serverName
         self.status = status
         self.additionalFields = additionalFields
     }
@@ -26,6 +32,8 @@ public struct RemoteControlStatusChangedNotification: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "RemoteControlStatusChangedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.environmentId = payload.environmentId
+        self.installationId = payload.installationId
+        self.serverName = payload.serverName
         self.status = payload.status
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -37,18 +45,24 @@ public struct RemoteControlStatusChangedNotification: ObjectModel {
     private var payload: Payload {
         Payload(
             environmentId: environmentId,
+            installationId: installationId,
+            serverName: serverName,
             status: status
         )
     }
 
-    private static let knownKeys: Set<String> = ["environmentId", "status"]
+    private static let knownKeys: Set<String> = ["environmentId", "installationId", "serverName", "status"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var environmentId: String?
+        var installationId: String
+        var serverName: String
         var status: RemoteControlConnectionStatus
 
         enum CodingKeys: String, CodingKey {
             case environmentId
+            case installationId
+            case serverName
             case status
         }
     }

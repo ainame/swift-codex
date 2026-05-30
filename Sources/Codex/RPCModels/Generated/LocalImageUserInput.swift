@@ -4,15 +4,18 @@
 import Foundation
 
 public struct LocalImageUserInput: ObjectModel {
+    public var detail: ImageDetail?
     public var path: String
     public var type: LocalImageUserInputType
     public var additionalFields: JSONObject
 
     public init(
+        detail: ImageDetail? = nil,
         path: String,
         type: LocalImageUserInputType,
         additionalFields: JSONObject = [:]
     ) {
+        self.detail = detail
         self.path = path
         self.type = type
         self.additionalFields = additionalFields
@@ -25,6 +28,7 @@ public struct LocalImageUserInput: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "LocalImageUserInput")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.detail = payload.detail
         self.path = payload.path
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -36,18 +40,21 @@ public struct LocalImageUserInput: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            detail: detail,
             path: path,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["path", "type"]
+    private static let knownKeys: Set<String> = ["detail", "path", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var detail: ImageDetail?
         var path: String
         var type: LocalImageUserInputType
 
         enum CodingKeys: String, CodingKey {
+            case detail
             case path
             case type
         }

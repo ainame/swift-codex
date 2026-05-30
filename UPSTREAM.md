@@ -6,12 +6,12 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `58573da43ab697e8b79f152c53df4b42230395a8`
-- Reviewed JSON-RPC basis commit SHA: `58573da43ab697e8b79f152c53df4b42230395a8`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/58573da43ab697e8b79f152c53df4b42230395a8`
-- Last reviewed date: `2026-05-09`
+- Vendored upstream commit: `4daceea869704f9f35e0a3949fc34711ef978a4e`
+- Reviewed JSON-RPC basis commit SHA: `4daceea869704f9f35e0a3949fc34711ef978a4e`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/4daceea869704f9f35e0a3949fc34711ef978a4e`
+- Last reviewed date: `2026-05-30`
 
-The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `codex_app_server` client and v2 app-server protocol, not the older `exec` transport.
+The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
 ## How To Keep This In Sync
 
@@ -33,25 +33,26 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `58573da43ab697e8b79f152c53df4b42230395a8` (`rust-v0.130.0`)
+- Vendored checkout: `vendor/openai-codex` at `4daceea869704f9f35e0a3949fc34711ef978a4e` (`rust-v0.135.0`)
 - Reviewed upstream files:
-  - `sdk/python/src/codex_app_server/api.py`
-  - `sdk/python/src/codex_app_server/async_client.py`
-  - `sdk/python/src/codex_app_server/client.py`
-  - `sdk/python/src/codex_app_server/errors.py`
-  - `sdk/python/src/codex_app_server/generated/v2_all.py`
-  - `sdk/python/src/codex_app_server/generated/notification_registry.py`
+  - `sdk/python/src/openai_codex/api.py`
+  - `sdk/python/src/openai_codex/async_client.py`
+  - `sdk/python/src/openai_codex/client.py`
+  - `sdk/python/src/openai_codex/errors.py`
+  - `sdk/python/src/openai_codex/_sandbox.py`
+  - `sdk/python/src/openai_codex/generated/v2_all.py`
+  - `sdk/python/src/openai_codex/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
-  - Python `codex_app_server` `thread.list` now accepts `ThreadListCwdFilter` plus `use_state_db_only`, while `thread.start` continues to expose `session_start_source`
-  - notification registry entries for `guardianWarning`, `model/verification`, `remoteControl/status/changed`, `thread/goal/cleared`, and `thread/goal/updated`
-  - refreshed thread payloads now include `sessionId` and `threadSource`
-  - plugin marketplace models now include availability, share context, and keyword metadata
-  - model metadata now includes service-tier records and the schema continues to widen raw string compatibility in a few request fields
+  - Python SDK package rename to `openai_codex`
+  - Python SDK `Sandbox` presets for thread lifecycle sandbox modes and turn sandbox policies
+  - notification registry entries for `process/exited` and `process/outputDelta`
+  - image input detail fields, MCP tool-call plugin IDs, expanded remote-control status payloads, and refreshed plugin share metadata
+  - schema additions for permission profiles, plugin installed/share checkout, thread goal requests, additional context, and related app-server configuration records
 - Parity target:
-  - Python SDK parity for the handwritten thread-start and thread-list convenience surface, while continuing to regenerate Swift protocol models directly from the vendored v2 schema and upstream notification registry
+  - Python SDK parity for the friendly sandbox preset surface, while continuing to regenerate Swift protocol models directly from the vendored v2 schema and upstream notification registry
 - Remaining upstream gaps not ported end to end:
-  - the schema and Python SDK now include additional request surfaces such as `hooks/list`, `marketplace/upgrade`, `plugin/share/*`, `process/*`, `thread/turns/list`, `mcpServer/resource/read`, and `mcpServer/tool/call`, but this repository still only exposes the previously implemented RPC convenience methods
+  - the schema and Python SDK now include additional request surfaces such as account login, `hooks/list`, `permissionProfile/list`, `plugin/installed`, `plugin/share/*`, `process/*`, thread goal APIs, `thread/turns/list`, `mcpServer/resource/read`, and `mcpServer/tool/call`, but this repository still only exposes the previously implemented RPC convenience methods plus sandbox presets
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than Python synchronous wrappers
   - `JSONValue.number(Double)` remains the raw escape hatch type, while generated typed models use integer fields where the schema requires them

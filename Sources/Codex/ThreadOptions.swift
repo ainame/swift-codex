@@ -10,6 +10,7 @@ public struct ThreadOptions: Sendable, Hashable, Codable {
     public var modelProvider: String?
     public var personality: Personality?
     public var sandbox: SandboxMode?
+    public var sandboxPreset: Sandbox?
     public var serviceName: String?
     public var serviceTier: ServiceTier?
     public var sessionStartSource: ThreadStartSource?
@@ -26,6 +27,7 @@ public struct ThreadOptions: Sendable, Hashable, Codable {
         modelProvider: String? = nil,
         personality: Personality? = nil,
         sandbox: SandboxMode? = nil,
+        sandboxPreset: Sandbox? = nil,
         serviceName: String? = nil,
         serviceTier: ServiceTier? = nil,
         sessionStartSource: ThreadStartSource? = nil
@@ -41,6 +43,7 @@ public struct ThreadOptions: Sendable, Hashable, Codable {
         self.modelProvider = modelProvider
         self.personality = personality
         self.sandbox = sandbox
+        self.sandboxPreset = sandboxPreset
         self.serviceName = serviceName
         self.serviceTier = serviceTier
         self.sessionStartSource = sessionStartSource

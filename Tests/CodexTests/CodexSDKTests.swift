@@ -383,6 +383,38 @@ struct CodexSDKTests {
     }
 
     @Test
+    func sandboxPresetsSerializeForThreadAndTurnOptions() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadStartResponses: [appServerThreadStartResponse(id: "thread_sandbox")],
+            turnStartResponses: [appServerTurnStartResponse(id: "turn_sandbox")]
+        ))
+
+        let codex = try await Codex(config: stub.makeConfig())
+        let thread = try await codex.startThread(options: ThreadOptions(
+            sandboxPreset: .workspaceWrite
+        ))
+        _ = try await thread.turn("hello", options: TurnOptions(
+            sandbox: .fullAccess
+        ))
+
+        let messages = try stub.appServerMessages(forInvocation: 0)
+        let threadStartParams = try #require(
+            messages.first { $0.stringValue(forKey: "method") == "thread/start" }?.objectValue(forKey: "params")
+        )
+        #expect(threadStartParams["sandbox"] == .string("workspace-write"))
+
+        let turnStartParams = try #require(
+            messages.first { $0.stringValue(forKey: "method") == "turn/start" }?.objectValue(forKey: "params")
+        )
+        #expect(turnStartParams["sandboxPolicy"] == .object([
+            "type": .string("dangerFullAccess"),
+        ]))
+        await codex.close()
+    }
+
+    @Test
     func threadListSerializesSortDirection() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }

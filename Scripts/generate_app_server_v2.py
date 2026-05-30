@@ -9,7 +9,16 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REGISTRY_PATH = REPO_ROOT / "vendor" / "openai-codex" / "sdk" / "python" / "src" / "codex_app_server" / "generated" / "notification_registry.py"
+UPSTREAM_PYTHON_SRC = REPO_ROOT / "vendor" / "openai-codex" / "sdk" / "python" / "src"
+UPSTREAM_PYTHON_PACKAGES = ("openai_codex", "codex_app_server")
+REGISTRY_PATH = next(
+    (
+        UPSTREAM_PYTHON_SRC / package / "generated" / "notification_registry.py"
+        for package in UPSTREAM_PYTHON_PACKAGES
+        if (UPSTREAM_PYTHON_SRC / package / "generated" / "notification_registry.py").exists()
+    ),
+    UPSTREAM_PYTHON_SRC / UPSTREAM_PYTHON_PACKAGES[0] / "generated" / "notification_registry.py",
+)
 SCHEMA_PATH = REPO_ROOT / "vendor" / "openai-codex" / "codex-rs" / "app-server-protocol" / "schema" / "json" / "codex_app_server_protocol.v2.schemas.json"
 OUTPUT_DIR = REPO_ROOT / "Sources" / "Codex" / "RPCModels" / "Generated"
 

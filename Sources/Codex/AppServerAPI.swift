@@ -424,7 +424,7 @@ public actor CodexRPCClient {
         if let personality = options.personality {
             params["personality"] = personality.rawJSON
         }
-        if let sandbox = options.sandbox {
+        if let sandbox = options.sandboxPreset?.threadMode ?? options.sandbox {
             params["sandbox"] = sandbox.rawJSON
         }
         if let serviceName = options.serviceName {
@@ -500,7 +500,7 @@ public actor CodexRPCClient {
         if let personality = options.personality {
             params["personality"] = personality.rawJSON
         }
-        if let sandboxPolicy = options.sandboxPolicy {
+        if let sandboxPolicy = options.sandbox?.turnPolicy ?? options.sandboxPolicy {
             params["sandboxPolicy"] = sandboxPolicy.rawJSON
         }
         if let serviceTier = options.serviceTier {

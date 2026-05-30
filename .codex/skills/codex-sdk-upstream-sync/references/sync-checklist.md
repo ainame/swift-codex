@@ -5,7 +5,8 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
 ## 1. Establish the upstream basis
 
 - Prefer the vendored upstream checkout at `vendor/openai-codex` when available.
-- If `vendor/openai-codex` is empty, uninitialized, or otherwise not a valid upstream checkout, do not use it to resolve releases.
+- If `vendor/openai-codex` is empty, uninitialized, or otherwise not a valid upstream checkout, do not use it to resolve releases. Repair it with `git submodule update --init --recursive vendor/openai-codex`, then fetch tags inside the submodule before diffing.
+- If the worktree is detached, stale, or otherwise blocks a clean sync branch, create a fresh worktree from `origin/main` or reset this automation worktree after confirming it has no uncommitted user changes.
 - If the request says latest release, resolve the latest stable GitHub release first from a current upstream source.
 - Verify the chosen release tag from the GitHub releases page or `gh release view` before relying on local tags.
 - Fetch upstream remote state and tags when the environment allows it.
@@ -22,13 +23,13 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
 ## 2. Compare the correct upstream inputs
 
 - Handwritten SDK surface:
-  - `sdk/python/src/codex_app_server/api.py`
-  - `sdk/python/src/codex_app_server/async_client.py`
-  - `sdk/python/src/codex_app_server/client.py`
-  - `sdk/python/src/codex_app_server/errors.py`
+  - `sdk/python/src/openai_codex/api.py` or legacy `sdk/python/src/codex_app_server/api.py`
+  - `sdk/python/src/openai_codex/async_client.py` or legacy `sdk/python/src/codex_app_server/async_client.py`
+  - `sdk/python/src/openai_codex/client.py` or legacy `sdk/python/src/codex_app_server/client.py`
+  - `sdk/python/src/openai_codex/errors.py` or legacy `sdk/python/src/codex_app_server/errors.py`
 - Typed/generated surface:
-  - `sdk/python/src/codex_app_server/generated/v2_all.py`
-  - `sdk/python/src/codex_app_server/generated/notification_registry.py`
+  - the current Python package's `generated/v2_all.py`
+  - the current Python package's `generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Behavior clarifiers:
   - `sdk/python/examples/`

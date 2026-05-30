@@ -1,6 +1,6 @@
 ---
 name: codex-sdk-upstream-sync
-description: Update this Swift Codex SDK port to match the latest relevant upstream `openai/codex` Python app-server SDK under `sdk/python/src/codex_app_server`, then refresh vendored upstream, typed model generation, and recorded metadata. Use when the user asks to sync upstream, bump `vendor/openai-codex`, catch up Python app-server behavior, compare against the v2 app-server schema, or update files like `UPSTREAM.md`, `README.md`, and `CHANGELOG.md` after parity work.
+description: Update this Swift Codex SDK port to match the latest relevant upstream `openai/codex` Python app-server SDK under `sdk/python/src/openai_codex` or the legacy `sdk/python/src/codex_app_server`, then refresh vendored upstream, typed model generation, and recorded metadata. Use when the user asks to sync upstream, bump `vendor/openai-codex`, catch up Python app-server behavior, compare against the v2 app-server schema, or update files like `UPSTREAM.md`, `README.md`, and `CHANGELOG.md` after parity work.
 ---
 
 # Codex SDK Upstream Sync
@@ -12,7 +12,8 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
 1. Resolve the repositories first.
    - Work in the target Swift port repository.
    - Prefer the vendored upstream checkout at `vendor/openai-codex` when the repository includes it.
-   - If `vendor/openai-codex` is missing, empty, or otherwise not a valid upstream checkout, do not trust it for release resolution. Fall back to a real local `openai/codex` checkout for file diffs and to a live upstream release source for the latest stable tag.
+   - If `vendor/openai-codex` is missing, empty, or otherwise not a valid upstream checkout, do not trust it for release resolution. First repair it with `git submodule update --init --recursive vendor/openai-codex`, then fetch tags inside the submodule. Fall back to a real local `openai/codex` checkout only if the submodule cannot be initialized.
+   - If the current worktree itself is detached, stale, or otherwise blocks a clean sync branch, create a fresh worktree from `origin/main` or reset this automation worktree after confirming it has no uncommitted user changes. Do not let an empty submodule or detached worktree end a sync that can be repaired locally.
    - If the repo does not vendor upstream, ensure a local checkout of `openai/codex` exists. Use [$ghq-get](/Users/ainame/.codex/skills/ghq-get/SKILL.md) when the upstream repo is only referenced by GitHub URL or is not present locally.
    - When the upstream basis will come from a `ghq-get` checkout, run `git fetch --tags origin` in that local checkout before resolving the latest release or comparing ancestry so the tag set is current.
 2. Resolve the upstream basis before editing.
@@ -24,8 +25,8 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - Compare the current vendored commit against the target release with ancestry checks before moving the submodule pointer. The current pin may already contain newer commits than the latest stable release for some paths.
    - Record the exact `openai/codex` commit SHA used as the basis, not just the tag name or branch.
 3. Compare the right upstream sources.
-   - Treat `sdk/python/src/codex_app_server` as the primary handwritten SDK surface.
-   - Treat `sdk/python/src/codex_app_server/generated/v2_all.py`, `generated/notification_registry.py`, and `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json` as the typed protocol/model basis.
+   - Treat `sdk/python/src/openai_codex` as the primary handwritten SDK surface for current releases. Use `sdk/python/src/codex_app_server` only for older releases before the Python package rename.
+   - Treat the Python package's `generated/v2_all.py`, `generated/notification_registry.py`, and `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json` as the typed protocol/model basis.
    - Review upstream examples and tests when they clarify intended behavior.
 4. Decide the parity target explicitly.
    - Python SDK parity: match the public Python app-server client surface and behavior.
@@ -81,13 +82,14 @@ Use fast local inspection tools first.
 
 ```bash
 gh release view rust-v0.135.0 --repo openai/codex
+git submodule update --init --recursive vendor/openai-codex
 git -C vendor/openai-codex fetch --tags origin
 git -C /path/to/ghq/github.com/openai/codex fetch --tags origin
 gh release list --repo openai/codex --limit 10
 git -C vendor/openai-codex merge-base --is-ancestor <target-release-or-commit> <current-pin>
-git -C vendor/openai-codex log -n 20 -- sdk/python/src/codex_app_server
-git -C vendor/openai-codex diff <old-sha>..<new-sha> -- sdk/python/src/codex_app_server sdk/python/examples sdk/python/tests codex-rs/app-server-protocol/schema/json
-rg -n "upstream|vendor/openai-codex|codex_app_server|generate_app_server_v2|version" README.md UPSTREAM.md CHANGELOG.md Package.swift Scripts Sources Tests AGENTS.md
+git -C vendor/openai-codex log -n 20 -- sdk/python/src/openai_codex sdk/python/src/codex_app_server
+git -C vendor/openai-codex diff <old-sha>..<new-sha> -- sdk/python/src/openai_codex sdk/python/src/codex_app_server sdk/python/examples sdk/python/tests codex-rs/app-server-protocol/schema/json
+rg -n "upstream|vendor/openai-codex|openai_codex|codex_app_server|generate_app_server_v2|version" README.md UPSTREAM.md CHANGELOG.md Package.swift Scripts Sources Tests AGENTS.md
 swift test
 ```
 

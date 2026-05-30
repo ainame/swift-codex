@@ -8,6 +8,16 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Synced the app-server schema to `rust-v0.135.0`, adding typed process notifications, image detail fields, plugin share metadata, MCP tool plugin IDs, and remote-control status metadata.
+- Added friendly `Sandbox` presets for thread and turn APIs, matching the upstream Python SDK's `read_only`, `workspace_write`, and `full_access` presets.
+
+### Changed
+
+- Updated the vendored upstream checkout to `rust-v0.135.0` (`4daceea869704f9f35e0a3949fc34711ef978a4e`).
+- Updated the schema generator and sync workflow to handle the upstream Python package rename from `codex_app_server` to `openai_codex`, and to repair empty submodule checkouts before falling back to external local checkouts.
+
 ## [0.130.0] - 2026-05-09
 
 Starting with `0.130.0`, `swift-codex` release versions follow the shipped upstream `openai/codex` SDK release number when an upstream sync is released.

@@ -11,6 +11,8 @@ public enum HookEventName: RawJSONRepresentable {
     case postCompact
     case sessionStart
     case userPromptSubmit
+    case subagentStart
+    case subagentStop
     case stop
     case unrecognized(String)
 
@@ -24,6 +26,8 @@ public enum HookEventName: RawJSONRepresentable {
         case "postCompact": self = .postCompact
         case "sessionStart": self = .sessionStart
         case "userPromptSubmit": self = .userPromptSubmit
+        case "subagentStart": self = .subagentStart
+        case "subagentStop": self = .subagentStop
         case "stop": self = .stop
         default:
             self = .unrecognized(value)
@@ -43,6 +47,8 @@ public enum HookEventName: RawJSONRepresentable {
         case .postCompact: return "postCompact"
         case .sessionStart: return "sessionStart"
         case .userPromptSubmit: return "userPromptSubmit"
+        case .subagentStart: return "subagentStart"
+        case .subagentStop: return "subagentStop"
         case .stop: return "stop"
         case .unrecognized(let value):
             return value

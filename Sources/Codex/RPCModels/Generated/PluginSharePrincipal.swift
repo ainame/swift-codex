@@ -7,17 +7,20 @@ public struct PluginSharePrincipal: ObjectModel {
     public var name: String
     public var principalId: String
     public var principalType: PluginSharePrincipalType
+    public var role: PluginSharePrincipalRole
     public var additionalFields: JSONObject
 
     public init(
         name: String,
         principalId: String,
         principalType: PluginSharePrincipalType,
+        role: PluginSharePrincipalRole,
         additionalFields: JSONObject = [:]
     ) {
         self.name = name
         self.principalId = principalId
         self.principalType = principalType
+        self.role = role
         self.additionalFields = additionalFields
     }
 
@@ -31,6 +34,7 @@ public struct PluginSharePrincipal: ObjectModel {
         self.name = payload.name
         self.principalId = payload.principalId
         self.principalType = payload.principalType
+        self.role = payload.role
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -42,21 +46,24 @@ public struct PluginSharePrincipal: ObjectModel {
         Payload(
             name: name,
             principalId: principalId,
-            principalType: principalType
+            principalType: principalType,
+            role: role
         )
     }
 
-    private static let knownKeys: Set<String> = ["name", "principalId", "principalType"]
+    private static let knownKeys: Set<String> = ["name", "principalId", "principalType", "role"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var name: String
         var principalId: String
         var principalType: PluginSharePrincipalType
+        var role: PluginSharePrincipalRole
 
         enum CodingKeys: String, CodingKey {
             case name
             case principalId
             case principalType
+            case role
         }
     }
 }

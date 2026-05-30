@@ -6,6 +6,7 @@ public struct TurnOptions: Sendable, Hashable, Codable {
     public var model: String?
     public var outputSchema: JSONObject?
     public var personality: Personality?
+    public var sandbox: Sandbox?
     public var sandboxPolicy: SandboxPolicy?
     public var serviceTier: ServiceTier?
     public var summary: ReasoningSummary?
@@ -18,6 +19,7 @@ public struct TurnOptions: Sendable, Hashable, Codable {
         model: String? = nil,
         outputSchema: JSONObject? = nil,
         personality: Personality? = nil,
+        sandbox: Sandbox? = nil,
         sandboxPolicy: SandboxPolicy? = nil,
         serviceTier: ServiceTier? = nil,
         summary: ReasoningSummary? = nil
@@ -29,6 +31,7 @@ public struct TurnOptions: Sendable, Hashable, Codable {
         self.model = model
         self.outputSchema = outputSchema
         self.personality = personality
+        self.sandbox = sandbox
         self.sandboxPolicy = sandboxPolicy
         self.serviceTier = serviceTier
         self.summary = summary

@@ -19,7 +19,8 @@ Current implementation includes:
 - thread instruction source metadata, fork ancestry, multi-cwd list filtering, and typed guardian auto-review payloads from the latest v2 schema
 - plugin list retrieval with typed marketplace metadata
 - turn start, steer, interrupt, buffered run, and streamed notifications
-- typed goal, model-verification, remote-control, and guardian-warning notifications from the latest upstream registry
+- friendly sandbox presets for thread and turn APIs
+- typed goal, model-verification, process, remote-control, and guardian-warning notifications from the latest upstream registry
 - typed approval handling for command and file-change requests
 - structured input items with text, remote images, local images, skills, and mentions
 - transport launch overrides for explicit process `cwd` and full argv replacement
@@ -38,9 +39,9 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `58573da43ab697e8b79f152c53df4b42230395a8` (`rust-v0.130.0`)
+- Vendored upstream commit: `4daceea869704f9f35e0a3949fc34711ef978a4e` (`rust-v0.135.0`)
 - Primary reviewed upstream basis for the current transport and schema:
-  - `sdk/python/src/codex_app_server`
+  - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
 See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files, the Python-SDK parity target used for this sync, and the remaining schema-only request surfaces not wrapped by the Swift convenience API yet.
@@ -62,7 +63,7 @@ Add the package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.130.0")
+    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.135.0")
 ]
 ```
 
@@ -97,7 +98,7 @@ import Codex
 let codex = try await Codex(config: .init())
 let thread = try await codex.startThread(options: .init(
     model: "gpt-5-codex",
-    sandbox: .workspaceWrite
+    sandboxPreset: .workspaceWrite
 ))
 
 let result = try await thread.run(
@@ -212,7 +213,7 @@ let thread = try await codex.startThread(options: .init(
     approvalPolicy: .onRequest,
     cwd: "/path/to/repo",
     model: "gpt-5-codex",
-    sandbox: .workspaceWrite,
+    sandboxPreset: .workspaceWrite,
     sessionStartSource: .startup
 ))
 ```
