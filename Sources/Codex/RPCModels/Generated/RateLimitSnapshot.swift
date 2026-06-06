@@ -5,6 +5,7 @@ import Foundation
 
 public struct RateLimitSnapshot: ObjectModel {
     public var credits: CreditsSnapshot?
+    public var individualLimit: SpendControlLimitSnapshot?
     public var limitId: String?
     public var limitName: String?
     public var planType: PlanType?
@@ -15,6 +16,7 @@ public struct RateLimitSnapshot: ObjectModel {
 
     public init(
         credits: CreditsSnapshot? = nil,
+        individualLimit: SpendControlLimitSnapshot? = nil,
         limitId: String? = nil,
         limitName: String? = nil,
         planType: PlanType? = nil,
@@ -24,6 +26,7 @@ public struct RateLimitSnapshot: ObjectModel {
         additionalFields: JSONObject = [:]
     ) {
         self.credits = credits
+        self.individualLimit = individualLimit
         self.limitId = limitId
         self.limitName = limitName
         self.planType = planType
@@ -41,6 +44,7 @@ public struct RateLimitSnapshot: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "RateLimitSnapshot")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.credits = payload.credits
+        self.individualLimit = payload.individualLimit
         self.limitId = payload.limitId
         self.limitName = payload.limitName
         self.planType = payload.planType
@@ -57,6 +61,7 @@ public struct RateLimitSnapshot: ObjectModel {
     private var payload: Payload {
         Payload(
             credits: credits,
+            individualLimit: individualLimit,
             limitId: limitId,
             limitName: limitName,
             planType: planType,
@@ -66,10 +71,11 @@ public struct RateLimitSnapshot: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["credits", "limitId", "limitName", "planType", "primary", "rateLimitReachedType", "secondary"]
+    private static let knownKeys: Set<String> = ["credits", "individualLimit", "limitId", "limitName", "planType", "primary", "rateLimitReachedType", "secondary"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var credits: CreditsSnapshot?
+        var individualLimit: SpendControlLimitSnapshot?
         var limitId: String?
         var limitName: String?
         var planType: PlanType?
@@ -79,6 +85,7 @@ public struct RateLimitSnapshot: ObjectModel {
 
         enum CodingKeys: String, CodingKey {
             case credits
+            case individualLimit
             case limitId
             case limitName
             case planType
@@ -88,4 +95,3 @@ public struct RateLimitSnapshot: ObjectModel {
         }
     }
 }
-

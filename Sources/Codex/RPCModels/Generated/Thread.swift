@@ -15,6 +15,7 @@ public struct Thread: ObjectModel {
     public var id: String
     public var modelProvider: String
     public var name: String?
+    public var parentThreadId: String?
     public var path: String?
     public var preview: String
     public var sessionId: String
@@ -37,6 +38,7 @@ public struct Thread: ObjectModel {
         id: String,
         modelProvider: String,
         name: String? = nil,
+        parentThreadId: String? = nil,
         path: String? = nil,
         preview: String,
         sessionId: String,
@@ -58,6 +60,7 @@ public struct Thread: ObjectModel {
         self.id = id
         self.modelProvider = modelProvider
         self.name = name
+        self.parentThreadId = parentThreadId
         self.path = path
         self.preview = preview
         self.sessionId = sessionId
@@ -87,6 +90,7 @@ public struct Thread: ObjectModel {
         self.id = payload.id
         self.modelProvider = payload.modelProvider
         self.name = payload.name
+        self.parentThreadId = payload.parentThreadId
         self.path = payload.path
         self.preview = payload.preview
         self.sessionId = payload.sessionId
@@ -115,6 +119,7 @@ public struct Thread: ObjectModel {
             id: id,
             modelProvider: modelProvider,
             name: name,
+            parentThreadId: parentThreadId,
             path: path,
             preview: preview,
             sessionId: sessionId,
@@ -126,7 +131,7 @@ public struct Thread: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "path", "preview", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
+    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "parentThreadId", "path", "preview", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentNickname: String?
@@ -140,6 +145,7 @@ public struct Thread: ObjectModel {
         var id: String
         var modelProvider: String
         var name: String?
+        var parentThreadId: String?
         var path: String?
         var preview: String
         var sessionId: String
@@ -161,6 +167,7 @@ public struct Thread: ObjectModel {
             case id
             case modelProvider
             case name
+            case parentThreadId
             case path
             case preview
             case sessionId
@@ -184,6 +191,7 @@ public struct Thread: ObjectModel {
             id: String,
             modelProvider: String,
             name: String?,
+            parentThreadId: String?,
             path: String?,
             preview: String,
             sessionId: String,
@@ -204,6 +212,7 @@ public struct Thread: ObjectModel {
             self.id = id
             self.modelProvider = modelProvider
             self.name = name
+            self.parentThreadId = parentThreadId
             self.path = path
             self.preview = preview
             self.sessionId = sessionId
@@ -227,6 +236,7 @@ public struct Thread: ObjectModel {
             self.id = try container.decode(String.self, forKey: .id)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
+            self.parentThreadId = try container.decodeIfPresent(String.self, forKey: .parentThreadId)
             self.path = try container.decodeIfPresent(String.self, forKey: .path)
             self.preview = try container.decode(String.self, forKey: .preview)
             self.sessionId = try container.decode(String.self, forKey: .sessionId)
@@ -238,4 +248,3 @@ public struct Thread: ObjectModel {
         }
     }
 }
-

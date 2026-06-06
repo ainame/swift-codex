@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `4daceea869704f9f35e0a3949fc34711ef978a4e`
-- Reviewed JSON-RPC basis commit SHA: `4daceea869704f9f35e0a3949fc34711ef978a4e`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/4daceea869704f9f35e0a3949fc34711ef978a4e`
-- Last reviewed date: `2026-05-30`
+- Vendored upstream commit: `f221438b691b8f749d98f22077c93ebe01923fbe`
+- Reviewed JSON-RPC basis commit SHA: `f221438b691b8f749d98f22077c93ebe01923fbe`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/f221438b691b8f749d98f22077c93ebe01923fbe`
+- Last reviewed date: `2026-06-06`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -32,6 +32,32 @@ When porting new behavior from upstream or validating parity:
 ## Sync Notes
 
 ### Unreleased
+
+- Vendored checkout: `vendor/openai-codex` at `f221438b691b8f749d98f22077c93ebe01923fbe` (`rust-v0.137.0`)
+- Reviewed upstream files:
+  - `codex-rs/app-server-protocol/schema/typescript/ClientRequest.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/Thread.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/ThreadResumeInitialTurnsPageParams.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/TurnsPage.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/RateLimitSnapshot.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/SpendControlLimitSnapshot.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/GetAccountRateLimitsResponse.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/SkillsExtraRootsSetParams.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/SkillsExtraRootsSetResponse.ts`
+- Reviewed upstream features:
+  - `Thread.parentThreadId` for subagent parent linkage
+  - `skills/extraRoots/set` request support
+  - paginated turn response records for thread history
+  - account rate-limit multi-bucket and spend-control metadata
+- Parity target:
+  - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
+- Remaining upstream gaps not ported end to end:
+  - the full `rust-v0.137.0` schema includes broader config, MCP server status, remote-control, plugin, thread-history, and app-server transport changes that are still not wrapped as Swift convenience APIs
+- Intentional Swift-specific deviations:
+  - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
+  - generated-style model files were refreshed manually for this constrained automation run because the local submodule could not fetch GitHub objects in the sandbox
+
+### 0.135.0
 
 - Vendored checkout: `vendor/openai-codex` at `4daceea869704f9f35e0a3949fc34711ef978a4e` (`rust-v0.135.0`)
 - Reviewed upstream files:
