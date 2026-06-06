@@ -8,6 +8,14 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Synced focused app-server schema additions from `rust-v0.137.0`, including `Thread.parentThreadId`, paginated turn response models, account rate-limit spend-control metadata, and `skills/extraRoots/set`.
+
+### Changed
+
+- Updated the vendored upstream checkout record to `rust-v0.137.0` (`f221438b691b8f749d98f22077c93ebe01923fbe`).
+
 ## [0.135.0] - 2026-05-30
 
 ### Added

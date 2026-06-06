@@ -388,6 +388,18 @@ public actor CodexRPCClient {
         )
     }
 
+    public func accountRateLimitsRead() async throws -> GetAccountRateLimitsResponse {
+        try await request("account/rateLimits/read", responseType: GetAccountRateLimitsResponse.self)
+    }
+
+    public func skillsExtraRootsSet(_ extraRoots: [String]) async throws -> SkillsExtraRootsSetResponse {
+        try await request(
+            "skills/extraRoots/set",
+            params: ["extraRoots": .array(extraRoots.map(JSONValue.string))],
+            responseType: SkillsExtraRootsSetResponse.self
+        )
+    }
+
     public func pluginList() async throws -> PluginListResponse {
         try await request("plugin/list", responseType: PluginListResponse.self)
     }

@@ -80,6 +80,8 @@ struct CodexStub {
         turn_steer_responses = scenario.get("turnSteerResponses", [])
         turn_interrupt_responses = scenario.get("turnInterruptResponses", [])
         model_list_responses = scenario.get("modelListResponses", [])
+        account_rate_limits_read_responses = scenario.get("accountRateLimitsReadResponses", [])
+        skills_extra_roots_set_responses = scenario.get("skillsExtraRootsSetResponses", [])
         plugin_list_responses = scenario.get("pluginListResponses", [])
 
         thread_start_index = 0
@@ -95,6 +97,8 @@ struct CodexStub {
         turn_steer_index = 0
         turn_interrupt_index = 0
         model_list_index = 0
+        account_rate_limits_read_index = 0
+        skills_extra_roots_set_index = 0
         plugin_list_index = 0
 
         def append_jsonl(suffix, payload):
@@ -229,6 +233,18 @@ struct CodexStub {
                 write_message({"id": request_id, "result": response})
                 continue
 
+            if method == "account/rateLimits/read":
+                response = response_at(account_rate_limits_read_responses, account_rate_limits_read_index, {})
+                account_rate_limits_read_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "skills/extraRoots/set":
+                response = response_at(skills_extra_roots_set_responses, skills_extra_roots_set_index, {})
+                skills_extra_roots_set_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
             if method == "plugin/list":
                 response = response_at(plugin_list_responses, plugin_list_index, {"marketplaces": []})
                 plugin_list_index += 1
@@ -343,6 +359,8 @@ struct AppServerScenario: Encodable {
     var turnSteerResponses: [JSONObject]
     var turnInterruptResponses: [JSONObject]
     var modelListResponses: [JSONObject]
+    var accountRateLimitsReadResponses: [JSONObject]
+    var skillsExtraRootsSetResponses: [JSONObject]
     var pluginListResponses: [JSONObject]
 
     init(
@@ -362,6 +380,8 @@ struct AppServerScenario: Encodable {
         turnSteerResponses: [JSONObject] = [],
         turnInterruptResponses: [JSONObject] = [],
         modelListResponses: [JSONObject] = [],
+        accountRateLimitsReadResponses: [JSONObject] = [],
+        skillsExtraRootsSetResponses: [JSONObject] = [],
         pluginListResponses: [JSONObject] = []
     ) {
         self.initializeResult = initializeResult
@@ -380,6 +400,8 @@ struct AppServerScenario: Encodable {
         self.turnSteerResponses = turnSteerResponses
         self.turnInterruptResponses = turnInterruptResponses
         self.modelListResponses = modelListResponses
+        self.accountRateLimitsReadResponses = accountRateLimitsReadResponses
+        self.skillsExtraRootsSetResponses = skillsExtraRootsSetResponses
         self.pluginListResponses = pluginListResponses
     }
 }
@@ -514,6 +536,26 @@ func appServerEmptyResponse() -> JSONObject {
 
 func appServerModelListResponse(models: [Model]) -> JSONObject {
     jsonObject(ModelListResponse(data: models))
+}
+
+func appServerAccountRateLimitsReadResponse() -> JSONObject {
+    jsonObject(
+        GetAccountRateLimitsResponse(
+            rateLimits: RateLimitSnapshot(
+                individualLimit: SpendControlLimitSnapshot(
+                    limit: "100.00",
+                    remainingPercent: 42.5,
+                    resetsAt: 1_780_000_000,
+                    used: "57.50"
+                ),
+                limitId: "codex",
+                limitName: "Codex"
+            ),
+            rateLimitsByLimitId: [
+                "codex": RateLimitSnapshot(limitId: "codex", limitName: "Codex")
+            ]
+        )
+    )
 }
 
 func appServerThreadStarted(threadID: String) -> JSONObject {

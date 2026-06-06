@@ -251,7 +251,9 @@ struct AppServerSDKTests {
             threadUnarchiveResponses: [appServerThreadUnarchiveResponse(id: "thread_unarchived")],
             threadSetNameResponses: [appServerEmptyResponse()],
             threadCompactResponses: [appServerEmptyResponse()],
-            modelListResponses: [appServerModelListResponse(models: [makeModel(id: "gpt-5")])]
+            modelListResponses: [appServerModelListResponse(models: [makeModel(id: "gpt-5")])],
+            accountRateLimitsReadResponses: [appServerAccountRateLimitsReadResponse()],
+            skillsExtraRootsSetResponses: [appServerEmptyResponse()]
         ))
 
         let client = CodexRPCClient(config: stub.makeConfig())
@@ -275,8 +277,12 @@ struct AppServerSDKTests {
         _ = try await client.threadCompact(threadID: "thread_resume")
         let models = try await client.modelList()
         #expect(models.data.map(\.id) == ["gpt-5"])
+        let rateLimits = try await client.accountRateLimitsRead()
+        #expect(rateLimits.rateLimits.individualLimit?.remainingPercent == 42.5)
+        _ = try await client.skillsExtraRootsSet(["/tmp/project/skills", "/tmp/shared/skills"])
 
-        let methods = try stub.appServerMessages(forInvocation: 0).compactMap { $0.stringValue(forKey: "method") }
+        let messages = try stub.appServerMessages(forInvocation: 0)
+        let methods = messages.compactMap { $0.stringValue(forKey: "method") }
         #expect(methods == [
             "initialize",
             "initialized",
@@ -290,8 +296,44 @@ struct AppServerSDKTests {
             "thread/name/set",
             "thread/compact/start",
             "model/list",
+            "account/rateLimits/read",
+            "skills/extraRoots/set",
         ])
+        let extraRootsParams = try #require(messages.first { $0.stringValue(forKey: "method") == "skills/extraRoots/set" }?.objectValue(forKey: "params"))
+        #expect(extraRootsParams["extraRoots"] == .array([
+            .string("/tmp/project/skills"),
+            .string("/tmp/shared/skills"),
+        ]))
         await client.close()
+    }
+
+    @Test
+    func generatedModelsDecodeRust0137Additions() throws {
+        var thread = makeThread(id: "child")
+        thread.parentThreadId = "parent"
+        #expect(thread.rawJSON.objectValue?["parentThreadId"] == .string("parent"))
+
+        let decodedThread = try decodeJSONValue(Thread.self, from: thread.rawJSON)
+        #expect(decodedThread.parentThreadId == "parent")
+
+        let turnsPage = TurnsPage(
+            backwardsCursor: "older",
+            data: [makeTurn(id: "turn_page")],
+            nextCursor: "newer"
+        )
+        let decodedPage = try decodeJSONValue(TurnsPage.self, from: turnsPage.rawJSON)
+        #expect(decodedPage.data.map(\.id) == ["turn_page"])
+        #expect(decodedPage.backwardsCursor == "older")
+        #expect(decodedPage.nextCursor == "newer")
+
+        let initialTurns = ThreadResumeInitialTurnsPageParams(
+            itemsView: .summary,
+            limit: 25,
+            sortDirection: .asc
+        )
+        #expect(initialTurns.rawJSON.objectValue?["itemsView"] == .string("summary"))
+        #expect(initialTurns.rawJSON.objectValue?["limit"] == .number(25))
+        #expect(initialTurns.rawJSON.objectValue?["sortDirection"] == .string("asc"))
     }
 
     @Test
