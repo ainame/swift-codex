@@ -8,13 +8,17 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.137.0] - 2026-06-07
+
 ### Added
 
-- Synced focused app-server schema additions from `rust-v0.137.0`, including `Thread.parentThreadId`, paginated turn response models, account rate-limit spend-control metadata, and `skills/extraRoots/set`.
+- Synced focused app-server schema additions from `rust-v0.137.0`, including `Thread.parentThreadId`, paginated turn response models, and account rate-limit spend-control metadata. [#14](https://github.com/ainame/swift-codex/pull/14)
+- Added low-level `CodexRPCClient.accountRateLimitsRead()` and `CodexRPCClient.skillsExtraRootsSet(_:)` helpers for the newly wrapped app-server RPCs. [#14](https://github.com/ainame/swift-codex/pull/14)
 
 ### Changed
 
-- Updated the vendored upstream checkout record to `rust-v0.137.0` (`f221438b691b8f749d98f22077c93ebe01923fbe`).
+- Updated the vendored upstream checkout to `rust-v0.137.0` (`f221438b691b8f749d98f22077c93ebe01923fbe`) and refreshed upstream metadata plus README version references. [#14](https://github.com/ainame/swift-codex/pull/14)
+- Tightened the upstream sync skill so sync runs that produce changes must commit, push, and open a PR before finishing when credentials and network allow it. [#14](https://github.com/ainame/swift-codex/pull/14)
 
 ## [0.135.0] - 2026-05-30
 
