@@ -49,6 +49,10 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - Run `swift test` for behavior changes. Use `swift build` only when tests are unavailable or the change is documentation-only.
    - If there is an examples package, build it when the sync touches user-facing API.
 8. Handle the ship flow when requested.
+   - If this process produces any repository changes, always create a PR for the sync branch before finishing. Do this for implementation changes, metadata-only changes, and workflow/skill fixes made during the sync.
+   - Commit each meaningful change before opening the PR.
+   - Push the branch and open the PR as part of the same run. Do not stop after a local commit when the network and credentials allow PR creation.
+   - If push or PR creation is blocked by authentication, permissions, or network state, keep the local commit, report the exact blocker, and record that the only incomplete step is PR creation.
    - If the requested automation should ship the sync immediately, create a PR for the sync branch first.
    - After the PR is merged, switch to the latest `main`, prepare the matching repository release version, tag it without a `v` prefix, and publish the GitHub release from `main`.
    - Do not create the release tag from the topic branch or from a pre-merge commit.
