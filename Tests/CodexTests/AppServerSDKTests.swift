@@ -253,6 +253,7 @@ struct AppServerSDKTests {
             threadCompactResponses: [appServerEmptyResponse()],
             modelListResponses: [appServerModelListResponse(models: [makeModel(id: "gpt-5")])],
             accountRateLimitsReadResponses: [appServerAccountRateLimitsReadResponse()],
+            accountTokenUsageReadResponses: [appServerAccountTokenUsageReadResponse()],
             skillsExtraRootsSetResponses: [appServerEmptyResponse()]
         ))
 
@@ -279,6 +280,9 @@ struct AppServerSDKTests {
         #expect(models.data.map(\.id) == ["gpt-5"])
         let rateLimits = try await client.accountRateLimitsRead()
         #expect(rateLimits.rateLimits.individualLimit?.remainingPercent == 42.5)
+        let tokenUsage = try await client.accountTokenUsageRead()
+        #expect(tokenUsage.summary.lifetimeTokens == 9000)
+        #expect(tokenUsage.dailyUsageBuckets?.first?.tokens == 1200)
         _ = try await client.skillsExtraRootsSet(["/tmp/project/skills", "/tmp/shared/skills"])
 
         let messages = try stub.appServerMessages(forInvocation: 0)
@@ -297,6 +301,7 @@ struct AppServerSDKTests {
             "thread/compact/start",
             "model/list",
             "account/rateLimits/read",
+            "account/tokenUsage/read",
             "skills/extraRoots/set",
         ])
         let extraRootsParams = try #require(messages.first { $0.stringValue(forKey: "method") == "skills/extraRoots/set" }?.objectValue(forKey: "params"))
@@ -334,6 +339,44 @@ struct AppServerSDKTests {
         #expect(initialTurns.rawJSON.objectValue?["itemsView"] == .string("summary"))
         #expect(initialTurns.rawJSON.objectValue?["limit"] == .number(25))
         #expect(initialTurns.rawJSON.objectValue?["sortDirection"] == .string("asc"))
+    }
+
+    @Test
+    func generatedModelsDecodeRust0139Additions() throws {
+        let tokenUsage = GetAccountTokenUsageResponse(
+            dailyUsageBuckets: [
+                AccountTokenUsageDailyBucket(startDate: "2026-06-09", tokens: 321),
+            ],
+            summary: AccountTokenUsageSummary(lifetimeTokens: 12345)
+        )
+        let decodedUsage = try decodeJSONValue(GetAccountTokenUsageResponse.self, from: tokenUsage.rawJSON)
+        #expect(decodedUsage.dailyUsageBuckets?.first?.startDate == "2026-06-09")
+        #expect(decodedUsage.summary.lifetimeTokens == 12345)
+
+        let template = AppTemplateSummary(
+            canonicalConnectorId: "connector.slack",
+            description: "Slack workspace",
+            logoUrl: "https://example.test/light.png",
+            logoUrlDark: "https://example.test/dark.png",
+            materializedAppIds: ["app.slack"],
+            name: "Slack",
+            reason: .noActiveWorkspace,
+            templateId: "template.slack"
+        )
+        let decodedTemplate = try decodeJSONValue(AppTemplateSummary.self, from: template.rawJSON)
+        #expect(decodedTemplate.materializedAppIds == ["app.slack"])
+        #expect(decodedTemplate.reason == .noActiveWorkspace)
+
+        let moderation = TurnModerationMetadataNotification(
+            metadata: .object(["safety": .string("ok")]),
+            threadId: "thread_139",
+            turnId: "turn_139"
+        )
+        let decodedModeration = try decodeJSONValue(TurnModerationMetadataNotification.self, from: moderation.rawJSON)
+        #expect(decodedModeration.metadata.objectValue?["safety"] == .string("ok"))
+
+        let payload = try CodexNotificationPayload(method: "turn/moderationMetadata", params: moderation.rawJSON)
+        #expect(payload == .turnModerationMetadata(moderation))
     }
 
     @Test

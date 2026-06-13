@@ -62,6 +62,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadUnarchived(ThreadUnarchivedNotification)
     case turnCompleted(TurnCompletedNotification)
     case turnDiffUpdated(TurnDiffUpdatedNotification)
+    case turnModerationMetadata(TurnModerationMetadataNotification)
     case turnPlanUpdated(TurnPlanUpdatedNotification)
     case turnStarted(TurnStartedNotification)
     case warning(WarningNotification)
@@ -129,6 +130,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/unarchived": self = .threadUnarchived(try decodeJSONValue(ThreadUnarchivedNotification.self, from: params))
         case "turn/completed": self = .turnCompleted(try decodeJSONValue(TurnCompletedNotification.self, from: params))
         case "turn/diff/updated": self = .turnDiffUpdated(try decodeJSONValue(TurnDiffUpdatedNotification.self, from: params))
+        case "turn/moderationMetadata": self = .turnModerationMetadata(try decodeJSONValue(TurnModerationMetadataNotification.self, from: params))
         case "turn/plan/updated": self = .turnPlanUpdated(try decodeJSONValue(TurnPlanUpdatedNotification.self, from: params))
         case "turn/started": self = .turnStarted(try decodeJSONValue(TurnStartedNotification.self, from: params))
         case "warning": self = .warning(try decodeJSONValue(WarningNotification.self, from: params))
@@ -199,6 +201,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadUnarchived(let value): return value.rawJSON
         case .turnCompleted(let value): return value.rawJSON
         case .turnDiffUpdated(let value): return value.rawJSON
+        case .turnModerationMetadata(let value): return value.rawJSON
         case .turnPlanUpdated(let value): return value.rawJSON
         case .turnStarted(let value): return value.rawJSON
         case .warning(let value): return value.rawJSON
@@ -303,4 +306,3 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         }
     }
 }
-

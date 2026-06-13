@@ -392,6 +392,10 @@ public actor CodexRPCClient {
         try await request("account/rateLimits/read", responseType: GetAccountRateLimitsResponse.self)
     }
 
+    public func accountTokenUsageRead() async throws -> GetAccountTokenUsageResponse {
+        try await request("account/tokenUsage/read", responseType: GetAccountTokenUsageResponse.self)
+    }
+
     public func skillsExtraRootsSet(_ extraRoots: [String]) async throws -> SkillsExtraRootsSetResponse {
         try await request(
             "skills/extraRoots/set",

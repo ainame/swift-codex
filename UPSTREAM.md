@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `f221438b691b8f749d98f22077c93ebe01923fbe`
-- Reviewed JSON-RPC basis commit SHA: `f221438b691b8f749d98f22077c93ebe01923fbe`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/f221438b691b8f749d98f22077c93ebe01923fbe`
-- Last reviewed date: `2026-06-06`
+- Vendored upstream commit: `a7dff904308535e965aee87680c1fc5ef1d19eec`
+- Reviewed JSON-RPC basis commit SHA: `a7dff904308535e965aee87680c1fc5ef1d19eec`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/a7dff904308535e965aee87680c1fc5ef1d19eec`
+- Last reviewed date: `2026-06-13`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -32,6 +32,26 @@ When porting new behavior from upstream or validating parity:
 ## Sync Notes
 
 ### Unreleased
+
+- Vendored checkout: `vendor/openai-codex` at `a7dff904308535e965aee87680c1fc5ef1d19eec` (`rust-v0.139.0`)
+- Reviewed upstream files:
+  - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
+  - `codex-rs/app-server-protocol/schema/json/v2/GetAccountTokenUsageResponse.json`
+  - `codex-rs/app-server-protocol/schema/json/v2/PluginReadResponse.json`
+  - `codex-rs/app-server-protocol/schema/json/v2/TurnModerationMetadataNotification.json`
+- Reviewed upstream features:
+  - account token usage summary and daily-bucket response records
+  - plugin app-template summary metadata records
+  - turn moderation metadata notifications
+- Parity target:
+  - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
+- Remaining upstream gaps not ported end to end:
+  - the full `rust-v0.139.0` schema includes broader config, MCP server status, remote-control, plugin read, app template, thread-history, and app-server transport changes that are still not wrapped as Swift convenience APIs
+- Intentional Swift-specific deviations:
+  - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
+  - generated-style model files were refreshed manually for this constrained automation run because shell DNS could not fetch GitHub objects in the sandbox; upstream schema snippets were verified through the GitHub connector
+
+### 0.137.0
 
 - Vendored checkout: `vendor/openai-codex` at `f221438b691b8f749d98f22077c93ebe01923fbe` (`rust-v0.137.0`)
 - Reviewed upstream files:
