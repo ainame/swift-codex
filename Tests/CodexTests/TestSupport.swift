@@ -81,6 +81,7 @@ struct CodexStub {
         turn_interrupt_responses = scenario.get("turnInterruptResponses", [])
         model_list_responses = scenario.get("modelListResponses", [])
         account_rate_limits_read_responses = scenario.get("accountRateLimitsReadResponses", [])
+        account_token_usage_read_responses = scenario.get("accountTokenUsageReadResponses", [])
         skills_extra_roots_set_responses = scenario.get("skillsExtraRootsSetResponses", [])
         plugin_list_responses = scenario.get("pluginListResponses", [])
 
@@ -98,6 +99,7 @@ struct CodexStub {
         turn_interrupt_index = 0
         model_list_index = 0
         account_rate_limits_read_index = 0
+        account_token_usage_read_index = 0
         skills_extra_roots_set_index = 0
         plugin_list_index = 0
 
@@ -239,6 +241,12 @@ struct CodexStub {
                 write_message({"id": request_id, "result": response})
                 continue
 
+            if method == "account/tokenUsage/read":
+                response = response_at(account_token_usage_read_responses, account_token_usage_read_index, {})
+                account_token_usage_read_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
             if method == "skills/extraRoots/set":
                 response = response_at(skills_extra_roots_set_responses, skills_extra_roots_set_index, {})
                 skills_extra_roots_set_index += 1
@@ -360,6 +368,7 @@ struct AppServerScenario: Encodable {
     var turnInterruptResponses: [JSONObject]
     var modelListResponses: [JSONObject]
     var accountRateLimitsReadResponses: [JSONObject]
+    var accountTokenUsageReadResponses: [JSONObject]
     var skillsExtraRootsSetResponses: [JSONObject]
     var pluginListResponses: [JSONObject]
 
@@ -381,6 +390,7 @@ struct AppServerScenario: Encodable {
         turnInterruptResponses: [JSONObject] = [],
         modelListResponses: [JSONObject] = [],
         accountRateLimitsReadResponses: [JSONObject] = [],
+        accountTokenUsageReadResponses: [JSONObject] = [],
         skillsExtraRootsSetResponses: [JSONObject] = [],
         pluginListResponses: [JSONObject] = []
     ) {
@@ -401,6 +411,7 @@ struct AppServerScenario: Encodable {
         self.turnInterruptResponses = turnInterruptResponses
         self.modelListResponses = modelListResponses
         self.accountRateLimitsReadResponses = accountRateLimitsReadResponses
+        self.accountTokenUsageReadResponses = accountTokenUsageReadResponses
         self.skillsExtraRootsSetResponses = skillsExtraRootsSetResponses
         self.pluginListResponses = pluginListResponses
     }
@@ -554,6 +565,23 @@ func appServerAccountRateLimitsReadResponse() -> JSONObject {
             rateLimitsByLimitId: [
                 "codex": RateLimitSnapshot(limitId: "codex", limitName: "Codex")
             ]
+        )
+    )
+}
+
+func appServerAccountTokenUsageReadResponse() -> JSONObject {
+    jsonObject(
+        GetAccountTokenUsageResponse(
+            dailyUsageBuckets: [
+                AccountTokenUsageDailyBucket(startDate: "2026-06-09", tokens: 1200),
+            ],
+            summary: AccountTokenUsageSummary(
+                currentStreakDays: 4,
+                lifetimeTokens: 9000,
+                longestRunningTurnSec: 300,
+                longestStreakDays: 8,
+                peakDailyTokens: 2200
+            )
         )
     )
 }

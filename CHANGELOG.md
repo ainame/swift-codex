@@ -8,6 +8,15 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Synced focused app-server schema additions from `rust-v0.139.0`, including account token-usage response models, plugin app-template summary models, and turn moderation metadata notifications.
+- Added low-level `CodexRPCClient.accountTokenUsageRead()` for the newly wrapped `account/tokenUsage/read` app-server RPC.
+
+### Changed
+
+- Updated the vendored upstream checkout to `rust-v0.139.0` (`a7dff904308535e965aee87680c1fc5ef1d19eec`) and refreshed upstream metadata plus README status notes.
+
 ## [0.137.0] - 2026-06-07
 
 ### Added
