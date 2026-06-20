@@ -8,17 +8,19 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.141.0] - 2026-06-20
+
 ### Added
 
-- Synced focused app-server schema additions through `rust-v0.141.0`, including account token-usage and rate-limit reset-credit records, plugin detail models, thread settings, sleep items, and subagent activity items.
-- Added low-level thread deletion and persisted-goal helpers, with matching `Codex` and `CodexThread` convenience APIs.
-- Added low-level `CodexRPCClient.accountTokenUsageRead()` for the wrapped `account/tokenUsage/read` app-server RPC.
-- Updated the model generator's root set so low-level RPC response models remain reproducible across schema refreshes.
+- Synced focused app-server schema additions through `rust-v0.141.0`, including account token-usage and rate-limit reset-credit records, plugin detail models, thread settings, sleep items, and subagent activity items. [#15](https://github.com/ainame/swift-codex/pull/15)
+- Added low-level thread deletion and persisted-goal helpers, with matching `Codex` and `CodexThread` convenience APIs. [#15](https://github.com/ainame/swift-codex/pull/15)
+- Added low-level `CodexRPCClient.accountTokenUsageRead()` for the wrapped `account/tokenUsage/read` app-server RPC. [#15](https://github.com/ainame/swift-codex/pull/15)
+- Updated the model generator's root set so low-level RPC response models remain reproducible across schema refreshes. [#15](https://github.com/ainame/swift-codex/pull/15)
 
 ### Changed
 
-- Updated the vendored upstream checkout to `rust-v0.141.0` (`3fb81667d30d9d24297216ea61fbfcc4351b2aa9`) and refreshed upstream metadata plus README status notes.
-- Constrained `swift-subprocess` to the compatible `0.4.x` line so the independent Examples package does not resolve the incompatible `0.5.0` manifest.
+- Updated the vendored upstream checkout to `rust-v0.141.0` (`3fb81667d30d9d24297216ea61fbfcc4351b2aa9`) and refreshed upstream metadata plus README status notes. [#15](https://github.com/ainame/swift-codex/pull/15)
+- Constrained `swift-subprocess` to the compatible `0.4.x` line so the independent Examples package does not resolve the incompatible `0.5.0` manifest. [#15](https://github.com/ainame/swift-codex/pull/15)
 
 ## [0.137.0] - 2026-06-07
 
