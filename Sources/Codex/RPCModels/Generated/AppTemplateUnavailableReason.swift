@@ -4,41 +4,35 @@
 import Foundation
 
 public enum AppTemplateUnavailableReason: RawJSONRepresentable {
-    case notConfiguredForWorkspace
-    case noActiveWorkspace
-
-    case unknown(JSONValue)
+    case nOTCONFIGUREDFORWORKSPACE
+    case nOACTIVEWORKSPACE
+    case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
-        let raw = try JSONValue(from: decoder)
-        if case .string(let value) = raw {
-            switch value {
-            case "NOT_CONFIGURED_FOR_WORKSPACE": self = .notConfiguredForWorkspace; return
-            case "NO_ACTIVE_WORKSPACE": self = .noActiveWorkspace; return
-            default:
-                break
-            }
+        let value = try String(from: decoder)
+        switch value {
+        case "NOT_CONFIGURED_FOR_WORKSPACE": self = .nOTCONFIGUREDFORWORKSPACE
+        case "NO_ACTIVE_WORKSPACE": self = .nOACTIVEWORKSPACE
+        default:
+            self = .unrecognized(value)
         }
-        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        switch self {
-        case .notConfiguredForWorkspace: try "NOT_CONFIGURED_FOR_WORKSPACE".encode(to: encoder)
-        case .noActiveWorkspace: try "NO_ACTIVE_WORKSPACE".encode(to: encoder)
+        try rawValue.encode(to: encoder)
+    }
 
-        case .unknown(let value):
-            try value.encode(to: encoder)
+    public var rawValue: String {
+        switch self {
+        case .nOTCONFIGUREDFORWORKSPACE: return "NOT_CONFIGURED_FOR_WORKSPACE"
+        case .nOACTIVEWORKSPACE: return "NO_ACTIVE_WORKSPACE"
+        case .unrecognized(let value):
+            return value
         }
     }
 
     public var rawJSON: JSONValue {
-        switch self {
-        case .notConfiguredForWorkspace: return .string("NOT_CONFIGURED_FOR_WORKSPACE")
-        case .noActiveWorkspace: return .string("NO_ACTIVE_WORKSPACE")
-
-        case .unknown(let value):
-            return value
-        }
+        .string(rawValue)
     }
 }
+

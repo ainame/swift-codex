@@ -17,7 +17,10 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.4"),
         .package(url: "https://github.com/apple/swift-system.git", from: "1.6.0"),
-        .package(url: "https://github.com/swiftlang/swift-subprocess.git", from: "0.4.0"),
+        .package(
+            url: "https://github.com/swiftlang/swift-subprocess.git",
+            .upToNextMinor(from: "0.4.0")
+        ),
         .package(url: "https://github.com/swiftlang/swift-testing.git", from: "0.9.0"),
     ],
     targets: [

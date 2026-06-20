@@ -5,14 +5,14 @@ import Foundation
 
 public struct SpendControlLimitSnapshot: ObjectModel {
     public var limit: String
-    public var remainingPercent: Double
+    public var remainingPercent: Int
     public var resetsAt: Int
     public var used: String
     public var additionalFields: JSONObject
 
     public init(
         limit: String,
-        remainingPercent: Double,
+        remainingPercent: Int,
         resetsAt: Int,
         used: String,
         additionalFields: JSONObject = [:]
@@ -55,7 +55,7 @@ public struct SpendControlLimitSnapshot: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {
         var limit: String
-        var remainingPercent: Double
+        var remainingPercent: Int
         var resetsAt: Int
         var used: String
 
@@ -67,3 +67,4 @@ public struct SpendControlLimitSnapshot: ObjectModel {
         }
     }
 }
+

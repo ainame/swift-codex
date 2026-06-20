@@ -4,13 +4,17 @@
 import Foundation
 
 public struct ExternalAgentConfigImportCompletedNotification: ObjectModel {
-
+    public var importId: String
+    public var itemTypeResults: [ExternalAgentConfigImportTypeResult]
     public var additionalFields: JSONObject
 
     public init(
+        importId: String,
+        itemTypeResults: [ExternalAgentConfigImportTypeResult],
         additionalFields: JSONObject = [:]
     ) {
-
+        self.importId = importId
+        self.itemTypeResults = itemTypeResults
         self.additionalFields = additionalFields
     }
 
@@ -20,8 +24,9 @@ public struct ExternalAgentConfigImportCompletedNotification: ObjectModel {
 
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ExternalAgentConfigImportCompletedNotification")
-        _ = try decodeJSONValue(Payload.self, from: .object(object))
-
+        let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.importId = payload.importId
+        self.itemTypeResults = payload.itemTypeResults
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -30,11 +35,22 @@ public struct ExternalAgentConfigImportCompletedNotification: ObjectModel {
     }
 
     private var payload: Payload {
-        Payload()
+        Payload(
+            importId: importId,
+            itemTypeResults: itemTypeResults
+        )
     }
 
-    private static let knownKeys: Set<String> = []
+    private static let knownKeys: Set<String> = ["importId", "itemTypeResults"]
 
-    private struct Payload: Codable, Hashable, Sendable {}
+    private struct Payload: Codable, Hashable, Sendable {
+        var importId: String
+        var itemTypeResults: [ExternalAgentConfigImportTypeResult]
+
+        enum CodingKeys: String, CodingKey {
+            case importId
+            case itemTypeResults
+        }
+    }
 }
 

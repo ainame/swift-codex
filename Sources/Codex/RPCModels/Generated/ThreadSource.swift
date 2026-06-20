@@ -3,39 +3,38 @@
 
 import Foundation
 
-public enum ThreadSource: RawJSONRepresentable {
-    case user
-    case subagent
-    case memoryConsolidation
-    case unrecognized(String)
+public struct ThreadSource: RawRepresentable, RawJSONRepresentable {
+    public var rawValue: String
+
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
 
     public init(from decoder: any Decoder) throws {
-        let value = try String(from: decoder)
-        switch value {
-        case "user": self = .user
-        case "subagent": self = .subagent
-        case "memory_consolidation": self = .memoryConsolidation
-        default:
-            self = .unrecognized(value)
+        let raw = try JSONValue(from: decoder)
+        guard let value = raw.stringValue else {
+            throw DecodingError.dataCorrupted(
+                .init(codingPath: decoder.codingPath, debugDescription: "ThreadSource must decode from a String")
+            )
         }
+        self.rawValue = value
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try rawValue.encode(to: encoder)
-    }
-
-    public var rawValue: String {
-        switch self {
-        case .user: return "user"
-        case .subagent: return "subagent"
-        case .memoryConsolidation: return "memory_consolidation"
-        case .unrecognized(let value):
-            return value
+        switch rawJSON {
+        case .string(let value):
+            try value.encode(to: encoder)
+        case .number(let value):
+            try value.encode(to: encoder)
+        case .bool(let value):
+            try value.encode(to: encoder)
+        default:
+            try rawJSON.encode(to: encoder)
         }
     }
 
     public var rawJSON: JSONValue {
-        .string(rawValue)
+        JSONValue.string(rawValue)
     }
 }
 

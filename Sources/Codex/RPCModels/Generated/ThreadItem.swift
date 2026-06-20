@@ -15,8 +15,10 @@ public enum ThreadItem: RawJSONRepresentable {
     case mcpToolCall(McpToolCallThreadItem)
     case dynamicToolCall(DynamicToolCallThreadItem)
     case collabAgentToolCall(CollabAgentToolCallThreadItem)
+    case subAgentActivity(SubAgentActivityThreadItem)
     case webSearch(WebSearchThreadItem)
     case imageView(ImageViewThreadItem)
+    case sleep(SleepThreadItem)
     case imageGeneration(ImageGenerationThreadItem)
     case enteredReviewMode(EnteredReviewModeThreadItem)
     case exitedReviewMode(ExitedReviewModeThreadItem)
@@ -84,6 +86,11 @@ public enum ThreadItem: RawJSONRepresentable {
                     self = .collabAgentToolCall(value)
                     return
                 }
+            case "subAgentActivity":
+                if let value = try? decodeJSONValue(SubAgentActivityThreadItem.self, from: raw) {
+                    self = .subAgentActivity(value)
+                    return
+                }
             case "webSearch":
                 if let value = try? decodeJSONValue(WebSearchThreadItem.self, from: raw) {
                     self = .webSearch(value)
@@ -92,6 +99,11 @@ public enum ThreadItem: RawJSONRepresentable {
             case "imageView":
                 if let value = try? decodeJSONValue(ImageViewThreadItem.self, from: raw) {
                     self = .imageView(value)
+                    return
+                }
+            case "sleep":
+                if let value = try? decodeJSONValue(SleepThreadItem.self, from: raw) {
+                    self = .sleep(value)
                     return
                 }
             case "imageGeneration":
@@ -128,8 +140,10 @@ public enum ThreadItem: RawJSONRepresentable {
         if let value = try? decodeJSONValue(McpToolCallThreadItem.self, from: raw) { self = .mcpToolCall(value); return }
         if let value = try? decodeJSONValue(DynamicToolCallThreadItem.self, from: raw) { self = .dynamicToolCall(value); return }
         if let value = try? decodeJSONValue(CollabAgentToolCallThreadItem.self, from: raw) { self = .collabAgentToolCall(value); return }
+        if let value = try? decodeJSONValue(SubAgentActivityThreadItem.self, from: raw) { self = .subAgentActivity(value); return }
         if let value = try? decodeJSONValue(WebSearchThreadItem.self, from: raw) { self = .webSearch(value); return }
         if let value = try? decodeJSONValue(ImageViewThreadItem.self, from: raw) { self = .imageView(value); return }
+        if let value = try? decodeJSONValue(SleepThreadItem.self, from: raw) { self = .sleep(value); return }
         if let value = try? decodeJSONValue(ImageGenerationThreadItem.self, from: raw) { self = .imageGeneration(value); return }
         if let value = try? decodeJSONValue(EnteredReviewModeThreadItem.self, from: raw) { self = .enteredReviewMode(value); return }
         if let value = try? decodeJSONValue(ExitedReviewModeThreadItem.self, from: raw) { self = .exitedReviewMode(value); return }
@@ -150,8 +164,10 @@ public enum ThreadItem: RawJSONRepresentable {
         case .mcpToolCall(let value): try value.encode(to: encoder)
         case .dynamicToolCall(let value): try value.encode(to: encoder)
         case .collabAgentToolCall(let value): try value.encode(to: encoder)
+        case .subAgentActivity(let value): try value.encode(to: encoder)
         case .webSearch(let value): try value.encode(to: encoder)
         case .imageView(let value): try value.encode(to: encoder)
+        case .sleep(let value): try value.encode(to: encoder)
         case .imageGeneration(let value): try value.encode(to: encoder)
         case .enteredReviewMode(let value): try value.encode(to: encoder)
         case .exitedReviewMode(let value): try value.encode(to: encoder)
@@ -174,8 +190,10 @@ public enum ThreadItem: RawJSONRepresentable {
         case .mcpToolCall(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.mcpToolCall")
         case .dynamicToolCall(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.dynamicToolCall")
         case .collabAgentToolCall(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.collabAgentToolCall")
+        case .subAgentActivity(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.subAgentActivity")
         case .webSearch(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.webSearch")
         case .imageView(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.imageView")
+        case .sleep(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.sleep")
         case .imageGeneration(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.imageGeneration")
         case .enteredReviewMode(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.enteredReviewMode")
         case .exitedReviewMode(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.exitedReviewMode")

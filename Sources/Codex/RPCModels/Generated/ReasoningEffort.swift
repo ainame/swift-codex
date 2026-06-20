@@ -3,48 +3,38 @@
 
 import Foundation
 
-public enum ReasoningEffort: RawJSONRepresentable {
-    case none
-    case minimal
-    case low
-    case medium
-    case high
-    case xhigh
-    case unrecognized(String)
+public struct ReasoningEffort: RawRepresentable, RawJSONRepresentable {
+    public var rawValue: String
+
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
 
     public init(from decoder: any Decoder) throws {
-        let value = try String(from: decoder)
-        switch value {
-        case "none": self = .none
-        case "minimal": self = .minimal
-        case "low": self = .low
-        case "medium": self = .medium
-        case "high": self = .high
-        case "xhigh": self = .xhigh
-        default:
-            self = .unrecognized(value)
+        let raw = try JSONValue(from: decoder)
+        guard let value = raw.stringValue else {
+            throw DecodingError.dataCorrupted(
+                .init(codingPath: decoder.codingPath, debugDescription: "ReasoningEffort must decode from a String")
+            )
         }
+        self.rawValue = value
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try rawValue.encode(to: encoder)
-    }
-
-    public var rawValue: String {
-        switch self {
-        case .none: return "none"
-        case .minimal: return "minimal"
-        case .low: return "low"
-        case .medium: return "medium"
-        case .high: return "high"
-        case .xhigh: return "xhigh"
-        case .unrecognized(let value):
-            return value
+        switch rawJSON {
+        case .string(let value):
+            try value.encode(to: encoder)
+        case .number(let value):
+            try value.encode(to: encoder)
+        case .bool(let value):
+            try value.encode(to: encoder)
+        default:
+            try rawJSON.encode(to: encoder)
         }
     }
 
     public var rawJSON: JSONValue {
-        .string(rawValue)
+        JSONValue.string(rawValue)
     }
 }
 

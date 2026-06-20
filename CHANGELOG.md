@@ -10,12 +10,15 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Added
 
-- Synced focused app-server schema additions from `rust-v0.139.0`, including account token-usage response models, plugin app-template summary models, and turn moderation metadata notifications.
-- Added low-level `CodexRPCClient.accountTokenUsageRead()` for the newly wrapped `account/tokenUsage/read` app-server RPC.
+- Synced focused app-server schema additions through `rust-v0.141.0`, including account token-usage and rate-limit reset-credit records, plugin detail models, thread settings, sleep items, and subagent activity items.
+- Added low-level thread deletion and persisted-goal helpers, with matching `Codex` and `CodexThread` convenience APIs.
+- Added low-level `CodexRPCClient.accountTokenUsageRead()` for the wrapped `account/tokenUsage/read` app-server RPC.
+- Updated the model generator's root set so low-level RPC response models remain reproducible across schema refreshes.
 
 ### Changed
 
-- Updated the vendored upstream checkout to `rust-v0.139.0` (`a7dff904308535e965aee87680c1fc5ef1d19eec`) and refreshed upstream metadata plus README status notes.
+- Updated the vendored upstream checkout to `rust-v0.141.0` (`3fb81667d30d9d24297216ea61fbfcc4351b2aa9`) and refreshed upstream metadata plus README status notes.
+- Constrained `swift-subprocess` to the compatible `0.4.x` line so the independent Examples package does not resolve the incompatible `0.5.0` manifest.
 
 ## [0.137.0] - 2026-06-07
 
