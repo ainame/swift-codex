@@ -279,7 +279,7 @@ struct AppServerSDKTests {
         let models = try await client.modelList()
         #expect(models.data.map(\.id) == ["gpt-5"])
         let rateLimits = try await client.accountRateLimitsRead()
-        #expect(rateLimits.rateLimits.individualLimit?.remainingPercent == 42.5)
+        #expect(rateLimits.rateLimits.individualLimit?.remainingPercent == 42)
         let tokenUsage = try await client.accountTokenUsageRead()
         #expect(tokenUsage.summary.lifetimeTokens == 9000)
         #expect(tokenUsage.dailyUsageBuckets?.first?.tokens == 1200)
@@ -367,16 +367,71 @@ struct AppServerSDKTests {
         #expect(decodedTemplate.materializedAppIds == ["app.slack"])
         #expect(decodedTemplate.reason == .noActiveWorkspace)
 
-        let moderation = TurnModerationMetadataNotification(
-            metadata: .object(["safety": .string("ok")]),
-            threadId: "thread_139",
-            turnId: "turn_139"
-        )
-        let decodedModeration = try decodeJSONValue(TurnModerationMetadataNotification.self, from: moderation.rawJSON)
-        #expect(decodedModeration.metadata.objectValue?["safety"] == .string("ok"))
+    }
 
-        let payload = try CodexNotificationPayload(method: "turn/moderationMetadata", params: moderation.rawJSON)
-        #expect(payload == .turnModerationMetadata(moderation))
+    @Test
+    func generatedModelsDecodeRust0141Additions() throws {
+        let response = ThreadGoalSetResponse(goal: ThreadGoal(
+            createdAt: 1,
+            objective: "Keep syncing",
+            status: .active,
+            threadId: "thread_141",
+            timeUsedSeconds: 2,
+            tokenBudget: 5000,
+            tokensUsed: 100,
+            updatedAt: 3
+        ))
+        let decoded = try decodeJSONValue(ThreadGoalSetResponse.self, from: response.rawJSON)
+        #expect(decoded.goal.objective == "Keep syncing")
+        #expect(decoded.goal.status == .active)
+        #expect(decoded.goal.tokenBudget == 5000)
+    }
+
+    @Test
+    func lowLevelClientSupportsThreadDeleteAndGoals() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        let goal = ThreadGoal(
+            createdAt: 1,
+            objective: "Ship the sync",
+            status: .active,
+            threadId: "thread_goal",
+            timeUsedSeconds: 0,
+            tokenBudget: 4000,
+            tokensUsed: 0,
+            updatedAt: 1
+        )
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadDeleteResponses: [appServerEmptyResponse()],
+            threadGoalSetResponses: [jsonObject(ThreadGoalSetResponse(goal: goal))],
+            threadGoalGetResponses: [jsonObject(ThreadGoalGetResponse(goal: goal))],
+            threadGoalClearResponses: [jsonObject(ThreadGoalClearResponse(cleared: true))]
+        ))
+
+        let client = CodexRPCClient(config: stub.makeConfig())
+        _ = try await client.initialize()
+        let set = try await client.threadGoalSet(
+            threadID: "thread_goal",
+            objective: "Ship the sync",
+            status: .active,
+            tokenBudget: 4000
+        )
+        #expect(set.goal.objective == "Ship the sync")
+        #expect(try await client.threadGoalGet(threadID: "thread_goal").goal?.status == .active)
+        #expect(try await client.threadGoalClear(threadID: "thread_goal").cleared)
+        _ = try await client.threadDelete(threadID: "thread_goal")
+
+        let messages = try stub.appServerMessages(forInvocation: 0)
+        let methods = messages.compactMap { $0.stringValue(forKey: "method") }
+        #expect(methods == [
+            "initialize", "initialized", "thread/goal/set", "thread/goal/get",
+            "thread/goal/clear", "thread/delete",
+        ])
+        let params = try #require(messages.first { $0.stringValue(forKey: "method") == "thread/goal/set" }?.objectValue(forKey: "params"))
+        #expect(params["objective"] == .string("Ship the sync"))
+        #expect(params["status"] == .string("active"))
+        #expect(params["tokenBudget"] == .number(4000))
+        await client.close()
     }
 
     @Test

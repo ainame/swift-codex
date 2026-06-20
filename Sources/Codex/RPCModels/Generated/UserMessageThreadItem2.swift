@@ -4,17 +4,20 @@
 import Foundation
 
 public struct UserMessageThreadItem2: ObjectModel {
+    public var clientId: String?
     public var content: [UserInput]
     public var id: String
     public var type: UserMessageThreadItemType2
     public var additionalFields: JSONObject
 
     public init(
+        clientId: String? = nil,
         content: [UserInput],
         id: String,
         type: UserMessageThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.clientId = clientId
         self.content = content
         self.id = id
         self.type = type
@@ -28,6 +31,7 @@ public struct UserMessageThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "UserMessageThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.clientId = payload.clientId
         self.content = payload.content
         self.id = payload.id
         self.type = payload.type
@@ -40,20 +44,23 @@ public struct UserMessageThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            clientId: clientId,
             content: content,
             id: id,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["content", "id", "type"]
+    private static let knownKeys: Set<String> = ["clientId", "content", "id", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var clientId: String?
         var content: [UserInput]
         var id: String
         var type: UserMessageThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case clientId
             case content
             case id
             case type

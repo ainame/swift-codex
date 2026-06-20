@@ -73,8 +73,12 @@ struct CodexStub {
         thread_fork_responses = scenario.get("threadForkResponses", [])
         thread_archive_responses = scenario.get("threadArchiveResponses", [])
         thread_unarchive_responses = scenario.get("threadUnarchiveResponses", [])
+        thread_delete_responses = scenario.get("threadDeleteResponses", [])
         thread_set_name_responses = scenario.get("threadSetNameResponses", [])
         thread_compact_responses = scenario.get("threadCompactResponses", [])
+        thread_goal_set_responses = scenario.get("threadGoalSetResponses", [])
+        thread_goal_get_responses = scenario.get("threadGoalGetResponses", [])
+        thread_goal_clear_responses = scenario.get("threadGoalClearResponses", [])
         turn_start_responses = scenario.get("turnStartResponses", [])
         turn_start_sequences = scenario.get("turnStartSequences", [])
         turn_steer_responses = scenario.get("turnSteerResponses", [])
@@ -92,8 +96,12 @@ struct CodexStub {
         thread_fork_index = 0
         thread_archive_index = 0
         thread_unarchive_index = 0
+        thread_delete_index = 0
         thread_set_name_index = 0
         thread_compact_index = 0
+        thread_goal_set_index = 0
+        thread_goal_get_index = 0
+        thread_goal_clear_index = 0
         turn_start_index = 0
         turn_steer_index = 0
         turn_interrupt_index = 0
@@ -184,6 +192,12 @@ struct CodexStub {
                 write_message({"id": request_id, "result": response})
                 continue
 
+            if method == "thread/delete":
+                response = response_at(thread_delete_responses, thread_delete_index, {})
+                thread_delete_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
             if method == "thread/name/set":
                 response = response_at(thread_set_name_responses, thread_set_name_index, {})
                 thread_set_name_index += 1
@@ -193,6 +207,24 @@ struct CodexStub {
             if method == "thread/compact/start":
                 response = response_at(thread_compact_responses, thread_compact_index, {})
                 thread_compact_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/goal/set":
+                response = response_at(thread_goal_set_responses, thread_goal_set_index, {})
+                thread_goal_set_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/goal/get":
+                response = response_at(thread_goal_get_responses, thread_goal_get_index, {})
+                thread_goal_get_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/goal/clear":
+                response = response_at(thread_goal_clear_responses, thread_goal_clear_index, {"cleared": True})
+                thread_goal_clear_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
@@ -360,8 +392,12 @@ struct AppServerScenario: Encodable {
     var threadForkResponses: [JSONObject]
     var threadArchiveResponses: [JSONObject]
     var threadUnarchiveResponses: [JSONObject]
+    var threadDeleteResponses: [JSONObject]
     var threadSetNameResponses: [JSONObject]
     var threadCompactResponses: [JSONObject]
+    var threadGoalSetResponses: [JSONObject]
+    var threadGoalGetResponses: [JSONObject]
+    var threadGoalClearResponses: [JSONObject]
     var turnStartResponses: [JSONObject]
     var turnStartSequences: [[AppServerScriptStep]]
     var turnSteerResponses: [JSONObject]
@@ -382,8 +418,12 @@ struct AppServerScenario: Encodable {
         threadForkResponses: [JSONObject] = [],
         threadArchiveResponses: [JSONObject] = [],
         threadUnarchiveResponses: [JSONObject] = [],
+        threadDeleteResponses: [JSONObject] = [],
         threadSetNameResponses: [JSONObject] = [],
         threadCompactResponses: [JSONObject] = [],
+        threadGoalSetResponses: [JSONObject] = [],
+        threadGoalGetResponses: [JSONObject] = [],
+        threadGoalClearResponses: [JSONObject] = [],
         turnStartResponses: [JSONObject] = [],
         turnStartSequences: [[AppServerScriptStep]] = [],
         turnSteerResponses: [JSONObject] = [],
@@ -403,8 +443,12 @@ struct AppServerScenario: Encodable {
         self.threadForkResponses = threadForkResponses
         self.threadArchiveResponses = threadArchiveResponses
         self.threadUnarchiveResponses = threadUnarchiveResponses
+        self.threadDeleteResponses = threadDeleteResponses
         self.threadSetNameResponses = threadSetNameResponses
         self.threadCompactResponses = threadCompactResponses
+        self.threadGoalSetResponses = threadGoalSetResponses
+        self.threadGoalGetResponses = threadGoalGetResponses
+        self.threadGoalClearResponses = threadGoalClearResponses
         self.turnStartResponses = turnStartResponses
         self.turnStartSequences = turnStartSequences
         self.turnSteerResponses = turnSteerResponses
@@ -555,7 +599,7 @@ func appServerAccountRateLimitsReadResponse() -> JSONObject {
             rateLimits: RateLimitSnapshot(
                 individualLimit: SpendControlLimitSnapshot(
                     limit: "100.00",
-                    remainingPercent: 42.5,
+                    remainingPercent: 42,
                     resetsAt: 1_780_000_000,
                     used: "57.50"
                 ),

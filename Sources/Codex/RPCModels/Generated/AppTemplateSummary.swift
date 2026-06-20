@@ -5,6 +5,7 @@ import Foundation
 
 public struct AppTemplateSummary: ObjectModel {
     public var canonicalConnectorId: String?
+    public var category: String?
     public var description: String?
     public var logoUrl: String?
     public var logoUrlDark: String?
@@ -16,6 +17,7 @@ public struct AppTemplateSummary: ObjectModel {
 
     public init(
         canonicalConnectorId: String? = nil,
+        category: String? = nil,
         description: String? = nil,
         logoUrl: String? = nil,
         logoUrlDark: String? = nil,
@@ -26,6 +28,7 @@ public struct AppTemplateSummary: ObjectModel {
         additionalFields: JSONObject = [:]
     ) {
         self.canonicalConnectorId = canonicalConnectorId
+        self.category = category
         self.description = description
         self.logoUrl = logoUrl
         self.logoUrlDark = logoUrlDark
@@ -44,6 +47,7 @@ public struct AppTemplateSummary: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "AppTemplateSummary")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.canonicalConnectorId = payload.canonicalConnectorId
+        self.category = payload.category
         self.description = payload.description
         self.logoUrl = payload.logoUrl
         self.logoUrlDark = payload.logoUrlDark
@@ -61,6 +65,7 @@ public struct AppTemplateSummary: ObjectModel {
     private var payload: Payload {
         Payload(
             canonicalConnectorId: canonicalConnectorId,
+            category: category,
             description: description,
             logoUrl: logoUrl,
             logoUrlDark: logoUrlDark,
@@ -71,10 +76,11 @@ public struct AppTemplateSummary: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["canonicalConnectorId", "description", "logoUrl", "logoUrlDark", "materializedAppIds", "name", "reason", "templateId"]
+    private static let knownKeys: Set<String> = ["canonicalConnectorId", "category", "description", "logoUrl", "logoUrlDark", "materializedAppIds", "name", "reason", "templateId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var canonicalConnectorId: String?
+        var category: String?
         var description: String?
         var logoUrl: String?
         var logoUrlDark: String?
@@ -85,6 +91,7 @@ public struct AppTemplateSummary: ObjectModel {
 
         enum CodingKeys: String, CodingKey {
             case canonicalConnectorId
+            case category
             case description
             case logoUrl
             case logoUrlDark
@@ -95,3 +102,4 @@ public struct AppTemplateSummary: ObjectModel {
         }
     }
 }
+

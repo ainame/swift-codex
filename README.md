@@ -40,7 +40,7 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `a7dff904308535e965aee87680c1fc5ef1d19eec` (`rust-v0.139.0`)
+- Vendored upstream commit: `3fb81667d30d9d24297216ea61fbfcc4351b2aa9` (`rust-v0.141.0`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`

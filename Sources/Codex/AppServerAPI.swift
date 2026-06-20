@@ -322,6 +322,10 @@ public actor CodexRPCClient {
         try await request("thread/unarchive", params: ["threadId": .string(threadID)], responseType: ThreadUnarchiveResponse.self)
     }
 
+    public func threadDelete(threadID: String) async throws -> ThreadDeleteResponse {
+        try await request("thread/delete", params: ["threadId": .string(threadID)], responseType: ThreadDeleteResponse.self)
+    }
+
     public func threadSetName(threadID: String, name: String) async throws -> ThreadSetNameResponse {
         try await request(
             "thread/name/set",
@@ -339,6 +343,33 @@ public actor CodexRPCClient {
             params: ["threadId": .string(threadID)],
             responseType: ThreadCompactStartResponse.self
         )
+    }
+
+    public func threadGoalSet(
+        threadID: String,
+        objective: String? = nil,
+        status: ThreadGoalStatus? = nil,
+        tokenBudget: Int64? = nil
+    ) async throws -> ThreadGoalSetResponse {
+        var params: JSONObject = ["threadId": .string(threadID)]
+        if let objective {
+            params["objective"] = .string(objective)
+        }
+        if let status {
+            params["status"] = status.rawJSON
+        }
+        if let tokenBudget {
+            params["tokenBudget"] = .number(Double(tokenBudget))
+        }
+        return try await request("thread/goal/set", params: params, responseType: ThreadGoalSetResponse.self)
+    }
+
+    public func threadGoalGet(threadID: String) async throws -> ThreadGoalGetResponse {
+        try await request("thread/goal/get", params: ["threadId": .string(threadID)], responseType: ThreadGoalGetResponse.self)
+    }
+
+    public func threadGoalClear(threadID: String) async throws -> ThreadGoalClearResponse {
+        try await request("thread/goal/clear", params: ["threadId": .string(threadID)], responseType: ThreadGoalClearResponse.self)
     }
 
     public func turnStart(
@@ -633,6 +664,12 @@ public actor Codex {
         )
     }
 
+    public func deleteThread(id: String) async throws -> ThreadDeleteResponse {
+        let response = try await client.threadDelete(threadID: id)
+        logger.info("Deleted thread", metadata: ["thread_id": .string(id)])
+        return response
+    }
+
     public func models(includeHidden: Bool = false) async throws -> ModelListResponse {
         try await client.modelList(includeHidden: includeHidden)
     }
@@ -755,6 +792,27 @@ public struct CodexThread: Sendable {
 
     public func compact() async throws -> ThreadCompactStartResponse {
         try await client.threadCompact(threadID: id)
+    }
+
+    public func setGoal(
+        objective: String? = nil,
+        status: ThreadGoalStatus? = nil,
+        tokenBudget: Int64? = nil
+    ) async throws -> ThreadGoalSetResponse {
+        try await client.threadGoalSet(
+            threadID: id,
+            objective: objective,
+            status: status,
+            tokenBudget: tokenBudget
+        )
+    }
+
+    public func goal() async throws -> ThreadGoalGetResponse {
+        try await client.threadGoalGet(threadID: id)
+    }
+
+    public func clearGoal() async throws -> ThreadGoalClearResponse {
+        try await client.threadGoalClear(threadID: id)
     }
 }
 

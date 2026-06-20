@@ -7,17 +7,20 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
     public var error: String?
     public var name: String
     public var status: McpServerStartupState
+    public var threadId: String?
     public var additionalFields: JSONObject
 
     public init(
         error: String? = nil,
         name: String,
         status: McpServerStartupState,
+        threadId: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.error = error
         self.name = name
         self.status = status
+        self.threadId = threadId
         self.additionalFields = additionalFields
     }
 
@@ -31,6 +34,7 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
         self.error = payload.error
         self.name = payload.name
         self.status = payload.status
+        self.threadId = payload.threadId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -42,21 +46,24 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
         Payload(
             error: error,
             name: name,
-            status: status
+            status: status,
+            threadId: threadId
         )
     }
 
-    private static let knownKeys: Set<String> = ["error", "name", "status"]
+    private static let knownKeys: Set<String> = ["error", "name", "status", "threadId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var error: String?
         var name: String
         var status: McpServerStartupState
+        var threadId: String?
 
         enum CodingKeys: String, CodingKey {
             case error
             case name
             case status
+            case threadId
         }
     }
 }

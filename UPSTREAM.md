@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `a7dff904308535e965aee87680c1fc5ef1d19eec`
-- Reviewed JSON-RPC basis commit SHA: `a7dff904308535e965aee87680c1fc5ef1d19eec`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/a7dff904308535e965aee87680c1fc5ef1d19eec`
-- Last reviewed date: `2026-06-13`
+- Vendored upstream commit: `3fb81667d30d9d24297216ea61fbfcc4351b2aa9`
+- Reviewed JSON-RPC basis commit SHA: `3fb81667d30d9d24297216ea61fbfcc4351b2aa9`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/3fb81667d30d9d24297216ea61fbfcc4351b2aa9`
+- Last reviewed date: `2026-06-20`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,23 +33,26 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `a7dff904308535e965aee87680c1fc5ef1d19eec` (`rust-v0.139.0`)
+- Vendored checkout: `vendor/openai-codex` at `3fb81667d30d9d24297216ea61fbfcc4351b2aa9` (`rust-v0.141.0`)
 - Reviewed upstream files:
+  - `sdk/python/src/openai_codex/_goal.py`
+  - `sdk/python/src/openai_codex/async_client.py`
+  - `sdk/python/src/openai_codex/client.py`
+  - `sdk/python/src/openai_codex/models.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
-  - `codex-rs/app-server-protocol/schema/json/v2/GetAccountTokenUsageResponse.json`
-  - `codex-rs/app-server-protocol/schema/json/v2/PluginReadResponse.json`
-  - `codex-rs/app-server-protocol/schema/json/v2/TurnModerationMetadataNotification.json`
 - Reviewed upstream features:
-  - account token usage summary and daily-bucket response records
-  - plugin app-template summary metadata records
-  - turn moderation metadata notifications
+  - thread deletion plus persisted goal set, get, clear, and notification records
+  - account token usage and rate-limit reset-credit response records
+  - plugin detail, thread settings, sleep item, and subagent activity records
+  - API path strings, collaboration modes, and external-agent import result records
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
-  - the full `rust-v0.139.0` schema includes broader config, MCP server status, remote-control, plugin read, app template, thread-history, and app-server transport changes that are still not wrapped as Swift convenience APIs
+  - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
+  - the full `rust-v0.141.0` schema includes broader config, MCP server status, remote-control, plugin, filesystem, and app-server transport changes that are still not wrapped as Swift convenience APIs
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
-  - generated-style model files were refreshed manually for this constrained automation run because shell DNS could not fetch GitHub objects in the sandbox; upstream schema snippets were verified through the GitHub connector
+  - persisted goals are exposed as direct actor methods rather than the Python SDK's synchronous and asynchronous logical-turn stream wrappers
 
 ### 0.137.0
 

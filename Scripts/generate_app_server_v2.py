@@ -33,6 +33,8 @@ SWIFT_RESERVED = {
 }
 
 ROOT_TYPES = {
+    "GetAccountRateLimitsResponse",
+    "GetAccountTokenUsageResponse",
     "ApprovalsReviewer",
     "AskForApproval",
     "ClientInfo",
@@ -40,6 +42,7 @@ ROOT_TYPES = {
     "Model",
     "ModelListResponse",
     "PluginListResponse",
+    "PluginReadResponse",
     "Personality",
     "ReasoningEffort",
     "ReasoningSummary",
@@ -51,11 +54,16 @@ ROOT_TYPES = {
     "Thread",
     "ThreadArchiveResponse",
     "ThreadCompactStartResponse",
+    "ThreadDeleteResponse",
     "ThreadForkResponse",
+    "ThreadGoalClearResponse",
+    "ThreadGoalGetResponse",
+    "ThreadGoalSetResponse",
     "ThreadItem",
     "ThreadListResponse",
     "ThreadReadResponse",
     "ThreadResumeResponse",
+    "ThreadResumeInitialTurnsPageParams",
     "ThreadSetNameResponse",
     "ThreadSortKey",
     "ThreadSourceKind",
@@ -64,6 +72,7 @@ ROOT_TYPES = {
     "ThreadStatus",
     "ThreadTokenUsage",
     "ThreadUnarchiveResponse",
+    "TurnsPage",
     "Turn",
     "TurnError",
     "TurnInterruptResponse",
@@ -73,6 +82,7 @@ ROOT_TYPES = {
     "TurnStatus",
     "TurnSteerResponse",
     "TokenUsageBreakdown",
+    "SkillsExtraRootsSetResponse",
 }
 
 MANUAL_DEFINITIONS = {

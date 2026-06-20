@@ -1,5 +1,18 @@
 import Foundation
 
+public extension ReasoningEffort {
+    static let minimal = Self(rawValue: "minimal")
+    static let low = Self(rawValue: "low")
+    static let medium = Self(rawValue: "medium")
+    static let high = Self(rawValue: "high")
+    static let xhigh = Self(rawValue: "xhigh")
+}
+
+public extension AppTemplateUnavailableReason {
+    static let notConfiguredForWorkspace = Self.nOTCONFIGUREDFORWORKSPACE
+    static let noActiveWorkspace = Self.nOACTIVEWORKSPACE
+}
+
 public protocol RawJSONRepresentable: Codable, Hashable, Sendable {
     var rawJSON: JSONValue { get }
 }

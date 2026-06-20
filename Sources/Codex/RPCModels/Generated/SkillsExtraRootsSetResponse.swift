@@ -37,3 +37,4 @@ public struct SkillsExtraRootsSetResponse: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {}
 }
+

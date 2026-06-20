@@ -56,13 +56,13 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadRealtimeStarted(ThreadRealtimeStartedNotification)
     case threadRealtimeTranscriptDelta(ThreadRealtimeTranscriptDeltaNotification)
     case threadRealtimeTranscriptDone(ThreadRealtimeTranscriptDoneNotification)
+    case threadSettingsUpdated(ThreadSettingsUpdatedNotification)
     case threadStarted(ThreadStartedNotification)
     case threadStatusChanged(ThreadStatusChangedNotification)
     case threadTokenUsageUpdated(ThreadTokenUsageUpdatedNotification)
     case threadUnarchived(ThreadUnarchivedNotification)
     case turnCompleted(TurnCompletedNotification)
     case turnDiffUpdated(TurnDiffUpdatedNotification)
-    case turnModerationMetadata(TurnModerationMetadataNotification)
     case turnPlanUpdated(TurnPlanUpdatedNotification)
     case turnStarted(TurnStartedNotification)
     case warning(WarningNotification)
@@ -124,13 +124,13 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/realtime/started": self = .threadRealtimeStarted(try decodeJSONValue(ThreadRealtimeStartedNotification.self, from: params))
         case "thread/realtime/transcript/delta": self = .threadRealtimeTranscriptDelta(try decodeJSONValue(ThreadRealtimeTranscriptDeltaNotification.self, from: params))
         case "thread/realtime/transcript/done": self = .threadRealtimeTranscriptDone(try decodeJSONValue(ThreadRealtimeTranscriptDoneNotification.self, from: params))
+        case "thread/settings/updated": self = .threadSettingsUpdated(try decodeJSONValue(ThreadSettingsUpdatedNotification.self, from: params))
         case "thread/started": self = .threadStarted(try decodeJSONValue(ThreadStartedNotification.self, from: params))
         case "thread/status/changed": self = .threadStatusChanged(try decodeJSONValue(ThreadStatusChangedNotification.self, from: params))
         case "thread/tokenUsage/updated": self = .threadTokenUsageUpdated(try decodeJSONValue(ThreadTokenUsageUpdatedNotification.self, from: params))
         case "thread/unarchived": self = .threadUnarchived(try decodeJSONValue(ThreadUnarchivedNotification.self, from: params))
         case "turn/completed": self = .turnCompleted(try decodeJSONValue(TurnCompletedNotification.self, from: params))
         case "turn/diff/updated": self = .turnDiffUpdated(try decodeJSONValue(TurnDiffUpdatedNotification.self, from: params))
-        case "turn/moderationMetadata": self = .turnModerationMetadata(try decodeJSONValue(TurnModerationMetadataNotification.self, from: params))
         case "turn/plan/updated": self = .turnPlanUpdated(try decodeJSONValue(TurnPlanUpdatedNotification.self, from: params))
         case "turn/started": self = .turnStarted(try decodeJSONValue(TurnStartedNotification.self, from: params))
         case "warning": self = .warning(try decodeJSONValue(WarningNotification.self, from: params))
@@ -195,13 +195,13 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeStarted(let value): return value.rawJSON
         case .threadRealtimeTranscriptDelta(let value): return value.rawJSON
         case .threadRealtimeTranscriptDone(let value): return value.rawJSON
+        case .threadSettingsUpdated(let value): return value.rawJSON
         case .threadStarted(let value): return value.rawJSON
         case .threadStatusChanged(let value): return value.rawJSON
         case .threadTokenUsageUpdated(let value): return value.rawJSON
         case .threadUnarchived(let value): return value.rawJSON
         case .turnCompleted(let value): return value.rawJSON
         case .turnDiffUpdated(let value): return value.rawJSON
-        case .turnModerationMetadata(let value): return value.rawJSON
         case .turnPlanUpdated(let value): return value.rawJSON
         case .turnStarted(let value): return value.rawJSON
         case .warning(let value): return value.rawJSON
@@ -232,6 +232,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .reasoningSummaryTextDelta(let value): return value.threadId
         case .reasoningTextDelta(let value): return value.threadId
         case .itemStarted(let value): return value.threadId
+        case .mcpServerStatusUpdated(let value): return value.threadId
         case .modelRerouted(let value): return value.threadId
         case .modelVerification(let value): return value.threadId
         case .serverRequestResolved(let value): return value.threadId
@@ -249,6 +250,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeStarted(let value): return value.threadId
         case .threadRealtimeTranscriptDelta(let value): return value.threadId
         case .threadRealtimeTranscriptDone(let value): return value.threadId
+        case .threadSettingsUpdated(let value): return value.threadId
         case .threadStarted(let value): return value.thread.id
         case .threadStatusChanged(let value): return value.threadId
         case .threadTokenUsageUpdated(let value): return value.threadId
@@ -306,3 +308,4 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         }
     }
 }
+

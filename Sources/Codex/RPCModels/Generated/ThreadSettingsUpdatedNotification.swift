@@ -3,60 +3,54 @@
 
 import Foundation
 
-public struct TurnModerationMetadataNotification: ObjectModel {
-    public var metadata: JSONValue
+public struct ThreadSettingsUpdatedNotification: ObjectModel {
     public var threadId: String
-    public var turnId: String
+    public var threadSettings: ThreadSettings
     public var additionalFields: JSONObject
 
     public init(
-        metadata: JSONValue,
         threadId: String,
-        turnId: String,
+        threadSettings: ThreadSettings,
         additionalFields: JSONObject = [:]
     ) {
-        self.metadata = metadata
         self.threadId = threadId
-        self.turnId = turnId
+        self.threadSettings = threadSettings
         self.additionalFields = additionalFields
     }
 
     public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "TurnModerationMetadataNotification"))
+        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "ThreadSettingsUpdatedNotification"))
     }
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "TurnModerationMetadataNotification")
+        let object = try decodeJSONObject(from: decoder, context: "ThreadSettingsUpdatedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.metadata = payload.metadata
         self.threadId = payload.threadId
-        self.turnId = payload.turnId
+        self.threadSettings = payload.threadSettings
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "TurnModerationMetadataNotification", to: encoder)
+        try encodeJSONObject(payload, additionalFields: additionalFields, context: "ThreadSettingsUpdatedNotification", to: encoder)
     }
 
     private var payload: Payload {
         Payload(
-            metadata: metadata,
             threadId: threadId,
-            turnId: turnId
+            threadSettings: threadSettings
         )
     }
 
-    private static let knownKeys: Set<String> = ["metadata", "threadId", "turnId"]
+    private static let knownKeys: Set<String> = ["threadId", "threadSettings"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var metadata: JSONValue
         var threadId: String
-        var turnId: String
+        var threadSettings: ThreadSettings
 
         enum CodingKeys: String, CodingKey {
-            case metadata
             case threadId
-            case turnId
+            case threadSettings
         }
     }
 }
+
