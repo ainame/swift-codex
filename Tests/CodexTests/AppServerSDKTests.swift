@@ -254,6 +254,8 @@ struct AppServerSDKTests {
             modelListResponses: [appServerModelListResponse(models: [makeModel(id: "gpt-5")])],
             accountRateLimitsReadResponses: [appServerAccountRateLimitsReadResponse()],
             accountTokenUsageReadResponses: [appServerAccountTokenUsageReadResponse()],
+            accountWorkspaceMessagesReadResponses: [appServerWorkspaceMessagesReadResponse()],
+            externalAgentConfigImportHistoriesReadResponses: [appServerExternalAgentConfigImportHistoriesReadResponse()],
             skillsExtraRootsSetResponses: [appServerEmptyResponse()]
         ))
 
@@ -283,6 +285,12 @@ struct AppServerSDKTests {
         let tokenUsage = try await client.accountTokenUsageRead()
         #expect(tokenUsage.summary.lifetimeTokens == 9000)
         #expect(tokenUsage.dailyUsageBuckets?.first?.tokens == 1200)
+        let workspaceMessages = try await client.accountWorkspaceMessagesRead()
+        #expect(workspaceMessages.featureEnabled)
+        #expect(workspaceMessages.messages.map(\.messageId) == ["message_1"])
+        let importHistories = try await client.externalAgentConfigImportHistoriesRead()
+        #expect(importHistories.data.map(\.importId) == ["import_1"])
+        #expect(importHistories.data.first?.failures.first?.errorType == "permissionDenied")
         _ = try await client.skillsExtraRootsSet(["/tmp/project/skills", "/tmp/shared/skills"])
 
         let messages = try stub.appServerMessages(forInvocation: 0)
@@ -302,6 +310,8 @@ struct AppServerSDKTests {
             "model/list",
             "account/rateLimits/read",
             "account/tokenUsage/read",
+            "account/workspaceMessages/read",
+            "externalAgentConfig/import/readHistories",
             "skills/extraRoots/set",
         ])
         let extraRootsParams = try #require(messages.first { $0.stringValue(forKey: "method") == "skills/extraRoots/set" }?.objectValue(forKey: "params"))
@@ -385,6 +395,51 @@ struct AppServerSDKTests {
         #expect(decoded.goal.objective == "Keep syncing")
         #expect(decoded.goal.status == .active)
         #expect(decoded.goal.tokenBudget == 5000)
+    }
+
+    @Test
+    func generatedModelsDecodeRust0142Additions() throws {
+        var thread = makeThread(id: "recent")
+        thread.recencyAt = 1_780_000_300
+        let decodedThread = try decodeJSONValue(Thread.self, from: thread.rawJSON)
+        #expect(decodedThread.recencyAt == 1_780_000_300)
+        #expect(ThreadSortKey.recencyAt.rawJSON == .string("recency_at"))
+
+        let pluginInterface = PluginInterface(
+            capabilities: [],
+            logoDark: AbsolutePathBuf(rawValue: "/tmp/dark.png"),
+            logoUrlDark: "https://example.test/dark.png",
+            screenshotUrls: [],
+            screenshots: []
+        )
+        let decodedPluginInterface = try decodeJSONValue(PluginInterface.self, from: pluginInterface.rawJSON)
+        #expect(decodedPluginInterface.logoUrlDark == "https://example.test/dark.png")
+        #expect(decodedPluginInterface.logoDark?.rawValue == "/tmp/dark.png")
+
+        let toolItem = McpToolCallThreadItem(
+            appContext: McpToolCallAppContext(
+                connectorId: "connector.slack",
+                linkId: "link_1",
+                resourceUri: "slack://channel/C123"
+            ),
+            arguments: .object(["channel": .string("C123")]),
+            id: "tool_1",
+            server: "slack",
+            status: .completed,
+            tool: "send_message",
+            type: .mcpToolCall
+        )
+        let decodedToolItem = try decodeJSONValue(McpToolCallThreadItem.self, from: toolItem.rawJSON)
+        #expect(decodedToolItem.appContext?.connectorId == "connector.slack")
+        #expect(decodedToolItem.appContext?.resourceUri == "slack://channel/C123")
+
+        let permissions = AdditionalFileSystemPermissions(
+            read: [LegacyAppPathString(rawValue: "/tmp/read")],
+            write: [LegacyAppPathString(rawValue: "/tmp/write")]
+        )
+        let decodedPermissions = try decodeJSONValue(AdditionalFileSystemPermissions.self, from: permissions.rawJSON)
+        #expect(decodedPermissions.read?.first?.rawValue == "/tmp/read")
+        #expect(decodedPermissions.write?.first?.rawValue == "/tmp/write")
     }
 
     @Test

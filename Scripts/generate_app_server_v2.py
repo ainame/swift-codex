@@ -33,8 +33,11 @@ SWIFT_RESERVED = {
 }
 
 ROOT_TYPES = {
+    "ExternalAgentConfigImportHistoriesReadResponse",
+    "ExternalAgentConfigImportHistory",
     "GetAccountRateLimitsResponse",
     "GetAccountTokenUsageResponse",
+    "GetWorkspaceMessagesResponse",
     "ApprovalsReviewer",
     "AskForApproval",
     "ClientInfo",

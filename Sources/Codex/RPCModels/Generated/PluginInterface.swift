@@ -13,7 +13,9 @@ public struct PluginInterface: ObjectModel {
     public var developerName: String?
     public var displayName: String?
     public var logo: AbsolutePathBuf?
+    public var logoDark: AbsolutePathBuf?
     public var logoUrl: String?
+    public var logoUrlDark: String?
     public var longDescription: String?
     public var privacyPolicyUrl: String?
     public var screenshotUrls: [String]
@@ -33,7 +35,9 @@ public struct PluginInterface: ObjectModel {
         developerName: String? = nil,
         displayName: String? = nil,
         logo: AbsolutePathBuf? = nil,
+        logoDark: AbsolutePathBuf? = nil,
         logoUrl: String? = nil,
+        logoUrlDark: String? = nil,
         longDescription: String? = nil,
         privacyPolicyUrl: String? = nil,
         screenshotUrls: [String],
@@ -52,7 +56,9 @@ public struct PluginInterface: ObjectModel {
         self.developerName = developerName
         self.displayName = displayName
         self.logo = logo
+        self.logoDark = logoDark
         self.logoUrl = logoUrl
+        self.logoUrlDark = logoUrlDark
         self.longDescription = longDescription
         self.privacyPolicyUrl = privacyPolicyUrl
         self.screenshotUrls = screenshotUrls
@@ -79,7 +85,9 @@ public struct PluginInterface: ObjectModel {
         self.developerName = payload.developerName
         self.displayName = payload.displayName
         self.logo = payload.logo
+        self.logoDark = payload.logoDark
         self.logoUrl = payload.logoUrl
+        self.logoUrlDark = payload.logoUrlDark
         self.longDescription = payload.longDescription
         self.privacyPolicyUrl = payload.privacyPolicyUrl
         self.screenshotUrls = payload.screenshotUrls
@@ -105,7 +113,9 @@ public struct PluginInterface: ObjectModel {
             developerName: developerName,
             displayName: displayName,
             logo: logo,
+            logoDark: logoDark,
             logoUrl: logoUrl,
+            logoUrlDark: logoUrlDark,
             longDescription: longDescription,
             privacyPolicyUrl: privacyPolicyUrl,
             screenshotUrls: screenshotUrls,
@@ -116,7 +126,7 @@ public struct PluginInterface: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["brandColor", "capabilities", "category", "composerIcon", "composerIconUrl", "defaultPrompt", "developerName", "displayName", "logo", "logoUrl", "longDescription", "privacyPolicyUrl", "screenshotUrls", "screenshots", "shortDescription", "termsOfServiceUrl", "websiteUrl"]
+    private static let knownKeys: Set<String> = ["brandColor", "capabilities", "category", "composerIcon", "composerIconUrl", "defaultPrompt", "developerName", "displayName", "logo", "logoDark", "logoUrl", "logoUrlDark", "longDescription", "privacyPolicyUrl", "screenshotUrls", "screenshots", "shortDescription", "termsOfServiceUrl", "websiteUrl"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var brandColor: String?
@@ -128,7 +138,9 @@ public struct PluginInterface: ObjectModel {
         var developerName: String?
         var displayName: String?
         var logo: AbsolutePathBuf?
+        var logoDark: AbsolutePathBuf?
         var logoUrl: String?
+        var logoUrlDark: String?
         var longDescription: String?
         var privacyPolicyUrl: String?
         var screenshotUrls: [String]
@@ -147,7 +159,9 @@ public struct PluginInterface: ObjectModel {
             case developerName
             case displayName
             case logo
+            case logoDark
             case logoUrl
+            case logoUrlDark
             case longDescription
             case privacyPolicyUrl
             case screenshotUrls

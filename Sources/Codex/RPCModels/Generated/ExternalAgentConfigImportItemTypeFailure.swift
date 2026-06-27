@@ -5,6 +5,7 @@ import Foundation
 
 public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
     public var cwd: String?
+    public var errorType: String?
     public var failureStage: String
     public var itemType: ExternalAgentConfigMigrationItemType
     public var message: String
@@ -13,6 +14,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
 
     public init(
         cwd: String? = nil,
+        errorType: String? = nil,
         failureStage: String,
         itemType: ExternalAgentConfigMigrationItemType,
         message: String,
@@ -20,6 +22,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
         additionalFields: JSONObject = [:]
     ) {
         self.cwd = cwd
+        self.errorType = errorType
         self.failureStage = failureStage
         self.itemType = itemType
         self.message = message
@@ -35,6 +38,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "ExternalAgentConfigImportItemTypeFailure")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.cwd = payload.cwd
+        self.errorType = payload.errorType
         self.failureStage = payload.failureStage
         self.itemType = payload.itemType
         self.message = payload.message
@@ -49,6 +53,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
     private var payload: Payload {
         Payload(
             cwd: cwd,
+            errorType: errorType,
             failureStage: failureStage,
             itemType: itemType,
             message: message,
@@ -56,10 +61,11 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["cwd", "failureStage", "itemType", "message", "source"]
+    private static let knownKeys: Set<String> = ["cwd", "errorType", "failureStage", "itemType", "message", "source"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var cwd: String?
+        var errorType: String?
         var failureStage: String
         var itemType: ExternalAgentConfigMigrationItemType
         var message: String
@@ -67,6 +73,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
 
         enum CodingKeys: String, CodingKey {
             case cwd
+            case errorType
             case failureStage
             case itemType
             case message

@@ -4,6 +4,7 @@
 import Foundation
 
 public struct McpToolCallThreadItem: ObjectModel {
+    public var appContext: McpToolCallAppContext?
     public var arguments: JSONValue
     public var durationMs: Int?
     public var error: McpToolCallError?
@@ -18,6 +19,7 @@ public struct McpToolCallThreadItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        appContext: McpToolCallAppContext? = nil,
         arguments: JSONValue,
         durationMs: Int? = nil,
         error: McpToolCallError? = nil,
@@ -31,6 +33,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         type: McpToolCallThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.appContext = appContext
         self.arguments = arguments
         self.durationMs = durationMs
         self.error = error
@@ -52,6 +55,7 @@ public struct McpToolCallThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "McpToolCallThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.appContext = payload.appContext
         self.arguments = payload.arguments
         self.durationMs = payload.durationMs
         self.error = payload.error
@@ -72,6 +76,7 @@ public struct McpToolCallThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            appContext: appContext,
             arguments: arguments,
             durationMs: durationMs,
             error: error,
@@ -86,9 +91,10 @@ public struct McpToolCallThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["arguments", "durationMs", "error", "id", "mcpAppResourceUri", "pluginId", "result", "server", "status", "tool", "type"]
+    private static let knownKeys: Set<String> = ["appContext", "arguments", "durationMs", "error", "id", "mcpAppResourceUri", "pluginId", "result", "server", "status", "tool", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var appContext: McpToolCallAppContext?
         var arguments: JSONValue
         var durationMs: Int?
         var error: McpToolCallError?
@@ -102,6 +108,7 @@ public struct McpToolCallThreadItem: ObjectModel {
         var type: McpToolCallThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case appContext
             case arguments
             case durationMs
             case error

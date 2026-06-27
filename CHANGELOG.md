@@ -8,6 +8,15 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Synced focused app-server schema additions through `rust-v0.142.3`, including workspace message records, external-agent import histories, thread recency metadata, MCP tool-call app context, and plugin dark-logo metadata.
+- Added low-level `CodexRPCClient.accountWorkspaceMessagesRead()` and `CodexRPCClient.externalAgentConfigImportHistoriesRead()` helpers for the newly wrapped app-server RPCs.
+
+### Changed
+
+- Updated the vendored upstream checkout to `rust-v0.142.3` (`e2b60462a7321517895dd94920661599303a7539`) and refreshed generated v2 models, upstream metadata, and README status notes.
+
 ## [0.141.0] - 2026-06-20
 
 ### Added

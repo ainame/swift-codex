@@ -86,6 +86,8 @@ struct CodexStub {
         model_list_responses = scenario.get("modelListResponses", [])
         account_rate_limits_read_responses = scenario.get("accountRateLimitsReadResponses", [])
         account_token_usage_read_responses = scenario.get("accountTokenUsageReadResponses", [])
+        account_workspace_messages_read_responses = scenario.get("accountWorkspaceMessagesReadResponses", [])
+        external_agent_config_import_histories_read_responses = scenario.get("externalAgentConfigImportHistoriesReadResponses", [])
         skills_extra_roots_set_responses = scenario.get("skillsExtraRootsSetResponses", [])
         plugin_list_responses = scenario.get("pluginListResponses", [])
 
@@ -108,6 +110,8 @@ struct CodexStub {
         model_list_index = 0
         account_rate_limits_read_index = 0
         account_token_usage_read_index = 0
+        account_workspace_messages_read_index = 0
+        external_agent_config_import_histories_read_index = 0
         skills_extra_roots_set_index = 0
         plugin_list_index = 0
 
@@ -279,6 +283,18 @@ struct CodexStub {
                 write_message({"id": request_id, "result": response})
                 continue
 
+            if method == "account/workspaceMessages/read":
+                response = response_at(account_workspace_messages_read_responses, account_workspace_messages_read_index, {"featureEnabled": False, "messages": []})
+                account_workspace_messages_read_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "externalAgentConfig/import/readHistories":
+                response = response_at(external_agent_config_import_histories_read_responses, external_agent_config_import_histories_read_index, {"data": []})
+                external_agent_config_import_histories_read_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
             if method == "skills/extraRoots/set":
                 response = response_at(skills_extra_roots_set_responses, skills_extra_roots_set_index, {})
                 skills_extra_roots_set_index += 1
@@ -405,6 +421,8 @@ struct AppServerScenario: Encodable {
     var modelListResponses: [JSONObject]
     var accountRateLimitsReadResponses: [JSONObject]
     var accountTokenUsageReadResponses: [JSONObject]
+    var accountWorkspaceMessagesReadResponses: [JSONObject]
+    var externalAgentConfigImportHistoriesReadResponses: [JSONObject]
     var skillsExtraRootsSetResponses: [JSONObject]
     var pluginListResponses: [JSONObject]
 
@@ -431,6 +449,8 @@ struct AppServerScenario: Encodable {
         modelListResponses: [JSONObject] = [],
         accountRateLimitsReadResponses: [JSONObject] = [],
         accountTokenUsageReadResponses: [JSONObject] = [],
+        accountWorkspaceMessagesReadResponses: [JSONObject] = [],
+        externalAgentConfigImportHistoriesReadResponses: [JSONObject] = [],
         skillsExtraRootsSetResponses: [JSONObject] = [],
         pluginListResponses: [JSONObject] = []
     ) {
@@ -456,6 +476,8 @@ struct AppServerScenario: Encodable {
         self.modelListResponses = modelListResponses
         self.accountRateLimitsReadResponses = accountRateLimitsReadResponses
         self.accountTokenUsageReadResponses = accountTokenUsageReadResponses
+        self.accountWorkspaceMessagesReadResponses = accountWorkspaceMessagesReadResponses
+        self.externalAgentConfigImportHistoriesReadResponses = externalAgentConfigImportHistoriesReadResponses
         self.skillsExtraRootsSetResponses = skillsExtraRootsSetResponses
         self.pluginListResponses = pluginListResponses
     }
@@ -626,6 +648,51 @@ func appServerAccountTokenUsageReadResponse() -> JSONObject {
                 longestStreakDays: 8,
                 peakDailyTokens: 2200
             )
+        )
+    )
+}
+
+func appServerWorkspaceMessagesReadResponse() -> JSONObject {
+    jsonObject(
+        GetWorkspaceMessagesResponse(
+            featureEnabled: true,
+            messages: [
+                WorkspaceMessage(
+                    createdAt: 1_780_000_100,
+                    messageBody: "Workspace notice",
+                    messageId: "message_1",
+                    messageType: .headline
+                ),
+            ]
+        )
+    )
+}
+
+func appServerExternalAgentConfigImportHistoriesReadResponse() -> JSONObject {
+    jsonObject(
+        ExternalAgentConfigImportHistoriesReadResponse(
+            data: [
+                ExternalAgentConfigImportHistory(
+                    completedAtMs: 1_780_000_200,
+                    failures: [
+                        ExternalAgentConfigImportItemTypeFailure(
+                            cwd: "/tmp/project",
+                            errorType: "permissionDenied",
+                            failureStage: "write",
+                            itemType: .pLUGINS,
+                            message: "could not write plugin",
+                            source: "claude"
+                        ),
+                    ],
+                    importId: "import_1",
+                    successes: [
+                        ExternalAgentConfigImportItemTypeSuccess(
+                            itemType: .sKILLS,
+                            source: "claude"
+                        ),
+                    ]
+                ),
+            ]
         )
     )
 }
