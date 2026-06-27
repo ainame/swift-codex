@@ -7,7 +7,7 @@ public struct ThreadStartResponse: ObjectModel {
     public var approvalPolicy: AskForApproval
     public var approvalsReviewer: ApprovalsReviewer
     public var cwd: AbsolutePathBuf
-    public var instructionSources: [AbsolutePathBuf]?
+    public var instructionSources: [LegacyAppPathString]?
     public var model: String
     public var modelProvider: String
     public var reasoningEffort: ReasoningEffort?
@@ -20,7 +20,7 @@ public struct ThreadStartResponse: ObjectModel {
         approvalPolicy: AskForApproval,
         approvalsReviewer: ApprovalsReviewer,
         cwd: AbsolutePathBuf,
-        instructionSources: [AbsolutePathBuf]? = nil,
+        instructionSources: [LegacyAppPathString]? = nil,
         model: String,
         modelProvider: String,
         reasoningEffort: ReasoningEffort? = nil,
@@ -87,7 +87,7 @@ public struct ThreadStartResponse: ObjectModel {
         var approvalPolicy: AskForApproval
         var approvalsReviewer: ApprovalsReviewer
         var cwd: AbsolutePathBuf
-        var instructionSources: [AbsolutePathBuf]?
+        var instructionSources: [LegacyAppPathString]?
         var model: String
         var modelProvider: String
         var reasoningEffort: ReasoningEffort?
@@ -113,7 +113,7 @@ public struct ThreadStartResponse: ObjectModel {
             approvalPolicy: AskForApproval,
             approvalsReviewer: ApprovalsReviewer,
             cwd: AbsolutePathBuf,
-            instructionSources: [AbsolutePathBuf]?,
+            instructionSources: [LegacyAppPathString]?,
             model: String,
             modelProvider: String,
             reasoningEffort: ReasoningEffort?,
@@ -138,7 +138,7 @@ public struct ThreadStartResponse: ObjectModel {
             self.approvalPolicy = try container.decode(AskForApproval.self, forKey: .approvalPolicy)
             self.approvalsReviewer = try container.decodeIfPresent(ApprovalsReviewer.self, forKey: .approvalsReviewer) ?? .user
             self.cwd = try container.decode(AbsolutePathBuf.self, forKey: .cwd)
-            self.instructionSources = try container.decodeIfPresent([AbsolutePathBuf].self, forKey: .instructionSources)
+            self.instructionSources = try container.decodeIfPresent([LegacyAppPathString].self, forKey: .instructionSources)
             self.model = try container.decode(String.self, forKey: .model)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
             self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: .reasoningEffort)

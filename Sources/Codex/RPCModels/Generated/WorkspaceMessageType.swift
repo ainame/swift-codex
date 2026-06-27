@@ -3,18 +3,18 @@
 
 import Foundation
 
-public enum ThreadSortKey: RawJSONRepresentable {
-    case createdAt
-    case updatedAt
-    case recencyAt
+public enum WorkspaceMessageType: RawJSONRepresentable {
+    case headline
+    case announcement
+    case unknown
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "created_at": self = .createdAt
-        case "updated_at": self = .updatedAt
-        case "recency_at": self = .recencyAt
+        case "headline": self = .headline
+        case "announcement": self = .announcement
+        case "unknown": self = .unknown
         default:
             self = .unrecognized(value)
         }
@@ -26,9 +26,9 @@ public enum ThreadSortKey: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .createdAt: return "created_at"
-        case .updatedAt: return "updated_at"
-        case .recencyAt: return "recency_at"
+        case .headline: return "headline"
+        case .announcement: return "announcement"
+        case .unknown: return "unknown"
         case .unrecognized(let value):
             return value
         }

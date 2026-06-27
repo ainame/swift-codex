@@ -109,21 +109,21 @@ struct CodexSDKTests {
 
         let start = try decodeJSONValue(ThreadStartResponse.self, from: .object(startRaw))
         #expect(start.instructionSources == [
-            AbsolutePathBuf(rawValue: "/tmp/project/AGENTS.md"),
-            AbsolutePathBuf(rawValue: "/tmp/project/.codex/agents.md"),
+            LegacyAppPathString(rawValue: "/tmp/project/AGENTS.md"),
+            LegacyAppPathString(rawValue: "/tmp/project/.codex/agents.md"),
         ])
         #expect(start.thread.forkedFromId == "thread_parent")
 
         let resumed = try decodeJSONValue(ThreadResumeResponse.self, from: .object(startRaw))
         #expect(resumed.instructionSources == [
-            AbsolutePathBuf(rawValue: "/tmp/project/AGENTS.md"),
-            AbsolutePathBuf(rawValue: "/tmp/project/.codex/agents.md"),
+            LegacyAppPathString(rawValue: "/tmp/project/AGENTS.md"),
+            LegacyAppPathString(rawValue: "/tmp/project/.codex/agents.md"),
         ])
 
         let forked = try decodeJSONValue(ThreadForkResponse.self, from: .object(startRaw))
         #expect(forked.instructionSources == [
-            AbsolutePathBuf(rawValue: "/tmp/project/AGENTS.md"),
-            AbsolutePathBuf(rawValue: "/tmp/project/.codex/agents.md"),
+            LegacyAppPathString(rawValue: "/tmp/project/AGENTS.md"),
+            LegacyAppPathString(rawValue: "/tmp/project/.codex/agents.md"),
         ])
     }
 

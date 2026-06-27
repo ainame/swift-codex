@@ -18,6 +18,7 @@ public struct Thread: ObjectModel {
     public var parentThreadId: String?
     public var path: String?
     public var preview: String
+    public var recencyAt: Int?
     public var sessionId: String
     public var source: SessionSource
     public var status: ThreadStatus
@@ -41,6 +42,7 @@ public struct Thread: ObjectModel {
         parentThreadId: String? = nil,
         path: String? = nil,
         preview: String,
+        recencyAt: Int? = nil,
         sessionId: String,
         source: SessionSource,
         status: ThreadStatus,
@@ -63,6 +65,7 @@ public struct Thread: ObjectModel {
         self.parentThreadId = parentThreadId
         self.path = path
         self.preview = preview
+        self.recencyAt = recencyAt
         self.sessionId = sessionId
         self.source = source
         self.status = status
@@ -93,6 +96,7 @@ public struct Thread: ObjectModel {
         self.parentThreadId = payload.parentThreadId
         self.path = payload.path
         self.preview = payload.preview
+        self.recencyAt = payload.recencyAt
         self.sessionId = payload.sessionId
         self.source = payload.source
         self.status = payload.status
@@ -122,6 +126,7 @@ public struct Thread: ObjectModel {
             parentThreadId: parentThreadId,
             path: path,
             preview: preview,
+            recencyAt: recencyAt,
             sessionId: sessionId,
             source: source,
             status: status,
@@ -131,7 +136,7 @@ public struct Thread: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "parentThreadId", "path", "preview", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
+    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "parentThreadId", "path", "preview", "recencyAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentNickname: String?
@@ -148,6 +153,7 @@ public struct Thread: ObjectModel {
         var parentThreadId: String?
         var path: String?
         var preview: String
+        var recencyAt: Int?
         var sessionId: String
         var source: SessionSource
         var status: ThreadStatus
@@ -170,6 +176,7 @@ public struct Thread: ObjectModel {
             case parentThreadId
             case path
             case preview
+            case recencyAt
             case sessionId
             case source
             case status
@@ -194,6 +201,7 @@ public struct Thread: ObjectModel {
             parentThreadId: String?,
             path: String?,
             preview: String,
+            recencyAt: Int?,
             sessionId: String,
             source: SessionSource,
             status: ThreadStatus,
@@ -215,6 +223,7 @@ public struct Thread: ObjectModel {
             self.parentThreadId = parentThreadId
             self.path = path
             self.preview = preview
+            self.recencyAt = recencyAt
             self.sessionId = sessionId
             self.source = source
             self.status = status
@@ -239,6 +248,7 @@ public struct Thread: ObjectModel {
             self.parentThreadId = try container.decodeIfPresent(String.self, forKey: .parentThreadId)
             self.path = try container.decodeIfPresent(String.self, forKey: .path)
             self.preview = try container.decode(String.self, forKey: .preview)
+            self.recencyAt = try container.decodeIfPresent(Int.self, forKey: .recencyAt)
             self.sessionId = try container.decode(String.self, forKey: .sessionId)
             self.source = try container.decode(SessionSource.self, forKey: .source)
             self.status = try container.decodeIfPresent(ThreadStatus.self, forKey: .status) ?? .idle(IdleThreadStatus(type: .idle))

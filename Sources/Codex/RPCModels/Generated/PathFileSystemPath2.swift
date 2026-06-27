@@ -4,12 +4,12 @@
 import Foundation
 
 public struct PathFileSystemPath2: ObjectModel {
-    public var path: ApiPathString
+    public var path: LegacyAppPathString
     public var type: PathFileSystemPathType2
     public var additionalFields: JSONObject
 
     public init(
-        path: ApiPathString,
+        path: LegacyAppPathString,
         type: PathFileSystemPathType2,
         additionalFields: JSONObject = [:]
     ) {
@@ -44,7 +44,7 @@ public struct PathFileSystemPath2: ObjectModel {
     private static let knownKeys: Set<String> = ["path", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var path: ApiPathString
+        var path: LegacyAppPathString
         var type: PathFileSystemPathType2
 
         enum CodingKeys: String, CodingKey {

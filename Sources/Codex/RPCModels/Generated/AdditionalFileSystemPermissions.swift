@@ -6,15 +6,15 @@ import Foundation
 public struct AdditionalFileSystemPermissions: ObjectModel {
     public var entries: [FileSystemSandboxEntry]?
     public var globScanMaxDepth: Int?
-    public var read: [ApiPathString]?
-    public var write: [ApiPathString]?
+    public var read: [LegacyAppPathString]?
+    public var write: [LegacyAppPathString]?
     public var additionalFields: JSONObject
 
     public init(
         entries: [FileSystemSandboxEntry]? = nil,
         globScanMaxDepth: Int? = nil,
-        read: [ApiPathString]? = nil,
-        write: [ApiPathString]? = nil,
+        read: [LegacyAppPathString]? = nil,
+        write: [LegacyAppPathString]? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.entries = entries
@@ -56,8 +56,8 @@ public struct AdditionalFileSystemPermissions: ObjectModel {
     private struct Payload: Codable, Hashable, Sendable {
         var entries: [FileSystemSandboxEntry]?
         var globScanMaxDepth: Int?
-        var read: [ApiPathString]?
-        var write: [ApiPathString]?
+        var read: [LegacyAppPathString]?
+        var write: [LegacyAppPathString]?
 
         enum CodingKeys: String, CodingKey {
             case entries

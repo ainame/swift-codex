@@ -427,6 +427,17 @@ public actor CodexRPCClient {
         try await request("account/tokenUsage/read", responseType: GetAccountTokenUsageResponse.self)
     }
 
+    public func accountWorkspaceMessagesRead() async throws -> GetWorkspaceMessagesResponse {
+        try await request("account/workspaceMessages/read", responseType: GetWorkspaceMessagesResponse.self)
+    }
+
+    public func externalAgentConfigImportHistoriesRead() async throws -> ExternalAgentConfigImportHistoriesReadResponse {
+        try await request(
+            "externalAgentConfig/import/readHistories",
+            responseType: ExternalAgentConfigImportHistoriesReadResponse.self
+        )
+    }
+
     public func skillsExtraRootsSet(_ extraRoots: [String]) async throws -> SkillsExtraRootsSetResponse {
         try await request(
             "skills/extraRoots/set",

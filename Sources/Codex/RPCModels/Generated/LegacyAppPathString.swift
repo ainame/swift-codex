@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct ApiPathString: RawRepresentable, RawJSONRepresentable {
+public struct LegacyAppPathString: RawRepresentable, RawJSONRepresentable {
     public var rawValue: String
 
     public init(rawValue: String) {
@@ -14,7 +14,7 @@ public struct ApiPathString: RawRepresentable, RawJSONRepresentable {
         let raw = try JSONValue(from: decoder)
         guard let value = raw.stringValue else {
             throw DecodingError.dataCorrupted(
-                .init(codingPath: decoder.codingPath, debugDescription: "ApiPathString must decode from a String")
+                .init(codingPath: decoder.codingPath, debugDescription: "LegacyAppPathString must decode from a String")
             )
         }
         self.rawValue = value

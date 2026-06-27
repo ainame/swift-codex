@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `3fb81667d30d9d24297216ea61fbfcc4351b2aa9`
-- Reviewed JSON-RPC basis commit SHA: `3fb81667d30d9d24297216ea61fbfcc4351b2aa9`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/3fb81667d30d9d24297216ea61fbfcc4351b2aa9`
-- Last reviewed date: `2026-06-20`
+- Vendored upstream commit: `e2b60462a7321517895dd94920661599303a7539`
+- Reviewed JSON-RPC basis commit SHA: `e2b60462a7321517895dd94920661599303a7539`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/e2b60462a7321517895dd94920661599303a7539`
+- Last reviewed date: `2026-06-27`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,23 +33,24 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `3fb81667d30d9d24297216ea61fbfcc4351b2aa9` (`rust-v0.141.0`)
+- Vendored checkout: `vendor/openai-codex` at `e2b60462a7321517895dd94920661599303a7539` (`rust-v0.142.3`)
 - Reviewed upstream files:
-  - `sdk/python/src/openai_codex/_goal.py`
+  - `sdk/python/src/openai_codex/_inputs.py`
   - `sdk/python/src/openai_codex/async_client.py`
   - `sdk/python/src/openai_codex/client.py`
-  - `sdk/python/src/openai_codex/models.py`
+  - `sdk/python/src/openai_codex/generated/v2_all.py`
+  - `sdk/python/src/openai_codex/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
-  - thread deletion plus persisted goal set, get, clear, and notification records
-  - account token usage and rate-limit reset-credit response records
-  - plugin detail, thread settings, sleep item, and subagent activity records
-  - API path strings, collaboration modes, and external-agent import result records
+  - workspace message and external-agent import-history response records
+  - thread recency ordering metadata and `recency_at` sort key support
+  - MCP tool-call app context metadata and plugin dark-logo metadata
+  - legacy app path string records, nullable ChatGPT account email, and external-agent import failure error types
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
   - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
-  - the full `rust-v0.141.0` schema includes broader config, MCP server status, remote-control, plugin, filesystem, and app-server transport changes that are still not wrapped as Swift convenience APIs
+  - the full `rust-v0.142.3` schema includes broader account, config, model safety-buffering, MCP server status, remote-control, plugin, filesystem, and app-server transport changes that are still not wrapped as Swift convenience APIs
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
   - persisted goals are exposed as direct actor methods rather than the Python SDK's synchronous and asynchronous logical-turn stream wrappers
