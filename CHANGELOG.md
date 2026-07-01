@@ -8,14 +8,16 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.142.3] - 2026-07-01
+
 ### Added
 
-- Synced focused app-server schema additions through `rust-v0.142.3`, including workspace message records, external-agent import histories, thread recency metadata, MCP tool-call app context, and plugin dark-logo metadata.
-- Added low-level `CodexRPCClient.accountWorkspaceMessagesRead()` and `CodexRPCClient.externalAgentConfigImportHistoriesRead()` helpers for the newly wrapped app-server RPCs.
+- Synced focused app-server schema additions through `rust-v0.142.3`, including workspace message records, external-agent import histories, thread recency metadata, MCP tool-call app context, and plugin dark-logo metadata. [#16](https://github.com/ainame/swift-codex/pull/16)
+- Added low-level `CodexRPCClient.accountWorkspaceMessagesRead()` and `CodexRPCClient.externalAgentConfigImportHistoriesRead()` helpers for the newly wrapped app-server RPCs. [#16](https://github.com/ainame/swift-codex/pull/16)
 
 ### Changed
 
-- Updated the vendored upstream checkout to `rust-v0.142.3` (`e2b60462a7321517895dd94920661599303a7539`) and refreshed generated v2 models, upstream metadata, and README status notes.
+- Updated the vendored upstream checkout to `rust-v0.142.3` (`e2b60462a7321517895dd94920661599303a7539`) and refreshed generated v2 models, upstream metadata, and README status notes. [#16](https://github.com/ainame/swift-codex/pull/16)
 
 ## [0.141.0] - 2026-06-20
 
