@@ -7,6 +7,7 @@ public enum AuthMode: RawJSONRepresentable {
     case apikey
     case chatgpt
     case chatgptAuthTokens
+    case headers
     case agentIdentity
     case personalAccessToken
     case bedrockApiKey
@@ -20,6 +21,7 @@ public enum AuthMode: RawJSONRepresentable {
             case "apikey": self = .apikey; return
             case "chatgpt": self = .chatgpt; return
             case "chatgptAuthTokens": self = .chatgptAuthTokens; return
+            case "headers": self = .headers; return
             case "agentIdentity": self = .agentIdentity; return
             case "personalAccessToken": self = .personalAccessToken; return
             case "bedrockApiKey": self = .bedrockApiKey; return
@@ -35,6 +37,7 @@ public enum AuthMode: RawJSONRepresentable {
         case .apikey: try "apikey".encode(to: encoder)
         case .chatgpt: try "chatgpt".encode(to: encoder)
         case .chatgptAuthTokens: try "chatgptAuthTokens".encode(to: encoder)
+        case .headers: try "headers".encode(to: encoder)
         case .agentIdentity: try "agentIdentity".encode(to: encoder)
         case .personalAccessToken: try "personalAccessToken".encode(to: encoder)
         case .bedrockApiKey: try "bedrockApiKey".encode(to: encoder)
@@ -49,6 +52,7 @@ public enum AuthMode: RawJSONRepresentable {
         case .apikey: return .string("apikey")
         case .chatgpt: return .string("chatgpt")
         case .chatgptAuthTokens: return .string("chatgptAuthTokens")
+        case .headers: return .string("headers")
         case .agentIdentity: return .string("agentIdentity")
         case .personalAccessToken: return .string("personalAccessToken")
         case .bedrockApiKey: return .string("bedrockApiKey")

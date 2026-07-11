@@ -5,13 +5,13 @@ import Foundation
 
 public struct ImageViewThreadItem: ObjectModel {
     public var id: String
-    public var path: AbsolutePathBuf
+    public var path: LegacyAppPathString
     public var type: ImageViewThreadItemType
     public var additionalFields: JSONObject
 
     public init(
         id: String,
-        path: AbsolutePathBuf,
+        path: LegacyAppPathString,
         type: ImageViewThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
@@ -50,7 +50,7 @@ public struct ImageViewThreadItem: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {
         var id: String
-        var path: AbsolutePathBuf
+        var path: LegacyAppPathString
         var type: ImageViewThreadItemType
 
         enum CodingKeys: String, CodingKey {

@@ -9,6 +9,7 @@ public struct PluginSummary: ObjectModel {
     public var enabled: Bool
     public var id: String
     public var installPolicy: PluginInstallPolicy
+    public var installPolicySource: PluginInstallPolicySource?
     public var installed: Bool
     public var interface: PluginInterface?
     public var keywords: [String]?
@@ -17,6 +18,7 @@ public struct PluginSummary: ObjectModel {
     public var remotePluginId: String?
     public var shareContext: PluginShareContext?
     public var source: PluginSource
+    public var version: String?
     public var additionalFields: JSONObject
 
     public init(
@@ -25,6 +27,7 @@ public struct PluginSummary: ObjectModel {
         enabled: Bool,
         id: String,
         installPolicy: PluginInstallPolicy,
+        installPolicySource: PluginInstallPolicySource? = nil,
         installed: Bool,
         interface: PluginInterface? = nil,
         keywords: [String]? = nil,
@@ -33,6 +36,7 @@ public struct PluginSummary: ObjectModel {
         remotePluginId: String? = nil,
         shareContext: PluginShareContext? = nil,
         source: PluginSource,
+        version: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.authPolicy = authPolicy
@@ -40,6 +44,7 @@ public struct PluginSummary: ObjectModel {
         self.enabled = enabled
         self.id = id
         self.installPolicy = installPolicy
+        self.installPolicySource = installPolicySource
         self.installed = installed
         self.interface = interface
         self.keywords = keywords
@@ -48,6 +53,7 @@ public struct PluginSummary: ObjectModel {
         self.remotePluginId = remotePluginId
         self.shareContext = shareContext
         self.source = source
+        self.version = version
         self.additionalFields = additionalFields
     }
 
@@ -63,6 +69,7 @@ public struct PluginSummary: ObjectModel {
         self.enabled = payload.enabled
         self.id = payload.id
         self.installPolicy = payload.installPolicy
+        self.installPolicySource = payload.installPolicySource
         self.installed = payload.installed
         self.interface = payload.interface
         self.keywords = payload.keywords
@@ -71,6 +78,7 @@ public struct PluginSummary: ObjectModel {
         self.remotePluginId = payload.remotePluginId
         self.shareContext = payload.shareContext
         self.source = payload.source
+        self.version = payload.version
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -85,6 +93,7 @@ public struct PluginSummary: ObjectModel {
             enabled: enabled,
             id: id,
             installPolicy: installPolicy,
+            installPolicySource: installPolicySource,
             installed: installed,
             interface: interface,
             keywords: keywords,
@@ -92,11 +101,12 @@ public struct PluginSummary: ObjectModel {
             name: name,
             remotePluginId: remotePluginId,
             shareContext: shareContext,
-            source: source
+            source: source,
+            version: version
         )
     }
 
-    private static let knownKeys: Set<String> = ["authPolicy", "availability", "enabled", "id", "installPolicy", "installed", "interface", "keywords", "localVersion", "name", "remotePluginId", "shareContext", "source"]
+    private static let knownKeys: Set<String> = ["authPolicy", "availability", "enabled", "id", "installPolicy", "installPolicySource", "installed", "interface", "keywords", "localVersion", "name", "remotePluginId", "shareContext", "source", "version"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var authPolicy: PluginAuthPolicy
@@ -104,6 +114,7 @@ public struct PluginSummary: ObjectModel {
         var enabled: Bool
         var id: String
         var installPolicy: PluginInstallPolicy
+        var installPolicySource: PluginInstallPolicySource?
         var installed: Bool
         var interface: PluginInterface?
         var keywords: [String]?
@@ -112,6 +123,7 @@ public struct PluginSummary: ObjectModel {
         var remotePluginId: String?
         var shareContext: PluginShareContext?
         var source: PluginSource
+        var version: String?
 
         enum CodingKeys: String, CodingKey {
             case authPolicy
@@ -119,6 +131,7 @@ public struct PluginSummary: ObjectModel {
             case enabled
             case id
             case installPolicy
+            case installPolicySource
             case installed
             case interface
             case keywords
@@ -127,6 +140,7 @@ public struct PluginSummary: ObjectModel {
             case remotePluginId
             case shareContext
             case source
+            case version
         }
     }
 }

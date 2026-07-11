@@ -5,6 +5,7 @@ import Foundation
 
 public enum CodexErrorInfo: RawJSONRepresentable {
     case contextWindowExceeded
+    case sessionBudgetExceeded
     case usageLimitExceeded
     case serverOverloaded
     case cyberPolicy
@@ -26,6 +27,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         if case .string(let value) = raw {
             switch value {
             case "contextWindowExceeded": self = .contextWindowExceeded; return
+            case "sessionBudgetExceeded": self = .sessionBudgetExceeded; return
             case "usageLimitExceeded": self = .usageLimitExceeded; return
             case "serverOverloaded": self = .serverOverloaded; return
             case "cyberPolicy": self = .cyberPolicy; return
@@ -50,6 +52,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
     public func encode(to encoder: any Encoder) throws {
         switch self {
         case .contextWindowExceeded: try "contextWindowExceeded".encode(to: encoder)
+        case .sessionBudgetExceeded: try "sessionBudgetExceeded".encode(to: encoder)
         case .usageLimitExceeded: try "usageLimitExceeded".encode(to: encoder)
         case .serverOverloaded: try "serverOverloaded".encode(to: encoder)
         case .cyberPolicy: try "cyberPolicy".encode(to: encoder)
@@ -72,6 +75,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
     public var rawJSON: JSONValue {
         switch self {
         case .contextWindowExceeded: return .string("contextWindowExceeded")
+        case .sessionBudgetExceeded: return .string("sessionBudgetExceeded")
         case .usageLimitExceeded: return .string("usageLimitExceeded")
         case .serverOverloaded: return .string("serverOverloaded")
         case .cyberPolicy: return .string("cyberPolicy")

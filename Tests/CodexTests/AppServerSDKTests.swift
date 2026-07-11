@@ -443,6 +443,83 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func generatedModelsDecodeRust0144Additions() throws {
+        let appInfo = AppInfo(
+            description: "A connected app",
+            distributionChannel: "marketplace",
+            iconAssets: ["32": "https://example.test/icon-32.png"],
+            iconDarkAssets: ["32": "https://example.test/icon-dark-32.png"],
+            id: "app.example",
+            name: "Example App"
+        )
+        let decodedAppInfo = try decodeJSONValue(AppInfo.self, from: appInfo.rawJSON)
+        #expect(decodedAppInfo.iconAssets?["32"] == "https://example.test/icon-32.png")
+        #expect(decodedAppInfo.iconDarkAssets?["32"] == "https://example.test/icon-dark-32.png")
+
+        let context = McpToolCallAppContext(
+            actionName: "send_message",
+            appName: "Slack",
+            connectorId: "connector.slack",
+            linkId: "link_1",
+            resourceUri: "slack://channel/C123",
+            templateId: "template.slack"
+        )
+        let decodedContext = try decodeJSONValue(McpToolCallAppContext.self, from: context.rawJSON)
+        #expect(decodedContext.actionName == "send_message")
+        #expect(decodedContext.appName == "Slack")
+        #expect(decodedContext.templateId == "template.slack")
+
+        let rateLimitCredits = RateLimitResetCreditsSummary(
+            availableCount: 1,
+            credits: [
+                RateLimitResetCredit(
+                    description: "One reset",
+                    expiresAt: 1_800_000_000,
+                    grantedAt: 1_790_000_000,
+                    id: "credit_1",
+                    resetType: .codexRateLimits,
+                    status: .available,
+                    title: "Reset credit"
+                ),
+            ]
+        )
+        let decodedCredits = try decodeJSONValue(RateLimitResetCreditsSummary.self, from: rateLimitCredits.rawJSON)
+        #expect(decodedCredits.availableCount == 1)
+        #expect(decodedCredits.credits?.first?.id == "credit_1")
+        #expect(decodedCredits.credits?.first?.resetType == .codexRateLimits)
+        #expect(decodedCredits.credits?.first?.status == .available)
+
+        let mcpStatus = CodexNotification(
+            method: "mcpServer/startupStatus/updated",
+            params: .object([
+                "failureReason": .string("reauthenticationRequired"),
+                "name": .string("linear"),
+                "status": .string("failed"),
+                "threadId": .string("thread_mcp"),
+            ])
+        )
+        if case .mcpServerStatusUpdated(let payload) = mcpStatus.payload {
+            #expect(payload.failureReason == .reauthenticationRequired)
+            #expect(payload.threadId == "thread_mcp")
+        } else {
+            Issue.record("Expected mcpServer/startupStatus/updated payload")
+        }
+        #expect(mcpStatus.threadID == "thread_mcp")
+
+        let oauthCompleted = CodexNotification(
+            method: "mcpServer/oauthLogin/completed",
+            params: .object([
+                "name": .string("linear"),
+                "success": .bool(true),
+                "threadId": .string("thread_mcp"),
+            ])
+        )
+        #expect(oauthCompleted.threadID == "thread_mcp")
+        #expect(AuthMode.headers.rawJSON == .string("headers"))
+        #expect(CodexErrorInfo.sessionBudgetExceeded.rawJSON == .string("sessionBudgetExceeded"))
+    }
+
+    @Test
     func lowLevelClientSupportsThreadDeleteAndGoals() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
