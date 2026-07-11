@@ -8,10 +8,13 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.144.1] - 2026-07-11
+
 ### Changed
 
-- Synced focused app-server schema additions through `rust-v0.144.1`, including plugin app icon assets, npm plugin source records, plugin install policy source metadata, MCP startup failure reasons, MCP app context fields, auth-header mode, session-budget errors, and account rate-limit reset-credit details.
-- Updated the vendored upstream checkout to `rust-v0.144.1` (`44918ea10c0f99151c6710411b4322c2f5c96bea`) and refreshed generated v2 models, upstream metadata, and README status notes.
+- Synced focused app-server schema additions through `rust-v0.144.1`, including plugin app icon assets, npm plugin source records, plugin install policy source metadata, MCP startup failure reasons, MCP app context fields, auth-header mode, session-budget errors, and account rate-limit reset-credit details. [#18](https://github.com/ainame/swift-codex/pull/18)
+- Updated the vendored upstream checkout to `rust-v0.144.1` (`44918ea10c0f99151c6710411b4322c2f5c96bea`) and refreshed generated v2 models, upstream metadata, README status notes, and generated-model coverage. [#18](https://github.com/ainame/swift-codex/pull/18)
+- Updated the vendored upstream checkout to `rust-v0.142.5` (`26de83050b20f7e0ee211b9739e52ae00ce8032a`) as an intermediate metadata-only sync before the `rust-v0.144.1` release. [#17](https://github.com/ainame/swift-codex/pull/17)
 
 ## [0.142.3] - 2026-07-01
 
