@@ -7,17 +7,20 @@ public struct McpServerOauthLoginCompletedNotification: ObjectModel {
     public var error: String?
     public var name: String
     public var success: Bool
+    public var threadId: String?
     public var additionalFields: JSONObject
 
     public init(
         error: String? = nil,
         name: String,
         success: Bool,
+        threadId: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.error = error
         self.name = name
         self.success = success
+        self.threadId = threadId
         self.additionalFields = additionalFields
     }
 
@@ -31,6 +34,7 @@ public struct McpServerOauthLoginCompletedNotification: ObjectModel {
         self.error = payload.error
         self.name = payload.name
         self.success = payload.success
+        self.threadId = payload.threadId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -42,21 +46,24 @@ public struct McpServerOauthLoginCompletedNotification: ObjectModel {
         Payload(
             error: error,
             name: name,
-            success: success
+            success: success,
+            threadId: threadId
         )
     }
 
-    private static let knownKeys: Set<String> = ["error", "name", "success"]
+    private static let knownKeys: Set<String> = ["error", "name", "success", "threadId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var error: String?
         var name: String
         var success: Bool
+        var threadId: String?
 
         enum CodingKeys: String, CodingKey {
             case error
             case name
             case success
+            case threadId
         }
     }
 }

@@ -232,6 +232,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .reasoningSummaryTextDelta(let value): return value.threadId
         case .reasoningTextDelta(let value): return value.threadId
         case .itemStarted(let value): return value.threadId
+        case .mcpServerOauthLoginCompleted(let value): return value.threadId
         case .mcpServerStatusUpdated(let value): return value.threadId
         case .modelRerouted(let value): return value.threadId
         case .modelVerification(let value): return value.threadId

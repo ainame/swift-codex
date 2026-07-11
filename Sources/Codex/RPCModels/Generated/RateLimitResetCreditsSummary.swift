@@ -5,13 +5,16 @@ import Foundation
 
 public struct RateLimitResetCreditsSummary: ObjectModel {
     public var availableCount: Int
+    public var credits: [RateLimitResetCredit]?
     public var additionalFields: JSONObject
 
     public init(
         availableCount: Int,
+        credits: [RateLimitResetCredit]? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.availableCount = availableCount
+        self.credits = credits
         self.additionalFields = additionalFields
     }
 
@@ -23,6 +26,7 @@ public struct RateLimitResetCreditsSummary: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "RateLimitResetCreditsSummary")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.availableCount = payload.availableCount
+        self.credits = payload.credits
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -32,17 +36,20 @@ public struct RateLimitResetCreditsSummary: ObjectModel {
 
     private var payload: Payload {
         Payload(
-            availableCount: availableCount
+            availableCount: availableCount,
+            credits: credits
         )
     }
 
-    private static let knownKeys: Set<String> = ["availableCount"]
+    private static let knownKeys: Set<String> = ["availableCount", "credits"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var availableCount: Int
+        var credits: [RateLimitResetCredit]?
 
         enum CodingKeys: String, CodingKey {
             case availableCount
+            case credits
         }
     }
 }

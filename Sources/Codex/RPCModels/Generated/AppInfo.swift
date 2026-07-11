@@ -8,6 +8,8 @@ public struct AppInfo: ObjectModel {
     public var branding: AppBranding?
     public var description: String?
     public var distributionChannel: String?
+    public var iconAssets: [String: String]?
+    public var iconDarkAssets: [String: String]?
     public var id: String
     public var installUrl: String?
     public var isAccessible: Bool?
@@ -24,6 +26,8 @@ public struct AppInfo: ObjectModel {
         branding: AppBranding? = nil,
         description: String? = nil,
         distributionChannel: String? = nil,
+        iconAssets: [String: String]? = nil,
+        iconDarkAssets: [String: String]? = nil,
         id: String,
         installUrl: String? = nil,
         isAccessible: Bool? = nil,
@@ -39,6 +43,8 @@ public struct AppInfo: ObjectModel {
         self.branding = branding
         self.description = description
         self.distributionChannel = distributionChannel
+        self.iconAssets = iconAssets
+        self.iconDarkAssets = iconDarkAssets
         self.id = id
         self.installUrl = installUrl
         self.isAccessible = isAccessible
@@ -62,6 +68,8 @@ public struct AppInfo: ObjectModel {
         self.branding = payload.branding
         self.description = payload.description
         self.distributionChannel = payload.distributionChannel
+        self.iconAssets = payload.iconAssets
+        self.iconDarkAssets = payload.iconDarkAssets
         self.id = payload.id
         self.installUrl = payload.installUrl
         self.isAccessible = payload.isAccessible
@@ -84,6 +92,8 @@ public struct AppInfo: ObjectModel {
             branding: branding,
             description: description,
             distributionChannel: distributionChannel,
+            iconAssets: iconAssets,
+            iconDarkAssets: iconDarkAssets,
             id: id,
             installUrl: installUrl,
             isAccessible: isAccessible,
@@ -96,13 +106,15 @@ public struct AppInfo: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["appMetadata", "branding", "description", "distributionChannel", "id", "installUrl", "isAccessible", "isEnabled", "labels", "logoUrl", "logoUrlDark", "name", "pluginDisplayNames"]
+    private static let knownKeys: Set<String> = ["appMetadata", "branding", "description", "distributionChannel", "iconAssets", "iconDarkAssets", "id", "installUrl", "isAccessible", "isEnabled", "labels", "logoUrl", "logoUrlDark", "name", "pluginDisplayNames"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var appMetadata: AppMetadata?
         var branding: AppBranding?
         var description: String?
         var distributionChannel: String?
+        var iconAssets: [String: String]?
+        var iconDarkAssets: [String: String]?
         var id: String
         var installUrl: String?
         var isAccessible: Bool?
@@ -118,6 +130,8 @@ public struct AppInfo: ObjectModel {
             case branding
             case description
             case distributionChannel
+            case iconAssets
+            case iconDarkAssets
             case id
             case installUrl
             case isAccessible

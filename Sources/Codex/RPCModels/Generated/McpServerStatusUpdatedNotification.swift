@@ -5,6 +5,7 @@ import Foundation
 
 public struct McpServerStatusUpdatedNotification: ObjectModel {
     public var error: String?
+    public var failureReason: McpServerStartupFailureReason?
     public var name: String
     public var status: McpServerStartupState
     public var threadId: String?
@@ -12,12 +13,14 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
 
     public init(
         error: String? = nil,
+        failureReason: McpServerStartupFailureReason? = nil,
         name: String,
         status: McpServerStartupState,
         threadId: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.error = error
+        self.failureReason = failureReason
         self.name = name
         self.status = status
         self.threadId = threadId
@@ -32,6 +35,7 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "McpServerStatusUpdatedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.error = payload.error
+        self.failureReason = payload.failureReason
         self.name = payload.name
         self.status = payload.status
         self.threadId = payload.threadId
@@ -45,22 +49,25 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
     private var payload: Payload {
         Payload(
             error: error,
+            failureReason: failureReason,
             name: name,
             status: status,
             threadId: threadId
         )
     }
 
-    private static let knownKeys: Set<String> = ["error", "name", "status", "threadId"]
+    private static let knownKeys: Set<String> = ["error", "failureReason", "name", "status", "threadId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var error: String?
+        var failureReason: McpServerStartupFailureReason?
         var name: String
         var status: McpServerStartupState
         var threadId: String?
 
         enum CodingKeys: String, CodingKey {
             case error
+            case failureReason
             case name
             case status
             case threadId

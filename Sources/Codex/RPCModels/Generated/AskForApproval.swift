@@ -5,7 +5,6 @@ import Foundation
 
 public enum AskForApproval: RawJSONRepresentable {
     case untrusted
-    case onFailure
     case onRequest
     case never
     case granular(GranularAskForApproval)
@@ -16,7 +15,6 @@ public enum AskForApproval: RawJSONRepresentable {
         if case .string(let value) = raw {
             switch value {
             case "untrusted": self = .untrusted; return
-            case "on-failure": self = .onFailure; return
             case "on-request": self = .onRequest; return
             case "never": self = .never; return
             default:
@@ -30,7 +28,6 @@ public enum AskForApproval: RawJSONRepresentable {
     public func encode(to encoder: any Encoder) throws {
         switch self {
         case .untrusted: try "untrusted".encode(to: encoder)
-        case .onFailure: try "on-failure".encode(to: encoder)
         case .onRequest: try "on-request".encode(to: encoder)
         case .never: try "never".encode(to: encoder)
         case .granular(let value): try value.encode(to: encoder)
@@ -42,7 +39,6 @@ public enum AskForApproval: RawJSONRepresentable {
     public var rawJSON: JSONValue {
         switch self {
         case .untrusted: return .string("untrusted")
-        case .onFailure: return .string("on-failure")
         case .onRequest: return .string("on-request")
         case .never: return .string("never")
         case .granular(let value): return losslessEncodeJSONValue(value, context: "AskForApproval.granular")

@@ -4,20 +4,29 @@
 import Foundation
 
 public struct McpToolCallAppContext: ObjectModel {
+    public var actionName: String?
+    public var appName: String?
     public var connectorId: String
     public var linkId: String?
     public var resourceUri: String?
+    public var templateId: String?
     public var additionalFields: JSONObject
 
     public init(
+        actionName: String? = nil,
+        appName: String? = nil,
         connectorId: String,
         linkId: String? = nil,
         resourceUri: String? = nil,
+        templateId: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
+        self.actionName = actionName
+        self.appName = appName
         self.connectorId = connectorId
         self.linkId = linkId
         self.resourceUri = resourceUri
+        self.templateId = templateId
         self.additionalFields = additionalFields
     }
 
@@ -28,9 +37,12 @@ public struct McpToolCallAppContext: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "McpToolCallAppContext")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.actionName = payload.actionName
+        self.appName = payload.appName
         self.connectorId = payload.connectorId
         self.linkId = payload.linkId
         self.resourceUri = payload.resourceUri
+        self.templateId = payload.templateId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -40,23 +52,32 @@ public struct McpToolCallAppContext: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            actionName: actionName,
+            appName: appName,
             connectorId: connectorId,
             linkId: linkId,
-            resourceUri: resourceUri
+            resourceUri: resourceUri,
+            templateId: templateId
         )
     }
 
-    private static let knownKeys: Set<String> = ["connectorId", "linkId", "resourceUri"]
+    private static let knownKeys: Set<String> = ["actionName", "appName", "connectorId", "linkId", "resourceUri", "templateId"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var actionName: String?
+        var appName: String?
         var connectorId: String
         var linkId: String?
         var resourceUri: String?
+        var templateId: String?
 
         enum CodingKeys: String, CodingKey {
+            case actionName
+            case appName
             case connectorId
             case linkId
             case resourceUri
+            case templateId
         }
     }
 }
