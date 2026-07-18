@@ -8,6 +8,10 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Changed
+
+- Updated the vendored upstream checkout to `rust-v0.144.5` (`87db9bc18ba5bc82c1cb4e4381b44f693ee35623`). The release contains no changes to the Python app-server SDK or v2 schema relative to the prior Swift basis.
+
 ## [0.144.1] - 2026-07-11
 
 ### Changed
