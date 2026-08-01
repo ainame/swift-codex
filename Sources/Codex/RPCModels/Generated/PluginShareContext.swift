@@ -4,6 +4,7 @@
 import Foundation
 
 public struct PluginShareContext: ObjectModel {
+    public var canPublishToWorkspace: Bool?
     public var creatorAccountUserId: String?
     public var creatorName: String?
     public var discoverability: PluginShareDiscoverability?
@@ -14,6 +15,7 @@ public struct PluginShareContext: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        canPublishToWorkspace: Bool? = nil,
         creatorAccountUserId: String? = nil,
         creatorName: String? = nil,
         discoverability: PluginShareDiscoverability? = nil,
@@ -23,6 +25,7 @@ public struct PluginShareContext: ObjectModel {
         shareUrl: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
+        self.canPublishToWorkspace = canPublishToWorkspace
         self.creatorAccountUserId = creatorAccountUserId
         self.creatorName = creatorName
         self.discoverability = discoverability
@@ -40,6 +43,7 @@ public struct PluginShareContext: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "PluginShareContext")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.canPublishToWorkspace = payload.canPublishToWorkspace
         self.creatorAccountUserId = payload.creatorAccountUserId
         self.creatorName = payload.creatorName
         self.discoverability = payload.discoverability
@@ -56,6 +60,7 @@ public struct PluginShareContext: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            canPublishToWorkspace: canPublishToWorkspace,
             creatorAccountUserId: creatorAccountUserId,
             creatorName: creatorName,
             discoverability: discoverability,
@@ -66,9 +71,10 @@ public struct PluginShareContext: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["creatorAccountUserId", "creatorName", "discoverability", "remotePluginId", "remoteVersion", "sharePrincipals", "shareUrl"]
+    private static let knownKeys: Set<String> = ["canPublishToWorkspace", "creatorAccountUserId", "creatorName", "discoverability", "remotePluginId", "remoteVersion", "sharePrincipals", "shareUrl"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var canPublishToWorkspace: Bool?
         var creatorAccountUserId: String?
         var creatorName: String?
         var discoverability: PluginShareDiscoverability?
@@ -78,6 +84,7 @@ public struct PluginShareContext: ObjectModel {
         var shareUrl: String?
 
         enum CodingKeys: String, CodingKey {
+            case canPublishToWorkspace
             case creatorAccountUserId
             case creatorName
             case discoverability

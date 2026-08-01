@@ -12,6 +12,7 @@ public enum ExternalAgentConfigMigrationItemType: RawJSONRepresentable {
     case sUBAGENTS
     case hOOKS
     case cOMMANDS
+    case mEMORY
     case sESSIONS
     case unrecognized(String)
 
@@ -26,6 +27,7 @@ public enum ExternalAgentConfigMigrationItemType: RawJSONRepresentable {
         case "SUBAGENTS": self = .sUBAGENTS
         case "HOOKS": self = .hOOKS
         case "COMMANDS": self = .cOMMANDS
+        case "MEMORY": self = .mEMORY
         case "SESSIONS": self = .sESSIONS
         default:
             self = .unrecognized(value)
@@ -46,6 +48,7 @@ public enum ExternalAgentConfigMigrationItemType: RawJSONRepresentable {
         case .sUBAGENTS: return "SUBAGENTS"
         case .hOOKS: return "HOOKS"
         case .cOMMANDS: return "COMMANDS"
+        case .mEMORY: return "MEMORY"
         case .sESSIONS: return "SESSIONS"
         case .unrecognized(let value):
             return value

@@ -7,6 +7,7 @@ public struct WebSearchThreadItem: ObjectModel {
     public var action: WebSearchAction?
     public var id: String
     public var query: String
+    public var results: [JSONValue]?
     public var type: WebSearchThreadItemType
     public var additionalFields: JSONObject
 
@@ -14,12 +15,14 @@ public struct WebSearchThreadItem: ObjectModel {
         action: WebSearchAction? = nil,
         id: String,
         query: String,
+        results: [JSONValue]? = nil,
         type: WebSearchThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
         self.action = action
         self.id = id
         self.query = query
+        self.results = results
         self.type = type
         self.additionalFields = additionalFields
     }
@@ -34,6 +37,7 @@ public struct WebSearchThreadItem: ObjectModel {
         self.action = payload.action
         self.id = payload.id
         self.query = payload.query
+        self.results = payload.results
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -47,22 +51,25 @@ public struct WebSearchThreadItem: ObjectModel {
             action: action,
             id: id,
             query: query,
+            results: results,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["action", "id", "query", "type"]
+    private static let knownKeys: Set<String> = ["action", "id", "query", "results", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var action: WebSearchAction?
         var id: String
         var query: String
+        var results: [JSONValue]?
         var type: WebSearchThreadItemType
 
         enum CodingKeys: String, CodingKey {
             case action
             case id
             case query
+            case results
             case type
         }
     }

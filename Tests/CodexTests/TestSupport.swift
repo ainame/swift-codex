@@ -671,6 +671,7 @@ func appServerWorkspaceMessagesReadResponse() -> JSONObject {
 func appServerExternalAgentConfigImportHistoriesReadResponse() -> JSONObject {
     jsonObject(
         ExternalAgentConfigImportHistoriesReadResponse(
+            connectors: [],
             data: [
                 ExternalAgentConfigImportHistory(
                     completedAtMs: 1_780_000_200,

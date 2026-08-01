@@ -8,6 +8,8 @@ public enum UserInput: RawJSONRepresentable {
     case text(TextUserInput)
     case image(ImageUserInput)
     case localImage(LocalImageUserInput)
+    case audio(AudioUserInput)
+    case localAudio(LocalAudioUserInput)
     case skill(SkillUserInput)
     case mention(MentionUserInput)
     case unknown(JSONValue)
@@ -38,6 +40,16 @@ public enum UserInput: RawJSONRepresentable {
                     self = .localImage(value)
                     return
                 }
+            case "audio":
+                if let value = try? decodeJSONValue(AudioUserInput.self, from: raw) {
+                    self = .audio(value)
+                    return
+                }
+            case "localAudio":
+                if let value = try? decodeJSONValue(LocalAudioUserInput.self, from: raw) {
+                    self = .localAudio(value)
+                    return
+                }
             case "skill":
                 if let value = try? decodeJSONValue(SkillUserInput.self, from: raw) {
                     self = .skill(value)
@@ -55,6 +67,8 @@ public enum UserInput: RawJSONRepresentable {
         if let value = try? decodeJSONValue(TextUserInput.self, from: raw) { self = .text(value); return }
         if let value = try? decodeJSONValue(ImageUserInput.self, from: raw) { self = .image(value); return }
         if let value = try? decodeJSONValue(LocalImageUserInput.self, from: raw) { self = .localImage(value); return }
+        if let value = try? decodeJSONValue(AudioUserInput.self, from: raw) { self = .audio(value); return }
+        if let value = try? decodeJSONValue(LocalAudioUserInput.self, from: raw) { self = .localAudio(value); return }
         if let value = try? decodeJSONValue(SkillUserInput.self, from: raw) { self = .skill(value); return }
         if let value = try? decodeJSONValue(MentionUserInput.self, from: raw) { self = .mention(value); return }
         self = .unknown(raw)
@@ -66,6 +80,8 @@ public enum UserInput: RawJSONRepresentable {
         case .text(let value): try value.encode(to: encoder)
         case .image(let value): try value.encode(to: encoder)
         case .localImage(let value): try value.encode(to: encoder)
+        case .audio(let value): try value.encode(to: encoder)
+        case .localAudio(let value): try value.encode(to: encoder)
         case .skill(let value): try value.encode(to: encoder)
         case .mention(let value): try value.encode(to: encoder)
         case .unknown(let value):
@@ -79,6 +95,8 @@ public enum UserInput: RawJSONRepresentable {
         case .text(let value): return losslessEncodeJSONValue(value, context: "UserInput.text")
         case .image(let value): return losslessEncodeJSONValue(value, context: "UserInput.image")
         case .localImage(let value): return losslessEncodeJSONValue(value, context: "UserInput.localImage")
+        case .audio(let value): return losslessEncodeJSONValue(value, context: "UserInput.audio")
+        case .localAudio(let value): return losslessEncodeJSONValue(value, context: "UserInput.localAudio")
         case .skill(let value): return losslessEncodeJSONValue(value, context: "UserInput.skill")
         case .mention(let value): return losslessEncodeJSONValue(value, context: "UserInput.mention")
         case .unknown(let value):

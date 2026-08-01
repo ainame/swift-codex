@@ -9,7 +9,6 @@ public struct McpToolCallAppContext: ObjectModel {
     public var connectorId: String
     public var linkId: String?
     public var resourceUri: String?
-    public var templateId: String?
     public var additionalFields: JSONObject
 
     public init(
@@ -18,7 +17,6 @@ public struct McpToolCallAppContext: ObjectModel {
         connectorId: String,
         linkId: String? = nil,
         resourceUri: String? = nil,
-        templateId: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.actionName = actionName
@@ -26,7 +24,6 @@ public struct McpToolCallAppContext: ObjectModel {
         self.connectorId = connectorId
         self.linkId = linkId
         self.resourceUri = resourceUri
-        self.templateId = templateId
         self.additionalFields = additionalFields
     }
 
@@ -42,7 +39,6 @@ public struct McpToolCallAppContext: ObjectModel {
         self.connectorId = payload.connectorId
         self.linkId = payload.linkId
         self.resourceUri = payload.resourceUri
-        self.templateId = payload.templateId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -56,12 +52,11 @@ public struct McpToolCallAppContext: ObjectModel {
             appName: appName,
             connectorId: connectorId,
             linkId: linkId,
-            resourceUri: resourceUri,
-            templateId: templateId
+            resourceUri: resourceUri
         )
     }
 
-    private static let knownKeys: Set<String> = ["actionName", "appName", "connectorId", "linkId", "resourceUri", "templateId"]
+    private static let knownKeys: Set<String> = ["actionName", "appName", "connectorId", "linkId", "resourceUri"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var actionName: String?
@@ -69,7 +64,6 @@ public struct McpToolCallAppContext: ObjectModel {
         var connectorId: String
         var linkId: String?
         var resourceUri: String?
-        var templateId: String?
 
         enum CodingKeys: String, CodingKey {
             case actionName
@@ -77,7 +71,6 @@ public struct McpToolCallAppContext: ObjectModel {
             case connectorId
             case linkId
             case resourceUri
-            case templateId
         }
     }
 }

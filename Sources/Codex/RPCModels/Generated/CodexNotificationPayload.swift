@@ -13,6 +13,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case deprecationNotice(DeprecationNoticeNotification)
     case error(ErrorNotification)
     case externalAgentConfigImportCompleted(ExternalAgentConfigImportCompletedNotification)
+    case externalAgentConfigImportProgress(ExternalAgentConfigImportProgressNotification)
     case fsChanged(FsChangedNotification)
     case fuzzyFileSearchSessionCompleted(FuzzyFileSearchSessionCompletedNotification)
     case fuzzyFileSearchSessionUpdated(FuzzyFileSearchSessionUpdatedNotification)
@@ -36,6 +37,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case mcpServerOauthLoginCompleted(McpServerOauthLoginCompletedNotification)
     case mcpServerStatusUpdated(McpServerStatusUpdatedNotification)
     case modelRerouted(ModelReroutedNotification)
+    case modelSafetyBufferingUpdated(ModelSafetyBufferingUpdatedNotification)
     case modelVerification(ModelVerificationNotification)
     case processExited(ProcessExitedNotification)
     case processOutputDelta(ProcessOutputDeltaNotification)
@@ -45,6 +47,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadArchived(ThreadArchivedNotification)
     case threadClosed(ThreadClosedNotification)
     case contextCompacted(ContextCompactedNotification)
+    case threadDeleted(ThreadDeletedNotification)
     case threadGoalCleared(ThreadGoalClearedNotification)
     case threadGoalUpdated(ThreadGoalUpdatedNotification)
     case threadNameUpdated(ThreadNameUpdatedNotification)
@@ -63,6 +66,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadUnarchived(ThreadUnarchivedNotification)
     case turnCompleted(TurnCompletedNotification)
     case turnDiffUpdated(TurnDiffUpdatedNotification)
+    case turnModerationMetadata(TurnModerationMetadataNotification)
     case turnPlanUpdated(TurnPlanUpdatedNotification)
     case turnStarted(TurnStartedNotification)
     case warning(WarningNotification)
@@ -81,6 +85,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "deprecationNotice": self = .deprecationNotice(try decodeJSONValue(DeprecationNoticeNotification.self, from: params))
         case "error": self = .error(try decodeJSONValue(ErrorNotification.self, from: params))
         case "externalAgentConfig/import/completed": self = .externalAgentConfigImportCompleted(try decodeJSONValue(ExternalAgentConfigImportCompletedNotification.self, from: params))
+        case "externalAgentConfig/import/progress": self = .externalAgentConfigImportProgress(try decodeJSONValue(ExternalAgentConfigImportProgressNotification.self, from: params))
         case "fs/changed": self = .fsChanged(try decodeJSONValue(FsChangedNotification.self, from: params))
         case "fuzzyFileSearch/sessionCompleted": self = .fuzzyFileSearchSessionCompleted(try decodeJSONValue(FuzzyFileSearchSessionCompletedNotification.self, from: params))
         case "fuzzyFileSearch/sessionUpdated": self = .fuzzyFileSearchSessionUpdated(try decodeJSONValue(FuzzyFileSearchSessionUpdatedNotification.self, from: params))
@@ -104,6 +109,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "mcpServer/oauthLogin/completed": self = .mcpServerOauthLoginCompleted(try decodeJSONValue(McpServerOauthLoginCompletedNotification.self, from: params))
         case "mcpServer/startupStatus/updated": self = .mcpServerStatusUpdated(try decodeJSONValue(McpServerStatusUpdatedNotification.self, from: params))
         case "model/rerouted": self = .modelRerouted(try decodeJSONValue(ModelReroutedNotification.self, from: params))
+        case "model/safetyBuffering/updated": self = .modelSafetyBufferingUpdated(try decodeJSONValue(ModelSafetyBufferingUpdatedNotification.self, from: params))
         case "model/verification": self = .modelVerification(try decodeJSONValue(ModelVerificationNotification.self, from: params))
         case "process/exited": self = .processExited(try decodeJSONValue(ProcessExitedNotification.self, from: params))
         case "process/outputDelta": self = .processOutputDelta(try decodeJSONValue(ProcessOutputDeltaNotification.self, from: params))
@@ -113,6 +119,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/archived": self = .threadArchived(try decodeJSONValue(ThreadArchivedNotification.self, from: params))
         case "thread/closed": self = .threadClosed(try decodeJSONValue(ThreadClosedNotification.self, from: params))
         case "thread/compacted": self = .contextCompacted(try decodeJSONValue(ContextCompactedNotification.self, from: params))
+        case "thread/deleted": self = .threadDeleted(try decodeJSONValue(ThreadDeletedNotification.self, from: params))
         case "thread/goal/cleared": self = .threadGoalCleared(try decodeJSONValue(ThreadGoalClearedNotification.self, from: params))
         case "thread/goal/updated": self = .threadGoalUpdated(try decodeJSONValue(ThreadGoalUpdatedNotification.self, from: params))
         case "thread/name/updated": self = .threadNameUpdated(try decodeJSONValue(ThreadNameUpdatedNotification.self, from: params))
@@ -131,6 +138,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/unarchived": self = .threadUnarchived(try decodeJSONValue(ThreadUnarchivedNotification.self, from: params))
         case "turn/completed": self = .turnCompleted(try decodeJSONValue(TurnCompletedNotification.self, from: params))
         case "turn/diff/updated": self = .turnDiffUpdated(try decodeJSONValue(TurnDiffUpdatedNotification.self, from: params))
+        case "turn/moderationMetadata": self = .turnModerationMetadata(try decodeJSONValue(TurnModerationMetadataNotification.self, from: params))
         case "turn/plan/updated": self = .turnPlanUpdated(try decodeJSONValue(TurnPlanUpdatedNotification.self, from: params))
         case "turn/started": self = .turnStarted(try decodeJSONValue(TurnStartedNotification.self, from: params))
         case "warning": self = .warning(try decodeJSONValue(WarningNotification.self, from: params))
@@ -152,6 +160,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .deprecationNotice(let value): return value.rawJSON
         case .error(let value): return value.rawJSON
         case .externalAgentConfigImportCompleted(let value): return value.rawJSON
+        case .externalAgentConfigImportProgress(let value): return value.rawJSON
         case .fsChanged(let value): return value.rawJSON
         case .fuzzyFileSearchSessionCompleted(let value): return value.rawJSON
         case .fuzzyFileSearchSessionUpdated(let value): return value.rawJSON
@@ -175,6 +184,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .mcpServerOauthLoginCompleted(let value): return value.rawJSON
         case .mcpServerStatusUpdated(let value): return value.rawJSON
         case .modelRerouted(let value): return value.rawJSON
+        case .modelSafetyBufferingUpdated(let value): return value.rawJSON
         case .modelVerification(let value): return value.rawJSON
         case .processExited(let value): return value.rawJSON
         case .processOutputDelta(let value): return value.rawJSON
@@ -184,6 +194,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadArchived(let value): return value.rawJSON
         case .threadClosed(let value): return value.rawJSON
         case .contextCompacted(let value): return value.rawJSON
+        case .threadDeleted(let value): return value.rawJSON
         case .threadGoalCleared(let value): return value.rawJSON
         case .threadGoalUpdated(let value): return value.rawJSON
         case .threadNameUpdated(let value): return value.rawJSON
@@ -202,6 +213,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadUnarchived(let value): return value.rawJSON
         case .turnCompleted(let value): return value.rawJSON
         case .turnDiffUpdated(let value): return value.rawJSON
+        case .turnModerationMetadata(let value): return value.rawJSON
         case .turnPlanUpdated(let value): return value.rawJSON
         case .turnStarted(let value): return value.rawJSON
         case .warning(let value): return value.rawJSON
@@ -235,11 +247,13 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .mcpServerOauthLoginCompleted(let value): return value.threadId
         case .mcpServerStatusUpdated(let value): return value.threadId
         case .modelRerouted(let value): return value.threadId
+        case .modelSafetyBufferingUpdated(let value): return value.threadId
         case .modelVerification(let value): return value.threadId
         case .serverRequestResolved(let value): return value.threadId
         case .threadArchived(let value): return value.threadId
         case .threadClosed(let value): return value.threadId
         case .contextCompacted(let value): return value.threadId
+        case .threadDeleted(let value): return value.threadId
         case .threadGoalCleared(let value): return value.threadId
         case .threadGoalUpdated(let value): return value.threadId
         case .threadNameUpdated(let value): return value.threadId
@@ -258,6 +272,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadUnarchived(let value): return value.threadId
         case .turnCompleted(let value): return value.threadId
         case .turnDiffUpdated(let value): return value.threadId
+        case .turnModerationMetadata(let value): return value.threadId
         case .turnPlanUpdated(let value): return value.threadId
         case .turnStarted(let value): return value.threadId
         case .warning(let value): return value.threadId
@@ -291,12 +306,14 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .reasoningTextDelta(let value): return value.turnId
         case .itemStarted(let value): return value.turnId
         case .modelRerouted(let value): return value.turnId
+        case .modelSafetyBufferingUpdated(let value): return value.turnId
         case .modelVerification(let value): return value.turnId
         case .contextCompacted(let value): return value.turnId
         case .threadGoalUpdated(let value): return value.turnId
         case .threadTokenUsageUpdated(let value): return value.turnId
         case .turnCompleted(let value): return value.turn.id
         case .turnDiffUpdated(let value): return value.turnId
+        case .turnModerationMetadata(let value): return value.turnId
         case .turnPlanUpdated(let value): return value.turnId
         case .turnStarted(let value): return value.turn.id
         case .unknown(_, let rawJSON):

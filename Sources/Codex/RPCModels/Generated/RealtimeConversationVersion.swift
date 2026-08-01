@@ -6,6 +6,7 @@ import Foundation
 public enum RealtimeConversationVersion: RawJSONRepresentable {
     case v1
     case v2
+    case v3
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
@@ -13,6 +14,7 @@ public enum RealtimeConversationVersion: RawJSONRepresentable {
         switch value {
         case "v1": self = .v1
         case "v2": self = .v2
+        case "v3": self = .v3
         default:
             self = .unrecognized(value)
         }
@@ -26,6 +28,7 @@ public enum RealtimeConversationVersion: RawJSONRepresentable {
         switch self {
         case .v1: return "v1"
         case .v2: return "v2"
+        case .v3: return "v3"
         case .unrecognized(let value):
             return value
         }

@@ -11,6 +11,7 @@ public struct PluginDetail: ObjectModel {
     public var marketplaceName: String
     public var marketplacePath: AbsolutePathBuf?
     public var mcpServers: [String]
+    public var scheduledTasks: [ScheduledTaskSummary]?
     public var shareUrl: String?
     public var skills: [SkillSummary]
     public var summary: PluginSummary
@@ -24,6 +25,7 @@ public struct PluginDetail: ObjectModel {
         marketplaceName: String,
         marketplacePath: AbsolutePathBuf? = nil,
         mcpServers: [String],
+        scheduledTasks: [ScheduledTaskSummary]? = nil,
         shareUrl: String? = nil,
         skills: [SkillSummary],
         summary: PluginSummary,
@@ -36,6 +38,7 @@ public struct PluginDetail: ObjectModel {
         self.marketplaceName = marketplaceName
         self.marketplacePath = marketplacePath
         self.mcpServers = mcpServers
+        self.scheduledTasks = scheduledTasks
         self.shareUrl = shareUrl
         self.skills = skills
         self.summary = summary
@@ -56,6 +59,7 @@ public struct PluginDetail: ObjectModel {
         self.marketplaceName = payload.marketplaceName
         self.marketplacePath = payload.marketplacePath
         self.mcpServers = payload.mcpServers
+        self.scheduledTasks = payload.scheduledTasks
         self.shareUrl = payload.shareUrl
         self.skills = payload.skills
         self.summary = payload.summary
@@ -75,13 +79,14 @@ public struct PluginDetail: ObjectModel {
             marketplaceName: marketplaceName,
             marketplacePath: marketplacePath,
             mcpServers: mcpServers,
+            scheduledTasks: scheduledTasks,
             shareUrl: shareUrl,
             skills: skills,
             summary: summary
         )
     }
 
-    private static let knownKeys: Set<String> = ["appTemplates", "apps", "description", "hooks", "marketplaceName", "marketplacePath", "mcpServers", "shareUrl", "skills", "summary"]
+    private static let knownKeys: Set<String> = ["appTemplates", "apps", "description", "hooks", "marketplaceName", "marketplacePath", "mcpServers", "scheduledTasks", "shareUrl", "skills", "summary"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var appTemplates: [AppTemplateSummary]
@@ -91,6 +96,7 @@ public struct PluginDetail: ObjectModel {
         var marketplaceName: String
         var marketplacePath: AbsolutePathBuf?
         var mcpServers: [String]
+        var scheduledTasks: [ScheduledTaskSummary]?
         var shareUrl: String?
         var skills: [SkillSummary]
         var summary: PluginSummary
@@ -103,6 +109,7 @@ public struct PluginDetail: ObjectModel {
             case marketplaceName
             case marketplacePath
             case mcpServers
+            case scheduledTasks
             case shareUrl
             case skills
             case summary

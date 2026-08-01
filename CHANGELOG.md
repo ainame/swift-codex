@@ -8,6 +8,11 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Changed
+
+- Synced focused app-server schema additions through `rust-v0.146.0`, including typed audio inputs, scheduled-task summaries, external-agent connector/import progress records, plugin/script attribution, and safety-buffering, thread-deletion, and moderation-metadata notifications.
+- Updated the vendored upstream checkout to `rust-v0.146.0` (`e363b08c9175ac1cbe5893615dd2cb9ddf95043b`) and refreshed generated v2 models, upstream metadata, and README status notes.
+
 ## [0.144.1] - 2026-07-11
 
 ### Changed

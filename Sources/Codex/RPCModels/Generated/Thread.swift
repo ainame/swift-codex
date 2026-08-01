@@ -13,6 +13,7 @@ public struct Thread: ObjectModel {
     public var forkedFromId: String?
     public var gitInfo: GitInfo?
     public var id: String
+    public var isPinned: Bool?
     public var modelProvider: String
     public var name: String?
     public var parentThreadId: String?
@@ -37,6 +38,7 @@ public struct Thread: ObjectModel {
         forkedFromId: String? = nil,
         gitInfo: GitInfo? = nil,
         id: String,
+        isPinned: Bool? = nil,
         modelProvider: String,
         name: String? = nil,
         parentThreadId: String? = nil,
@@ -60,6 +62,7 @@ public struct Thread: ObjectModel {
         self.forkedFromId = forkedFromId
         self.gitInfo = gitInfo
         self.id = id
+        self.isPinned = isPinned
         self.modelProvider = modelProvider
         self.name = name
         self.parentThreadId = parentThreadId
@@ -91,6 +94,7 @@ public struct Thread: ObjectModel {
         self.forkedFromId = payload.forkedFromId
         self.gitInfo = payload.gitInfo
         self.id = payload.id
+        self.isPinned = payload.isPinned
         self.modelProvider = payload.modelProvider
         self.name = payload.name
         self.parentThreadId = payload.parentThreadId
@@ -121,6 +125,7 @@ public struct Thread: ObjectModel {
             forkedFromId: forkedFromId,
             gitInfo: gitInfo,
             id: id,
+            isPinned: isPinned,
             modelProvider: modelProvider,
             name: name,
             parentThreadId: parentThreadId,
@@ -136,7 +141,7 @@ public struct Thread: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "parentThreadId", "path", "preview", "recencyAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
+    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "isPinned", "modelProvider", "name", "parentThreadId", "path", "preview", "recencyAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentNickname: String?
@@ -148,6 +153,7 @@ public struct Thread: ObjectModel {
         var forkedFromId: String?
         var gitInfo: GitInfo?
         var id: String
+        var isPinned: Bool?
         var modelProvider: String
         var name: String?
         var parentThreadId: String?
@@ -171,6 +177,7 @@ public struct Thread: ObjectModel {
             case forkedFromId
             case gitInfo
             case id
+            case isPinned
             case modelProvider
             case name
             case parentThreadId
@@ -196,6 +203,7 @@ public struct Thread: ObjectModel {
             forkedFromId: String?,
             gitInfo: GitInfo?,
             id: String,
+            isPinned: Bool?,
             modelProvider: String,
             name: String?,
             parentThreadId: String?,
@@ -218,6 +226,7 @@ public struct Thread: ObjectModel {
             self.forkedFromId = forkedFromId
             self.gitInfo = gitInfo
             self.id = id
+            self.isPinned = isPinned
             self.modelProvider = modelProvider
             self.name = name
             self.parentThreadId = parentThreadId
@@ -243,6 +252,7 @@ public struct Thread: ObjectModel {
             self.forkedFromId = try container.decodeIfPresent(String.self, forKey: .forkedFromId)
             self.gitInfo = try container.decodeIfPresent(GitInfo.self, forKey: .gitInfo)
             self.id = try container.decode(String.self, forKey: .id)
+            self.isPinned = try container.decodeIfPresent(Bool.self, forKey: .isPinned)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.parentThreadId = try container.decodeIfPresent(String.self, forKey: .parentThreadId)

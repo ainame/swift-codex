@@ -12,6 +12,7 @@ public struct RateLimitSnapshot: ObjectModel {
     public var primary: RateLimitWindow?
     public var rateLimitReachedType: RateLimitReachedType?
     public var secondary: RateLimitWindow?
+    public var spendControlReached: Bool?
     public var additionalFields: JSONObject
 
     public init(
@@ -23,6 +24,7 @@ public struct RateLimitSnapshot: ObjectModel {
         primary: RateLimitWindow? = nil,
         rateLimitReachedType: RateLimitReachedType? = nil,
         secondary: RateLimitWindow? = nil,
+        spendControlReached: Bool? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.credits = credits
@@ -33,6 +35,7 @@ public struct RateLimitSnapshot: ObjectModel {
         self.primary = primary
         self.rateLimitReachedType = rateLimitReachedType
         self.secondary = secondary
+        self.spendControlReached = spendControlReached
         self.additionalFields = additionalFields
     }
 
@@ -51,6 +54,7 @@ public struct RateLimitSnapshot: ObjectModel {
         self.primary = payload.primary
         self.rateLimitReachedType = payload.rateLimitReachedType
         self.secondary = payload.secondary
+        self.spendControlReached = payload.spendControlReached
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -67,11 +71,12 @@ public struct RateLimitSnapshot: ObjectModel {
             planType: planType,
             primary: primary,
             rateLimitReachedType: rateLimitReachedType,
-            secondary: secondary
+            secondary: secondary,
+            spendControlReached: spendControlReached
         )
     }
 
-    private static let knownKeys: Set<String> = ["credits", "individualLimit", "limitId", "limitName", "planType", "primary", "rateLimitReachedType", "secondary"]
+    private static let knownKeys: Set<String> = ["credits", "individualLimit", "limitId", "limitName", "planType", "primary", "rateLimitReachedType", "secondary", "spendControlReached"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var credits: CreditsSnapshot?
@@ -82,6 +87,7 @@ public struct RateLimitSnapshot: ObjectModel {
         var primary: RateLimitWindow?
         var rateLimitReachedType: RateLimitReachedType?
         var secondary: RateLimitWindow?
+        var spendControlReached: Bool?
 
         enum CodingKeys: String, CodingKey {
             case credits
@@ -92,6 +98,7 @@ public struct RateLimitSnapshot: ObjectModel {
             case primary
             case rateLimitReachedType
             case secondary
+            case spendControlReached
         }
     }
 }

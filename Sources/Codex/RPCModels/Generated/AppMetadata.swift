@@ -7,7 +7,6 @@ public struct AppMetadata: ObjectModel {
     public var categories: [String]?
     public var developer: String?
     public var firstPartyRequiresInstall: Bool?
-    public var firstPartyType: String?
     public var review: AppReview?
     public var screenshots: [AppScreenshot]?
     public var seoDescription: String?
@@ -22,7 +21,6 @@ public struct AppMetadata: ObjectModel {
         categories: [String]? = nil,
         developer: String? = nil,
         firstPartyRequiresInstall: Bool? = nil,
-        firstPartyType: String? = nil,
         review: AppReview? = nil,
         screenshots: [AppScreenshot]? = nil,
         seoDescription: String? = nil,
@@ -36,7 +34,6 @@ public struct AppMetadata: ObjectModel {
         self.categories = categories
         self.developer = developer
         self.firstPartyRequiresInstall = firstPartyRequiresInstall
-        self.firstPartyType = firstPartyType
         self.review = review
         self.screenshots = screenshots
         self.seoDescription = seoDescription
@@ -58,7 +55,6 @@ public struct AppMetadata: ObjectModel {
         self.categories = payload.categories
         self.developer = payload.developer
         self.firstPartyRequiresInstall = payload.firstPartyRequiresInstall
-        self.firstPartyType = payload.firstPartyType
         self.review = payload.review
         self.screenshots = payload.screenshots
         self.seoDescription = payload.seoDescription
@@ -79,7 +75,6 @@ public struct AppMetadata: ObjectModel {
             categories: categories,
             developer: developer,
             firstPartyRequiresInstall: firstPartyRequiresInstall,
-            firstPartyType: firstPartyType,
             review: review,
             screenshots: screenshots,
             seoDescription: seoDescription,
@@ -91,13 +86,12 @@ public struct AppMetadata: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["categories", "developer", "firstPartyRequiresInstall", "firstPartyType", "review", "screenshots", "seoDescription", "showInComposerWhenUnlinked", "subCategories", "version", "versionId", "versionNotes"]
+    private static let knownKeys: Set<String> = ["categories", "developer", "firstPartyRequiresInstall", "review", "screenshots", "seoDescription", "showInComposerWhenUnlinked", "subCategories", "version", "versionId", "versionNotes"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var categories: [String]?
         var developer: String?
         var firstPartyRequiresInstall: Bool?
-        var firstPartyType: String?
         var review: AppReview?
         var screenshots: [AppScreenshot]?
         var seoDescription: String?
@@ -111,7 +105,6 @@ public struct AppMetadata: ObjectModel {
             case categories
             case developer
             case firstPartyRequiresInstall
-            case firstPartyType
             case review
             case screenshots
             case seoDescription
