@@ -8,10 +8,16 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.146.0] - 2026-08-01
+
+### Added
+
+- Added generated v2 models for audio inputs, scheduled-task summaries, external-agent connector/import progress records, plugin/script attribution, and model safety-buffering, thread-deletion, and turn moderation-metadata notifications. [#20](https://github.com/ainame/swift-codex/pull/20)
+
 ### Changed
 
-- Synced focused app-server schema additions through `rust-v0.146.0`, including typed audio inputs, scheduled-task summaries, external-agent connector/import progress records, plugin/script attribution, and safety-buffering, thread-deletion, and moderation-metadata notifications.
-- Updated the vendored upstream checkout to `rust-v0.146.0` (`e363b08c9175ac1cbe5893615dd2cb9ddf95043b`) and refreshed generated v2 models, upstream metadata, and README status notes.
+- Synced focused app-server schema additions through `rust-v0.146.0` and refreshed generated model fixtures, including the upstream removal of the MCP template ID. [#20](https://github.com/ainame/swift-codex/pull/20)
+- Updated the vendored upstream checkout to `rust-v0.146.0` (`e363b08c9175ac1cbe5893615dd2cb9ddf95043b`) and refreshed upstream metadata and README status notes. [#20](https://github.com/ainame/swift-codex/pull/20)
 
 ## [0.144.1] - 2026-07-11
 
