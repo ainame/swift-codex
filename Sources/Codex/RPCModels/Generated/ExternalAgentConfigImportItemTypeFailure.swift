@@ -10,6 +10,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
     public var itemType: ExternalAgentConfigMigrationItemType
     public var message: String
     public var source: String?
+    public var subErrorType: String?
     public var additionalFields: JSONObject
 
     public init(
@@ -19,6 +20,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
         itemType: ExternalAgentConfigMigrationItemType,
         message: String,
         source: String? = nil,
+        subErrorType: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.cwd = cwd
@@ -27,6 +29,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
         self.itemType = itemType
         self.message = message
         self.source = source
+        self.subErrorType = subErrorType
         self.additionalFields = additionalFields
     }
 
@@ -43,6 +46,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
         self.itemType = payload.itemType
         self.message = payload.message
         self.source = payload.source
+        self.subErrorType = payload.subErrorType
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -57,11 +61,12 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
             failureStage: failureStage,
             itemType: itemType,
             message: message,
-            source: source
+            source: source,
+            subErrorType: subErrorType
         )
     }
 
-    private static let knownKeys: Set<String> = ["cwd", "errorType", "failureStage", "itemType", "message", "source"]
+    private static let knownKeys: Set<String> = ["cwd", "errorType", "failureStage", "itemType", "message", "source", "subErrorType"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var cwd: String?
@@ -70,6 +75,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
         var itemType: ExternalAgentConfigMigrationItemType
         var message: String
         var source: String?
+        var subErrorType: String?
 
         enum CodingKeys: String, CodingKey {
             case cwd
@@ -78,6 +84,7 @@ public struct ExternalAgentConfigImportItemTypeFailure: ObjectModel {
             case itemType
             case message
             case source
+            case subErrorType
         }
     }
 }

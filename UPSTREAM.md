@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `44918ea10c0f99151c6710411b4322c2f5c96bea`
-- Reviewed JSON-RPC basis commit SHA: `44918ea10c0f99151c6710411b4322c2f5c96bea`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/44918ea10c0f99151c6710411b4322c2f5c96bea`
-- Last reviewed date: `2026-07-11`
+- Vendored upstream commit: `e363b08c9175ac1cbe5893615dd2cb9ddf95043b`
+- Reviewed JSON-RPC basis commit SHA: `e363b08c9175ac1cbe5893615dd2cb9ddf95043b`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/e363b08c9175ac1cbe5893615dd2cb9ddf95043b`
+- Last reviewed date: `2026-08-01`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,7 +33,7 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `44918ea10c0f99151c6710411b4322c2f5c96bea` (`rust-v0.144.1`)
+- Vendored checkout: `vendor/openai-codex` at `e363b08c9175ac1cbe5893615dd2cb9ddf95043b` (`rust-v0.146.0`)
 - Reviewed upstream files:
   - `sdk/python/src/openai_codex/_inputs.py`
   - `sdk/python/src/openai_codex/async_client.py`
@@ -42,16 +42,14 @@ When porting new behavior from upstream or validating parity:
   - `sdk/python/src/openai_codex/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
-  - refreshed generated v2 models for plugin app icon assets, npm plugin sources, and plugin install policy source metadata
-  - auth mode `headers`, session-budget error metadata, and MCP startup failure reasons
-  - MCP OAuth login and server status notifications now carry optional thread identifiers
-  - MCP tool-call app context now includes optional app/action/template metadata
-  - account rate-limit reset-credit details and `AskForApproval` enum alignment with the current schema
+  - refreshed generated v2 models for audio inputs, scheduled-task summaries, external-agent connector candidates, plugin/script attribution, and expanded app/plugin metadata
+  - external-agent import progress, model safety-buffering, thread deletion, and turn moderation-metadata notifications
+  - updated input modalities, hook events, plan types, rate-limit usage, and realtime conversation versions
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
   - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
-  - the full `rust-v0.144.1` schema includes broader account, config, model safety-buffering, MCP server status, remote-control, plugin, filesystem, and app-server transport changes that are still not wrapped as Swift convenience APIs
+  - the full `rust-v0.146.0` schema includes broader account, config, MCP server status, remote-control, plugin, filesystem, scheduled-task, and app-server transport changes that are still not wrapped as Swift convenience APIs
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
   - persisted goals are exposed as direct actor methods rather than the Python SDK's synchronous and asynchronous logical-turn stream wrappers

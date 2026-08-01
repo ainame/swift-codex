@@ -4,13 +4,16 @@
 import Foundation
 
 public struct ExternalAgentConfigImportHistoriesReadResponse: ObjectModel {
+    public var connectors: [ExternalAgentImportedConnectorCandidate]
     public var data: [ExternalAgentConfigImportHistory]
     public var additionalFields: JSONObject
 
     public init(
+        connectors: [ExternalAgentImportedConnectorCandidate],
         data: [ExternalAgentConfigImportHistory],
         additionalFields: JSONObject = [:]
     ) {
+        self.connectors = connectors
         self.data = data
         self.additionalFields = additionalFields
     }
@@ -22,6 +25,7 @@ public struct ExternalAgentConfigImportHistoriesReadResponse: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ExternalAgentConfigImportHistoriesReadResponse")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.connectors = payload.connectors
         self.data = payload.data
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -32,16 +36,19 @@ public struct ExternalAgentConfigImportHistoriesReadResponse: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            connectors: connectors,
             data: data
         )
     }
 
-    private static let knownKeys: Set<String> = ["data"]
+    private static let knownKeys: Set<String> = ["connectors", "data"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var connectors: [ExternalAgentImportedConnectorCandidate]
         var data: [ExternalAgentConfigImportHistory]
 
         enum CodingKeys: String, CodingKey {
+            case connectors
             case data
         }
     }

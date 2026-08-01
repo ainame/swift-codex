@@ -5,12 +5,12 @@ import Foundation
 
 public struct KindFileSystemSpecialPath2: ObjectModel {
     public var kind: KindFileSystemSpecialPath2Kind
-    public var subpath: String?
+    public var subpath: LegacyAppPathString?
     public var additionalFields: JSONObject
 
     public init(
         kind: KindFileSystemSpecialPath2Kind,
-        subpath: String? = nil,
+        subpath: LegacyAppPathString? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.kind = kind
@@ -45,7 +45,7 @@ public struct KindFileSystemSpecialPath2: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {
         var kind: KindFileSystemSpecialPath2Kind
-        var subpath: String?
+        var subpath: LegacyAppPathString?
 
         enum CodingKeys: String, CodingKey {
             case kind

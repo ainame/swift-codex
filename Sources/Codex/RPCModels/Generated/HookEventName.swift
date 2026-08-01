@@ -10,6 +10,7 @@ public enum HookEventName: RawJSONRepresentable {
     case preCompact
     case postCompact
     case sessionStart
+    case sessionEnd
     case userPromptSubmit
     case subagentStart
     case subagentStop
@@ -25,6 +26,7 @@ public enum HookEventName: RawJSONRepresentable {
         case "preCompact": self = .preCompact
         case "postCompact": self = .postCompact
         case "sessionStart": self = .sessionStart
+        case "sessionEnd": self = .sessionEnd
         case "userPromptSubmit": self = .userPromptSubmit
         case "subagentStart": self = .subagentStart
         case "subagentStop": self = .subagentStop
@@ -46,6 +48,7 @@ public enum HookEventName: RawJSONRepresentable {
         case .preCompact: return "preCompact"
         case .postCompact: return "postCompact"
         case .sessionStart: return "sessionStart"
+        case .sessionEnd: return "sessionEnd"
         case .userPromptSubmit: return "userPromptSubmit"
         case .subagentStart: return "subagentStart"
         case .subagentStop: return "subagentStop"

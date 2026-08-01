@@ -6,6 +6,7 @@ import Foundation
 public enum InputModality: RawJSONRepresentable {
     case text
     case image
+    case audio
 
     case unknown(JSONValue)
 
@@ -15,6 +16,7 @@ public enum InputModality: RawJSONRepresentable {
             switch value {
             case "text": self = .text; return
             case "image": self = .image; return
+            case "audio": self = .audio; return
             default:
                 break
             }
@@ -26,6 +28,7 @@ public enum InputModality: RawJSONRepresentable {
         switch self {
         case .text: try "text".encode(to: encoder)
         case .image: try "image".encode(to: encoder)
+        case .audio: try "audio".encode(to: encoder)
 
         case .unknown(let value):
             try value.encode(to: encoder)
@@ -36,6 +39,7 @@ public enum InputModality: RawJSONRepresentable {
         switch self {
         case .text: return .string("text")
         case .image: return .string("image")
+        case .audio: return .string("audio")
 
         case .unknown(let value):
             return value

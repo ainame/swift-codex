@@ -7,6 +7,7 @@ public enum DynamicToolCallOutputContentItem: RawJSONRepresentable {
 
     case inputText(InputTextDynamicToolCallOutputContentItem)
     case inputImage(InputImageDynamicToolCallOutputContentItem)
+    case inputAudio(InputAudioDynamicToolCallOutputContentItem)
     case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
@@ -30,12 +31,18 @@ public enum DynamicToolCallOutputContentItem: RawJSONRepresentable {
                     self = .inputImage(value)
                     return
                 }
+            case "inputAudio":
+                if let value = try? decodeJSONValue(InputAudioDynamicToolCallOutputContentItem.self, from: raw) {
+                    self = .inputAudio(value)
+                    return
+                }
             default:
                 break
             }
         }
         if let value = try? decodeJSONValue(InputTextDynamicToolCallOutputContentItem.self, from: raw) { self = .inputText(value); return }
         if let value = try? decodeJSONValue(InputImageDynamicToolCallOutputContentItem.self, from: raw) { self = .inputImage(value); return }
+        if let value = try? decodeJSONValue(InputAudioDynamicToolCallOutputContentItem.self, from: raw) { self = .inputAudio(value); return }
         self = .unknown(raw)
     }
 
@@ -44,6 +51,7 @@ public enum DynamicToolCallOutputContentItem: RawJSONRepresentable {
 
         case .inputText(let value): try value.encode(to: encoder)
         case .inputImage(let value): try value.encode(to: encoder)
+        case .inputAudio(let value): try value.encode(to: encoder)
         case .unknown(let value):
             try value.encode(to: encoder)
         }
@@ -54,6 +62,7 @@ public enum DynamicToolCallOutputContentItem: RawJSONRepresentable {
 
         case .inputText(let value): return losslessEncodeJSONValue(value, context: "DynamicToolCallOutputContentItem.inputText")
         case .inputImage(let value): return losslessEncodeJSONValue(value, context: "DynamicToolCallOutputContentItem.inputImage")
+        case .inputAudio(let value): return losslessEncodeJSONValue(value, context: "DynamicToolCallOutputContentItem.inputAudio")
         case .unknown(let value):
             return value
         }

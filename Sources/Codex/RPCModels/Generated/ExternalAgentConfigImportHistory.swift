@@ -7,6 +7,7 @@ public struct ExternalAgentConfigImportHistory: ObjectModel {
     public var completedAtMs: Int
     public var failures: [ExternalAgentConfigImportItemTypeFailure]
     public var importId: String
+    public var providerId: String?
     public var successes: [ExternalAgentConfigImportItemTypeSuccess]
     public var additionalFields: JSONObject
 
@@ -14,12 +15,14 @@ public struct ExternalAgentConfigImportHistory: ObjectModel {
         completedAtMs: Int,
         failures: [ExternalAgentConfigImportItemTypeFailure],
         importId: String,
+        providerId: String? = nil,
         successes: [ExternalAgentConfigImportItemTypeSuccess],
         additionalFields: JSONObject = [:]
     ) {
         self.completedAtMs = completedAtMs
         self.failures = failures
         self.importId = importId
+        self.providerId = providerId
         self.successes = successes
         self.additionalFields = additionalFields
     }
@@ -34,6 +37,7 @@ public struct ExternalAgentConfigImportHistory: ObjectModel {
         self.completedAtMs = payload.completedAtMs
         self.failures = payload.failures
         self.importId = payload.importId
+        self.providerId = payload.providerId
         self.successes = payload.successes
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -47,22 +51,25 @@ public struct ExternalAgentConfigImportHistory: ObjectModel {
             completedAtMs: completedAtMs,
             failures: failures,
             importId: importId,
+            providerId: providerId,
             successes: successes
         )
     }
 
-    private static let knownKeys: Set<String> = ["completedAtMs", "failures", "importId", "successes"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "failures", "importId", "providerId", "successes"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var completedAtMs: Int
         var failures: [ExternalAgentConfigImportItemTypeFailure]
         var importId: String
+        var providerId: String?
         var successes: [ExternalAgentConfigImportItemTypeSuccess]
 
         enum CodingKeys: String, CodingKey {
             case completedAtMs
             case failures
             case importId
+            case providerId
             case successes
         }
     }

@@ -461,13 +461,11 @@ struct AppServerSDKTests {
             appName: "Slack",
             connectorId: "connector.slack",
             linkId: "link_1",
-            resourceUri: "slack://channel/C123",
-            templateId: "template.slack"
+            resourceUri: "slack://channel/C123"
         )
         let decodedContext = try decodeJSONValue(McpToolCallAppContext.self, from: context.rawJSON)
         #expect(decodedContext.actionName == "send_message")
         #expect(decodedContext.appName == "Slack")
-        #expect(decodedContext.templateId == "template.slack")
 
         let rateLimitCredits = RateLimitResetCreditsSummary(
             availableCount: 1,
@@ -517,6 +515,48 @@ struct AppServerSDKTests {
         #expect(oauthCompleted.threadID == "thread_mcp")
         #expect(AuthMode.headers.rawJSON == .string("headers"))
         #expect(CodexErrorInfo.sessionBudgetExceeded.rawJSON == .string("sessionBudgetExceeded"))
+    }
+
+    @Test
+    func generatedModelsDecodeRust0146Additions() throws {
+        let audio = try decodeJSONValue(
+            AudioUserInput.self,
+            from: .object([
+                "type": .string("audio"),
+                "url": .string("https://example.test/audio.wav"),
+            ])
+        )
+        #expect(audio.type == .audio)
+        #expect(audio.url == "https://example.test/audio.wav")
+
+        let task = try decodeJSONValue(
+            ScheduledTaskSummary.self,
+            from: .object([
+                "key": .string("task_1"),
+                "name": .string("Daily check"),
+                "prompt": .string("Review the workspace"),
+                "schedule": .object([
+                    "time": .string("09:00"),
+                    "type": .string("daily"),
+                ]),
+            ])
+        )
+        #expect(task.key == "task_1")
+        if case .daily(let schedule) = task.schedule {
+            #expect(schedule.time == "09:00")
+        } else {
+            Issue.record("Expected daily scheduled task")
+        }
+
+        let deleted = CodexNotification(
+            method: "thread/deleted",
+            params: .object(["threadId": .string("thread_deleted")])
+        )
+        if case .threadDeleted(let payload) = deleted.payload {
+            #expect(payload.threadId == "thread_deleted")
+        } else {
+            Issue.record("Expected thread/deleted payload")
+        }
     }
 
     @Test

@@ -4,6 +4,7 @@
 import Foundation
 
 public struct TokenUsageBreakdown: ObjectModel {
+    public var cacheWriteInputTokens: Int?
     public var cachedInputTokens: Int
     public var inputTokens: Int
     public var outputTokens: Int
@@ -12,6 +13,7 @@ public struct TokenUsageBreakdown: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        cacheWriteInputTokens: Int? = nil,
         cachedInputTokens: Int,
         inputTokens: Int,
         outputTokens: Int,
@@ -19,6 +21,7 @@ public struct TokenUsageBreakdown: ObjectModel {
         totalTokens: Int,
         additionalFields: JSONObject = [:]
     ) {
+        self.cacheWriteInputTokens = cacheWriteInputTokens
         self.cachedInputTokens = cachedInputTokens
         self.inputTokens = inputTokens
         self.outputTokens = outputTokens
@@ -34,6 +37,7 @@ public struct TokenUsageBreakdown: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "TokenUsageBreakdown")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.cacheWriteInputTokens = payload.cacheWriteInputTokens
         self.cachedInputTokens = payload.cachedInputTokens
         self.inputTokens = payload.inputTokens
         self.outputTokens = payload.outputTokens
@@ -48,6 +52,7 @@ public struct TokenUsageBreakdown: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            cacheWriteInputTokens: cacheWriteInputTokens,
             cachedInputTokens: cachedInputTokens,
             inputTokens: inputTokens,
             outputTokens: outputTokens,
@@ -56,9 +61,10 @@ public struct TokenUsageBreakdown: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["cachedInputTokens", "inputTokens", "outputTokens", "reasoningOutputTokens", "totalTokens"]
+    private static let knownKeys: Set<String> = ["cacheWriteInputTokens", "cachedInputTokens", "inputTokens", "outputTokens", "reasoningOutputTokens", "totalTokens"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var cacheWriteInputTokens: Int?
         var cachedInputTokens: Int
         var inputTokens: Int
         var outputTokens: Int
@@ -66,6 +72,7 @@ public struct TokenUsageBreakdown: ObjectModel {
         var totalTokens: Int
 
         enum CodingKeys: String, CodingKey {
+            case cacheWriteInputTokens
             case cachedInputTokens
             case inputTokens
             case outputTokens

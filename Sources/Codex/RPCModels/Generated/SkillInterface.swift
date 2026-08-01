@@ -8,7 +8,9 @@ public struct SkillInterface: ObjectModel {
     public var defaultPrompt: String?
     public var displayName: String?
     public var iconLarge: AbsolutePathBuf?
+    public var iconLargeUrl: String?
     public var iconSmall: AbsolutePathBuf?
+    public var iconSmallUrl: String?
     public var shortDescription: String?
     public var additionalFields: JSONObject
 
@@ -17,7 +19,9 @@ public struct SkillInterface: ObjectModel {
         defaultPrompt: String? = nil,
         displayName: String? = nil,
         iconLarge: AbsolutePathBuf? = nil,
+        iconLargeUrl: String? = nil,
         iconSmall: AbsolutePathBuf? = nil,
+        iconSmallUrl: String? = nil,
         shortDescription: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
@@ -25,7 +29,9 @@ public struct SkillInterface: ObjectModel {
         self.defaultPrompt = defaultPrompt
         self.displayName = displayName
         self.iconLarge = iconLarge
+        self.iconLargeUrl = iconLargeUrl
         self.iconSmall = iconSmall
+        self.iconSmallUrl = iconSmallUrl
         self.shortDescription = shortDescription
         self.additionalFields = additionalFields
     }
@@ -41,7 +47,9 @@ public struct SkillInterface: ObjectModel {
         self.defaultPrompt = payload.defaultPrompt
         self.displayName = payload.displayName
         self.iconLarge = payload.iconLarge
+        self.iconLargeUrl = payload.iconLargeUrl
         self.iconSmall = payload.iconSmall
+        self.iconSmallUrl = payload.iconSmallUrl
         self.shortDescription = payload.shortDescription
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -56,19 +64,23 @@ public struct SkillInterface: ObjectModel {
             defaultPrompt: defaultPrompt,
             displayName: displayName,
             iconLarge: iconLarge,
+            iconLargeUrl: iconLargeUrl,
             iconSmall: iconSmall,
+            iconSmallUrl: iconSmallUrl,
             shortDescription: shortDescription
         )
     }
 
-    private static let knownKeys: Set<String> = ["brandColor", "defaultPrompt", "displayName", "iconLarge", "iconSmall", "shortDescription"]
+    private static let knownKeys: Set<String> = ["brandColor", "defaultPrompt", "displayName", "iconLarge", "iconLargeUrl", "iconSmall", "iconSmallUrl", "shortDescription"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var brandColor: String?
         var defaultPrompt: String?
         var displayName: String?
         var iconLarge: AbsolutePathBuf?
+        var iconLargeUrl: String?
         var iconSmall: AbsolutePathBuf?
+        var iconSmallUrl: String?
         var shortDescription: String?
 
         enum CodingKeys: String, CodingKey {
@@ -76,7 +88,9 @@ public struct SkillInterface: ObjectModel {
             case defaultPrompt
             case displayName
             case iconLarge
+            case iconLargeUrl
             case iconSmall
+            case iconSmallUrl
             case shortDescription
         }
     }

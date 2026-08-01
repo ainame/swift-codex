@@ -11,7 +11,9 @@ public struct CommandExecutionThreadItem: ObjectModel {
     public var durationMs: Int?
     public var exitCode: Int?
     public var id: String
+    public var pluginId: String?
     public var processId: String?
+    public var scriptPath: String?
     public var source: CommandExecutionSource?
     public var status: CommandExecutionStatus
     public var type: CommandExecutionThreadItemType
@@ -25,7 +27,9 @@ public struct CommandExecutionThreadItem: ObjectModel {
         durationMs: Int? = nil,
         exitCode: Int? = nil,
         id: String,
+        pluginId: String? = nil,
         processId: String? = nil,
+        scriptPath: String? = nil,
         source: CommandExecutionSource? = nil,
         status: CommandExecutionStatus,
         type: CommandExecutionThreadItemType,
@@ -38,7 +42,9 @@ public struct CommandExecutionThreadItem: ObjectModel {
         self.durationMs = durationMs
         self.exitCode = exitCode
         self.id = id
+        self.pluginId = pluginId
         self.processId = processId
+        self.scriptPath = scriptPath
         self.source = source
         self.status = status
         self.type = type
@@ -59,7 +65,9 @@ public struct CommandExecutionThreadItem: ObjectModel {
         self.durationMs = payload.durationMs
         self.exitCode = payload.exitCode
         self.id = payload.id
+        self.pluginId = payload.pluginId
         self.processId = payload.processId
+        self.scriptPath = payload.scriptPath
         self.source = payload.source
         self.status = payload.status
         self.type = payload.type
@@ -79,14 +87,16 @@ public struct CommandExecutionThreadItem: ObjectModel {
             durationMs: durationMs,
             exitCode: exitCode,
             id: id,
+            pluginId: pluginId,
             processId: processId,
+            scriptPath: scriptPath,
             source: source,
             status: status,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["aggregatedOutput", "command", "commandActions", "cwd", "durationMs", "exitCode", "id", "processId", "source", "status", "type"]
+    private static let knownKeys: Set<String> = ["aggregatedOutput", "command", "commandActions", "cwd", "durationMs", "exitCode", "id", "pluginId", "processId", "scriptPath", "source", "status", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var aggregatedOutput: String?
@@ -96,7 +106,9 @@ public struct CommandExecutionThreadItem: ObjectModel {
         var durationMs: Int?
         var exitCode: Int?
         var id: String
+        var pluginId: String?
         var processId: String?
+        var scriptPath: String?
         var source: CommandExecutionSource?
         var status: CommandExecutionStatus
         var type: CommandExecutionThreadItemType
@@ -109,7 +121,9 @@ public struct CommandExecutionThreadItem: ObjectModel {
             case durationMs
             case exitCode
             case id
+            case pluginId
             case processId
+            case scriptPath
             case source
             case status
             case type
