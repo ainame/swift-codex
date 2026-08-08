@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `e363b08c9175ac1cbe5893615dd2cb9ddf95043b`
-- Reviewed JSON-RPC basis commit SHA: `e363b08c9175ac1cbe5893615dd2cb9ddf95043b`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/e363b08c9175ac1cbe5893615dd2cb9ddf95043b`
-- Last reviewed date: `2026-08-01`
+- Vendored upstream commit: `be6e8eac029b183056b7e4402879f15d2c85f61b`
+- Reviewed JSON-RPC basis commit SHA: `be6e8eac029b183056b7e4402879f15d2c85f61b`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/be6e8eac029b183056b7e4402879f15d2c85f61b`
+- Last reviewed date: `2026-08-08`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,7 +33,7 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `e363b08c9175ac1cbe5893615dd2cb9ddf95043b` (`rust-v0.146.0`)
+- Vendored checkout: `vendor/openai-codex` at `be6e8eac029b183056b7e4402879f15d2c85f61b` (`rust-v0.147.0`)
 - Reviewed upstream files:
   - `sdk/python/src/openai_codex/_inputs.py`
   - `sdk/python/src/openai_codex/async_client.py`
@@ -42,14 +42,14 @@ When porting new behavior from upstream or validating parity:
   - `sdk/python/src/openai_codex/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 - Reviewed upstream features:
-  - refreshed generated v2 models for audio inputs, scheduled-task summaries, external-agent connector candidates, plugin/script attribution, and expanded app/plugin metadata
-  - external-agent import progress, model safety-buffering, thread deletion, and turn moderation-metadata notifications
-  - updated input modalities, hook events, plan types, rate-limit usage, and realtime conversation versions
+  - refreshed generated v2 models for persistent thread sections and section ordering, plugin eligibility/install metadata, model specialties, MCP read-only hints, image transparency, and external-agent import titles
+  - added onboarding entrypoint and plan variants, updated legacy app path payloads, and removed the obsolete thread pin field
+  - reviewed the upstream schema additions for MCP 2026-07-28 discovery, paginated thread history, plugin search/install, and related app-server notifications
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
   - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
-  - the full `rust-v0.146.0` schema includes broader account, config, MCP server status, remote-control, plugin, filesystem, scheduled-task, and app-server transport changes that are still not wrapped as Swift convenience APIs
+  - the full `rust-v0.147.0` schema includes broader account, config, MCP server status, plugin search/install, thread-section mutation, filesystem, scheduled-task, and app-server transport changes that are still not wrapped as Swift convenience APIs
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
   - persisted goals are exposed as direct actor methods rather than the Python SDK's synchronous and asynchronous logical-turn stream wrappers

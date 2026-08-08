@@ -6,14 +6,14 @@ import Foundation
 public struct ReadCommandAction: ObjectModel {
     public var command: String
     public var name: String
-    public var path: AbsolutePathBuf
+    public var path: LegacyAppPathString
     public var type: ReadCommandActionType
     public var additionalFields: JSONObject
 
     public init(
         command: String,
         name: String,
-        path: AbsolutePathBuf,
+        path: LegacyAppPathString,
         type: ReadCommandActionType,
         additionalFields: JSONObject = [:]
     ) {
@@ -56,7 +56,7 @@ public struct ReadCommandAction: ObjectModel {
     private struct Payload: Codable, Hashable, Sendable {
         var command: String
         var name: String
-        var path: AbsolutePathBuf
+        var path: LegacyAppPathString
         var type: ReadCommandActionType
 
         enum CodingKeys: String, CodingKey {

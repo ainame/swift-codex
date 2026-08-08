@@ -15,6 +15,7 @@ public struct Model: ObjectModel {
     public var inputModalities: [InputModality]?
     public var isDefault: Bool
     public var model: String
+    public var modelSpecialty: String?
     public var serviceTiers: [ModelServiceTier]?
     public var supportedReasoningEfforts: [ReasoningEffortOption]
     public var supportsPersonality: Bool?
@@ -34,6 +35,7 @@ public struct Model: ObjectModel {
         inputModalities: [InputModality]? = nil,
         isDefault: Bool,
         model: String,
+        modelSpecialty: String? = nil,
         serviceTiers: [ModelServiceTier]? = nil,
         supportedReasoningEfforts: [ReasoningEffortOption],
         supportsPersonality: Bool? = nil,
@@ -52,6 +54,7 @@ public struct Model: ObjectModel {
         self.inputModalities = inputModalities
         self.isDefault = isDefault
         self.model = model
+        self.modelSpecialty = modelSpecialty
         self.serviceTiers = serviceTiers
         self.supportedReasoningEfforts = supportedReasoningEfforts
         self.supportsPersonality = supportsPersonality
@@ -78,6 +81,7 @@ public struct Model: ObjectModel {
         self.inputModalities = payload.inputModalities
         self.isDefault = payload.isDefault
         self.model = payload.model
+        self.modelSpecialty = payload.modelSpecialty
         self.serviceTiers = payload.serviceTiers
         self.supportedReasoningEfforts = payload.supportedReasoningEfforts
         self.supportsPersonality = payload.supportsPersonality
@@ -103,6 +107,7 @@ public struct Model: ObjectModel {
             inputModalities: inputModalities,
             isDefault: isDefault,
             model: model,
+            modelSpecialty: modelSpecialty,
             serviceTiers: serviceTiers,
             supportedReasoningEfforts: supportedReasoningEfforts,
             supportsPersonality: supportsPersonality,
@@ -111,7 +116,7 @@ public struct Model: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["additionalSpeedTiers", "availabilityNux", "defaultReasoningEffort", "defaultServiceTier", "description", "displayName", "hidden", "id", "inputModalities", "isDefault", "model", "serviceTiers", "supportedReasoningEfforts", "supportsPersonality", "upgrade", "upgradeInfo"]
+    private static let knownKeys: Set<String> = ["additionalSpeedTiers", "availabilityNux", "defaultReasoningEffort", "defaultServiceTier", "description", "displayName", "hidden", "id", "inputModalities", "isDefault", "model", "modelSpecialty", "serviceTiers", "supportedReasoningEfforts", "supportsPersonality", "upgrade", "upgradeInfo"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var additionalSpeedTiers: [String]?
@@ -125,6 +130,7 @@ public struct Model: ObjectModel {
         var inputModalities: [InputModality]?
         var isDefault: Bool
         var model: String
+        var modelSpecialty: String?
         var serviceTiers: [ModelServiceTier]?
         var supportedReasoningEfforts: [ReasoningEffortOption]
         var supportsPersonality: Bool?
@@ -143,6 +149,7 @@ public struct Model: ObjectModel {
             case inputModalities
             case isDefault
             case model
+            case modelSpecialty
             case serviceTiers
             case supportedReasoningEfforts
             case supportsPersonality

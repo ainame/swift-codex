@@ -8,6 +8,15 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Added generated v2 models for persistent thread sections, plugin eligibility and install metadata, model specialties, MCP read-only hints, image transparency, external-agent import titles, onboarding entrypoints, and new plan variants.
+
+### Changed
+
+- Synced focused app-server schema additions through `rust-v0.147.0`, including section-aware thread metadata, refreshed plugin and model payloads, and updated legacy app path fields.
+- Updated the vendored upstream checkout to `rust-v0.147.0` (`be6e8eac029b183056b7e4402879f15d2c85f61b`) and refreshed generated model coverage and upstream provenance.
+
 ## [0.146.0] - 2026-08-01
 
 ### Added
