@@ -6,11 +6,14 @@ import Foundation
 public struct PluginSummary: ObjectModel {
     public var authPolicy: PluginAuthPolicy
     public var availability: PluginAvailability?
+    public var disabledReason: PluginDisabledReason?
+    public var eligiblePlanTypes: [String]?
     public var enabled: Bool
     public var id: String
     public var installPolicy: PluginInstallPolicy
     public var installPolicySource: PluginInstallPolicySource?
     public var installed: Bool
+    public var installedAt: Int?
     public var interface: PluginInterface?
     public var keywords: [String]?
     public var localVersion: String?
@@ -25,11 +28,14 @@ public struct PluginSummary: ObjectModel {
     public init(
         authPolicy: PluginAuthPolicy,
         availability: PluginAvailability? = nil,
+        disabledReason: PluginDisabledReason? = nil,
+        eligiblePlanTypes: [String]? = nil,
         enabled: Bool,
         id: String,
         installPolicy: PluginInstallPolicy,
         installPolicySource: PluginInstallPolicySource? = nil,
         installed: Bool,
+        installedAt: Int? = nil,
         interface: PluginInterface? = nil,
         keywords: [String]? = nil,
         localVersion: String? = nil,
@@ -43,11 +49,14 @@ public struct PluginSummary: ObjectModel {
     ) {
         self.authPolicy = authPolicy
         self.availability = availability
+        self.disabledReason = disabledReason
+        self.eligiblePlanTypes = eligiblePlanTypes
         self.enabled = enabled
         self.id = id
         self.installPolicy = installPolicy
         self.installPolicySource = installPolicySource
         self.installed = installed
+        self.installedAt = installedAt
         self.interface = interface
         self.keywords = keywords
         self.localVersion = localVersion
@@ -69,11 +78,14 @@ public struct PluginSummary: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.authPolicy = payload.authPolicy
         self.availability = payload.availability
+        self.disabledReason = payload.disabledReason
+        self.eligiblePlanTypes = payload.eligiblePlanTypes
         self.enabled = payload.enabled
         self.id = payload.id
         self.installPolicy = payload.installPolicy
         self.installPolicySource = payload.installPolicySource
         self.installed = payload.installed
+        self.installedAt = payload.installedAt
         self.interface = payload.interface
         self.keywords = payload.keywords
         self.localVersion = payload.localVersion
@@ -94,11 +106,14 @@ public struct PluginSummary: ObjectModel {
         Payload(
             authPolicy: authPolicy,
             availability: availability,
+            disabledReason: disabledReason,
+            eligiblePlanTypes: eligiblePlanTypes,
             enabled: enabled,
             id: id,
             installPolicy: installPolicy,
             installPolicySource: installPolicySource,
             installed: installed,
+            installedAt: installedAt,
             interface: interface,
             keywords: keywords,
             localVersion: localVersion,
@@ -111,16 +126,19 @@ public struct PluginSummary: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["authPolicy", "availability", "enabled", "id", "installPolicy", "installPolicySource", "installed", "interface", "keywords", "localVersion", "mustShowInstallationInterstitial", "name", "remotePluginId", "shareContext", "source", "version"]
+    private static let knownKeys: Set<String> = ["authPolicy", "availability", "disabledReason", "eligiblePlanTypes", "enabled", "id", "installPolicy", "installPolicySource", "installed", "installedAt", "interface", "keywords", "localVersion", "mustShowInstallationInterstitial", "name", "remotePluginId", "shareContext", "source", "version"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var authPolicy: PluginAuthPolicy
         var availability: PluginAvailability?
+        var disabledReason: PluginDisabledReason?
+        var eligiblePlanTypes: [String]?
         var enabled: Bool
         var id: String
         var installPolicy: PluginInstallPolicy
         var installPolicySource: PluginInstallPolicySource?
         var installed: Bool
+        var installedAt: Int?
         var interface: PluginInterface?
         var keywords: [String]?
         var localVersion: String?
@@ -134,11 +152,14 @@ public struct PluginSummary: ObjectModel {
         enum CodingKeys: String, CodingKey {
             case authPolicy
             case availability
+            case disabledReason
+            case eligiblePlanTypes
             case enabled
             case id
             case installPolicy
             case installPolicySource
             case installed
+            case installedAt
             case interface
             case keywords
             case localVersion
