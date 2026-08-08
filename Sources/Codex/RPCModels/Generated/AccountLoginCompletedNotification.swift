@@ -6,17 +6,20 @@ import Foundation
 public struct AccountLoginCompletedNotification: ObjectModel {
     public var error: String?
     public var loginId: String?
+    public var onboardingEntrypoint: DesktopOnboardingEntrypoint?
     public var success: Bool
     public var additionalFields: JSONObject
 
     public init(
         error: String? = nil,
         loginId: String? = nil,
+        onboardingEntrypoint: DesktopOnboardingEntrypoint? = nil,
         success: Bool,
         additionalFields: JSONObject = [:]
     ) {
         self.error = error
         self.loginId = loginId
+        self.onboardingEntrypoint = onboardingEntrypoint
         self.success = success
         self.additionalFields = additionalFields
     }
@@ -30,6 +33,7 @@ public struct AccountLoginCompletedNotification: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.error = payload.error
         self.loginId = payload.loginId
+        self.onboardingEntrypoint = payload.onboardingEntrypoint
         self.success = payload.success
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -42,20 +46,23 @@ public struct AccountLoginCompletedNotification: ObjectModel {
         Payload(
             error: error,
             loginId: loginId,
+            onboardingEntrypoint: onboardingEntrypoint,
             success: success
         )
     }
 
-    private static let knownKeys: Set<String> = ["error", "loginId", "success"]
+    private static let knownKeys: Set<String> = ["error", "loginId", "onboardingEntrypoint", "success"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var error: String?
         var loginId: String?
+        var onboardingEntrypoint: DesktopOnboardingEntrypoint?
         var success: Bool
 
         enum CodingKeys: String, CodingKey {
             case error
             case loginId
+            case onboardingEntrypoint
             case success
         }
     }

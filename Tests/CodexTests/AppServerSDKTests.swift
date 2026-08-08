@@ -560,6 +560,57 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func generatedModelsDecodeRust0147Additions() throws {
+        var thread = makeThread(id: "sectioned")
+        thread.section = ThreadSection(id: "section_1", name: "Today")
+        thread.sectionEnteredAt = 1_780_000_400
+        let decodedThread = try decodeJSONValue(Thread.self, from: thread.rawJSON)
+        #expect(decodedThread.section?.id == "section_1")
+        #expect(decodedThread.section?.name == "Today")
+        #expect(decodedThread.sectionEnteredAt == 1_780_000_400)
+        #expect(ThreadSortKey.sectionPosition.rawJSON == .string("section_position"))
+
+        var model = makeModel(id: "gpt-5-specialty")
+        model.modelSpecialty = "coding"
+        let decodedModel = try decodeJSONValue(Model.self, from: model.rawJSON)
+        #expect(decodedModel.modelSpecialty == "coding")
+
+        let plugin = PluginSummary(
+            authPolicy: .oNUSE,
+            availability: .aVAILABLE,
+            disabledReason: .planNotEligible,
+            eligiblePlanTypes: ["business"],
+            enabled: false,
+            id: "plugin.example",
+            installPolicy: .aVAILABLE,
+            installed: true,
+            installedAt: 1_780_000_401,
+            name: "Example Plugin",
+            source: .remote(RemotePluginSource(type: .remote))
+        )
+        let decodedPlugin = try decodeJSONValue(PluginSummary.self, from: plugin.rawJSON)
+        #expect(decodedPlugin.disabledReason == .planNotEligible)
+        #expect(decodedPlugin.eligiblePlanTypes == ["business"])
+        #expect(decodedPlugin.installedAt == 1_780_000_401)
+
+        var toolItem = McpToolCallThreadItem(
+            arguments: .object([:]),
+            id: "tool_147",
+            server: "example",
+            status: .completed,
+            tool: "read",
+            type: .mcpToolCall
+        )
+        toolItem.readOnlyHint = true
+        let decodedToolItem = try decodeJSONValue(McpToolCallThreadItem.self, from: toolItem.rawJSON)
+        #expect(decodedToolItem.readOnlyHint == true)
+
+        #expect(PlanType.selfServeBusinessProlite.rawJSON == .string("self_serve_business_prolite"))
+        #expect(PlanType.enterpriseCbpAutomation.rawJSON == .string("enterprise_cbp_automation"))
+        #expect(DesktopOnboardingEntrypoint.lifeSciences.rawJSON == .string("life_sciences"))
+    }
+
+    @Test
     func lowLevelClientSupportsThreadDeleteAndGoals() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }

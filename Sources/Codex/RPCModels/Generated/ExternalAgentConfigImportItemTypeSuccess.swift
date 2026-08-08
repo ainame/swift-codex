@@ -8,6 +8,7 @@ public struct ExternalAgentConfigImportItemTypeSuccess: ObjectModel {
     public var itemType: ExternalAgentConfigMigrationItemType
     public var source: String?
     public var target: String?
+    public var title: String?
     public var additionalFields: JSONObject
 
     public init(
@@ -15,12 +16,14 @@ public struct ExternalAgentConfigImportItemTypeSuccess: ObjectModel {
         itemType: ExternalAgentConfigMigrationItemType,
         source: String? = nil,
         target: String? = nil,
+        title: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.cwd = cwd
         self.itemType = itemType
         self.source = source
         self.target = target
+        self.title = title
         self.additionalFields = additionalFields
     }
 
@@ -35,6 +38,7 @@ public struct ExternalAgentConfigImportItemTypeSuccess: ObjectModel {
         self.itemType = payload.itemType
         self.source = payload.source
         self.target = payload.target
+        self.title = payload.title
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -47,23 +51,26 @@ public struct ExternalAgentConfigImportItemTypeSuccess: ObjectModel {
             cwd: cwd,
             itemType: itemType,
             source: source,
-            target: target
+            target: target,
+            title: title
         )
     }
 
-    private static let knownKeys: Set<String> = ["cwd", "itemType", "source", "target"]
+    private static let knownKeys: Set<String> = ["cwd", "itemType", "source", "target", "title"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var cwd: String?
         var itemType: ExternalAgentConfigMigrationItemType
         var source: String?
         var target: String?
+        var title: String?
 
         enum CodingKeys: String, CodingKey {
             case cwd
             case itemType
             case source
             case target
+            case title
         }
     }
 }

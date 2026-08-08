@@ -9,6 +9,7 @@ public struct ImageGenerationThreadItem: ObjectModel {
     public var revisedPrompt: String?
     public var savedPath: AbsolutePathBuf?
     public var status: String
+    public var transparentBackground: Bool?
     public var type: ImageGenerationThreadItemType
     public var additionalFields: JSONObject
 
@@ -18,6 +19,7 @@ public struct ImageGenerationThreadItem: ObjectModel {
         revisedPrompt: String? = nil,
         savedPath: AbsolutePathBuf? = nil,
         status: String,
+        transparentBackground: Bool? = nil,
         type: ImageGenerationThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
@@ -26,6 +28,7 @@ public struct ImageGenerationThreadItem: ObjectModel {
         self.revisedPrompt = revisedPrompt
         self.savedPath = savedPath
         self.status = status
+        self.transparentBackground = transparentBackground
         self.type = type
         self.additionalFields = additionalFields
     }
@@ -42,6 +45,7 @@ public struct ImageGenerationThreadItem: ObjectModel {
         self.revisedPrompt = payload.revisedPrompt
         self.savedPath = payload.savedPath
         self.status = payload.status
+        self.transparentBackground = payload.transparentBackground
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -57,11 +61,12 @@ public struct ImageGenerationThreadItem: ObjectModel {
             revisedPrompt: revisedPrompt,
             savedPath: savedPath,
             status: status,
+            transparentBackground: transparentBackground,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "result", "revisedPrompt", "savedPath", "status", "type"]
+    private static let knownKeys: Set<String> = ["id", "result", "revisedPrompt", "savedPath", "status", "transparentBackground", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var id: String
@@ -69,6 +74,7 @@ public struct ImageGenerationThreadItem: ObjectModel {
         var revisedPrompt: String?
         var savedPath: AbsolutePathBuf?
         var status: String
+        var transparentBackground: Bool?
         var type: ImageGenerationThreadItemType
 
         enum CodingKeys: String, CodingKey {
@@ -77,6 +83,7 @@ public struct ImageGenerationThreadItem: ObjectModel {
             case revisedPrompt
             case savedPath
             case status
+            case transparentBackground
             case type
         }
     }
