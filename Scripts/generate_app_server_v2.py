@@ -742,11 +742,20 @@ def emit_notification_payload(mapping: list[tuple[str, str]]) -> str:
     raw_cases: list[str] = []
     metadata_thread_cases: list[str] = []
     metadata_turn_cases: list[str] = []
+    used_case_names: set[str] = set()
 
     for method, type_name in mapping:
         if type_name not in REGISTRY.definitions:
             continue
         case_name = sanitize_case_name(type_name[:-12] if type_name.endswith("Notification") else type_name)
+        if case_name in used_case_names:
+            method_suffix = upper_camel(method.rsplit("/", 1)[-1])
+            case_name = f"{case_name}{method_suffix}"
+            suffix_index = 2
+            while case_name in used_case_names:
+                case_name = f"{case_name}{suffix_index}"
+                suffix_index += 1
+        used_case_names.add(case_name)
         cases.append(f"    case {case_name}({type_name})")
         init_cases.append(f'        case {json_string(method)}: self = .{case_name}(try decodeJSONValue({type_name}.self, from: params))')
         raw_cases.append(f"        case .{case_name}(let value): return value.rawJSON")

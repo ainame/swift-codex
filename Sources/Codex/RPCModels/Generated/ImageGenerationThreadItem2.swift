@@ -4,6 +4,7 @@
 import Foundation
 
 public struct ImageGenerationThreadItem2: ObjectModel {
+    public var failure: ImageGenerationFailure?
     public var id: String
     public var result: String
     public var revisedPrompt: String?
@@ -14,6 +15,7 @@ public struct ImageGenerationThreadItem2: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        failure: ImageGenerationFailure? = nil,
         id: String,
         result: String,
         revisedPrompt: String? = nil,
@@ -23,6 +25,7 @@ public struct ImageGenerationThreadItem2: ObjectModel {
         type: ImageGenerationThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.failure = failure
         self.id = id
         self.result = result
         self.revisedPrompt = revisedPrompt
@@ -40,6 +43,7 @@ public struct ImageGenerationThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ImageGenerationThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.failure = payload.failure
         self.id = payload.id
         self.result = payload.result
         self.revisedPrompt = payload.revisedPrompt
@@ -56,6 +60,7 @@ public struct ImageGenerationThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            failure: failure,
             id: id,
             result: result,
             revisedPrompt: revisedPrompt,
@@ -66,9 +71,10 @@ public struct ImageGenerationThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "result", "revisedPrompt", "savedPath", "status", "transparentBackground", "type"]
+    private static let knownKeys: Set<String> = ["failure", "id", "result", "revisedPrompt", "savedPath", "status", "transparentBackground", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var failure: ImageGenerationFailure?
         var id: String
         var result: String
         var revisedPrompt: String?
@@ -78,6 +84,7 @@ public struct ImageGenerationThreadItem2: ObjectModel {
         var type: ImageGenerationThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case failure
             case id
             case result
             case revisedPrompt

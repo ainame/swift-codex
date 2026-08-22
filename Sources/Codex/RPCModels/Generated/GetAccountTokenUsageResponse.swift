@@ -6,15 +6,18 @@ import Foundation
 public struct GetAccountTokenUsageResponse: ObjectModel {
     public var dailyUsageBuckets: [AccountTokenUsageDailyBucket]?
     public var summary: AccountTokenUsageSummary
+    public var threadUsage: ThreadUsage?
     public var additionalFields: JSONObject
 
     public init(
         dailyUsageBuckets: [AccountTokenUsageDailyBucket]? = nil,
         summary: AccountTokenUsageSummary,
+        threadUsage: ThreadUsage? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.dailyUsageBuckets = dailyUsageBuckets
         self.summary = summary
+        self.threadUsage = threadUsage
         self.additionalFields = additionalFields
     }
 
@@ -27,6 +30,7 @@ public struct GetAccountTokenUsageResponse: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.dailyUsageBuckets = payload.dailyUsageBuckets
         self.summary = payload.summary
+        self.threadUsage = payload.threadUsage
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -37,19 +41,22 @@ public struct GetAccountTokenUsageResponse: ObjectModel {
     private var payload: Payload {
         Payload(
             dailyUsageBuckets: dailyUsageBuckets,
-            summary: summary
+            summary: summary,
+            threadUsage: threadUsage
         )
     }
 
-    private static let knownKeys: Set<String> = ["dailyUsageBuckets", "summary"]
+    private static let knownKeys: Set<String> = ["dailyUsageBuckets", "summary", "threadUsage"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var dailyUsageBuckets: [AccountTokenUsageDailyBucket]?
         var summary: AccountTokenUsageSummary
+        var threadUsage: ThreadUsage?
 
         enum CodingKeys: String, CodingKey {
             case dailyUsageBuckets
             case summary
+            case threadUsage
         }
     }
 }

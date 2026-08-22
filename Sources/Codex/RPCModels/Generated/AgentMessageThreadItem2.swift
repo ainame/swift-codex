@@ -4,6 +4,7 @@
 import Foundation
 
 public struct AgentMessageThreadItem2: ObjectModel {
+    public var delivery: AgentMessageDelivery?
     public var id: String
     public var memoryCitation: MemoryCitation?
     public var phase: MessagePhase?
@@ -12,6 +13,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        delivery: AgentMessageDelivery? = nil,
         id: String,
         memoryCitation: MemoryCitation? = nil,
         phase: MessagePhase? = nil,
@@ -19,6 +21,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         type: AgentMessageThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.delivery = delivery
         self.id = id
         self.memoryCitation = memoryCitation
         self.phase = phase
@@ -34,6 +37,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "AgentMessageThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.delivery = payload.delivery
         self.id = payload.id
         self.memoryCitation = payload.memoryCitation
         self.phase = payload.phase
@@ -48,6 +52,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            delivery: delivery,
             id: id,
             memoryCitation: memoryCitation,
             phase: phase,
@@ -56,9 +61,10 @@ public struct AgentMessageThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "memoryCitation", "phase", "text", "type"]
+    private static let knownKeys: Set<String> = ["delivery", "id", "memoryCitation", "phase", "text", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var delivery: AgentMessageDelivery?
         var id: String
         var memoryCitation: MemoryCitation?
         var phase: MessagePhase?
@@ -66,6 +72,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         var type: AgentMessageThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case delivery
             case id
             case memoryCitation
             case phase

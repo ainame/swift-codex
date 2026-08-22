@@ -611,6 +611,97 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func generatedModelsDecodeRust0149Additions() throws {
+        var thread = makeThread(id: "projected")
+        thread.projectId = "project_149"
+        thread.section = ThreadSection(
+            appearance: ThreadSectionAppearance(color: "blue", icon: "calendar"),
+            id: "section_149",
+            name: "Today"
+        )
+        let decodedThread = try decodeJSONValue(Thread.self, from: thread.rawJSON)
+        #expect(decodedThread.projectId == "project_149")
+        #expect(decodedThread.section?.appearance?.icon == "calendar")
+
+        var model = makeModel(id: "gpt-5-multi-agent")
+        model.multiAgentVersion = .v2
+        let decodedModel = try decodeJSONValue(Model.self, from: model.rawJSON)
+        #expect(decodedModel.multiAgentVersion == .v2)
+
+        let usage = ThreadUsage(
+            estimatedUsageCreditsMicros: 125,
+            estimatedUsageUsdMicros: 250,
+            groups: [ThreadUsageBreakdownGroup(
+                estimatedUsageCreditsMicros: 125,
+                model: "gpt-5",
+                outputTokens: 42,
+                totalTokens: 100
+            )],
+            threadId: "projected"
+        )
+        let tokenUsage = GetAccountTokenUsageResponse(
+            summary: AccountTokenUsageSummary(lifetimeTokens: 100),
+            threadUsage: usage
+        )
+        let decodedTokenUsage = try decodeJSONValue(GetAccountTokenUsageResponse.self, from: tokenUsage.rawJSON)
+        #expect(decodedTokenUsage.threadUsage?.groups.first?.totalTokens == 100)
+
+        let agentMessage = AgentMessageThreadItem(
+            delivery: .async,
+            id: "message_149",
+            text: "Later",
+            type: .agentMessage
+        )
+        let decodedAgentMessage = try decodeJSONValue(AgentMessageThreadItem.self, from: agentMessage.rawJSON)
+        #expect(decodedAgentMessage.delivery == .async)
+
+        let image = ImageGenerationThreadItem(
+            failure: .usageLimitExceeded(UsageLimitExceededImageGenerationFailure(
+                limitId: "image_daily",
+                resetsAt: 1_780_000_500,
+                type: .usageLimitExceeded
+            )),
+            id: "image_149",
+            result: "",
+            status: "failed",
+            type: .imageGeneration
+        )
+        let decodedImage = try decodeJSONValue(ImageGenerationThreadItem.self, from: image.rawJSON)
+        if case .usageLimitExceeded(let failure) = try #require(decodedImage.failure) {
+            #expect(failure.limitId == "image_daily")
+        } else {
+            Issue.record("Expected usage-limit image generation failure")
+        }
+
+        #expect(CodexErrorInfo.misalignmentPolicyViolation.rawJSON == .string("misalignmentPolicyViolation"))
+        #expect(HookHandlerType.mcpTool.rawJSON == .string("mcpTool"))
+    }
+
+    @Test
+    func environmentConnectionNotificationsDecodeFromRegistry() throws {
+        let params: JSONValue = .object([
+            "environmentId": .string("environment_149"),
+            "threadId": .string("thread_149"),
+        ])
+
+        let connected = CodexNotification(method: "thread/environment/connected", params: params)
+        #expect(connected.threadID == "thread_149")
+        if case .environmentConnection(let payload) = connected.payload {
+            #expect(payload.environmentId == "environment_149")
+        } else {
+            Issue.record("Expected environment connection notification")
+        }
+
+        let disconnected = CodexNotification(method: "thread/environment/disconnected", params: params)
+        #expect(disconnected.threadID == "thread_149")
+        if case .environmentConnectionDisconnected(let payload) = disconnected.payload {
+            #expect(payload.environmentId == "environment_149")
+        } else {
+            Issue.record("Expected environment disconnection notification")
+        }
+    }
+
+    @Test
     func lowLevelClientSupportsThreadDeleteAndGoals() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
