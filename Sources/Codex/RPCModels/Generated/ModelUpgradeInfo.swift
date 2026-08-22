@@ -7,6 +7,7 @@ public struct ModelUpgradeInfo: ObjectModel {
     public var migrationMarkdown: String?
     public var model: String
     public var modelLink: String?
+    public var retirementAt: Int?
     public var upgradeCopy: String?
     public var additionalFields: JSONObject
 
@@ -14,12 +15,14 @@ public struct ModelUpgradeInfo: ObjectModel {
         migrationMarkdown: String? = nil,
         model: String,
         modelLink: String? = nil,
+        retirementAt: Int? = nil,
         upgradeCopy: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.migrationMarkdown = migrationMarkdown
         self.model = model
         self.modelLink = modelLink
+        self.retirementAt = retirementAt
         self.upgradeCopy = upgradeCopy
         self.additionalFields = additionalFields
     }
@@ -34,6 +37,7 @@ public struct ModelUpgradeInfo: ObjectModel {
         self.migrationMarkdown = payload.migrationMarkdown
         self.model = payload.model
         self.modelLink = payload.modelLink
+        self.retirementAt = payload.retirementAt
         self.upgradeCopy = payload.upgradeCopy
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -47,22 +51,25 @@ public struct ModelUpgradeInfo: ObjectModel {
             migrationMarkdown: migrationMarkdown,
             model: model,
             modelLink: modelLink,
+            retirementAt: retirementAt,
             upgradeCopy: upgradeCopy
         )
     }
 
-    private static let knownKeys: Set<String> = ["migrationMarkdown", "model", "modelLink", "upgradeCopy"]
+    private static let knownKeys: Set<String> = ["migrationMarkdown", "model", "modelLink", "retirementAt", "upgradeCopy"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var migrationMarkdown: String?
         var model: String
         var modelLink: String?
+        var retirementAt: Int?
         var upgradeCopy: String?
 
         enum CodingKeys: String, CodingKey {
             case migrationMarkdown
             case model
             case modelLink
+            case retirementAt
             case upgradeCopy
         }
     }

@@ -9,6 +9,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
     case usageLimitExceeded
     case serverOverloaded
     case cyberPolicy
+    case misalignmentPolicyViolation
     case internalServerError
     case unauthorized
     case badRequest
@@ -31,6 +32,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
             case "usageLimitExceeded": self = .usageLimitExceeded; return
             case "serverOverloaded": self = .serverOverloaded; return
             case "cyberPolicy": self = .cyberPolicy; return
+            case "misalignmentPolicyViolation": self = .misalignmentPolicyViolation; return
             case "internalServerError": self = .internalServerError; return
             case "unauthorized": self = .unauthorized; return
             case "badRequest": self = .badRequest; return
@@ -56,6 +58,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .usageLimitExceeded: try "usageLimitExceeded".encode(to: encoder)
         case .serverOverloaded: try "serverOverloaded".encode(to: encoder)
         case .cyberPolicy: try "cyberPolicy".encode(to: encoder)
+        case .misalignmentPolicyViolation: try "misalignmentPolicyViolation".encode(to: encoder)
         case .internalServerError: try "internalServerError".encode(to: encoder)
         case .unauthorized: try "unauthorized".encode(to: encoder)
         case .badRequest: try "badRequest".encode(to: encoder)
@@ -79,6 +82,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .usageLimitExceeded: return .string("usageLimitExceeded")
         case .serverOverloaded: return .string("serverOverloaded")
         case .cyberPolicy: return .string("cyberPolicy")
+        case .misalignmentPolicyViolation: return .string("misalignmentPolicyViolation")
         case .internalServerError: return .string("internalServerError")
         case .unauthorized: return .string("unauthorized")
         case .badRequest: return .string("badRequest")

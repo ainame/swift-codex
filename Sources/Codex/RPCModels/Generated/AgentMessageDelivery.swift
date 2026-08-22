@@ -3,20 +3,14 @@
 
 import Foundation
 
-public enum HookHandlerType: RawJSONRepresentable {
-    case command
-    case mcpTool
-    case prompt
-    case agent
+public enum AgentMessageDelivery: RawJSONRepresentable {
+    case async
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "command": self = .command
-        case "mcpTool": self = .mcpTool
-        case "prompt": self = .prompt
-        case "agent": self = .agent
+        case "async": self = .async
         default:
             self = .unrecognized(value)
         }
@@ -28,10 +22,7 @@ public enum HookHandlerType: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .command: return "command"
-        case .mcpTool: return "mcpTool"
-        case .prompt: return "prompt"
-        case .agent: return "agent"
+        case .async: return "async"
         case .unrecognized(let value):
             return value
         }

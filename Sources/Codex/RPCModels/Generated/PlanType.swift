@@ -18,6 +18,8 @@ public enum PlanType: RawJSONRepresentable {
     case enterpriseCbpUsageBased
     case enterprise
     case edu
+    case eduPlus
+    case eduPro
     case unknown
     case unrecognized(String)
 
@@ -38,6 +40,8 @@ public enum PlanType: RawJSONRepresentable {
         case "enterprise_cbp_usage_based": self = .enterpriseCbpUsageBased
         case "enterprise": self = .enterprise
         case "edu": self = .edu
+        case "edu_plus": self = .eduPlus
+        case "edu_pro": self = .eduPro
         case "unknown": self = .unknown
         default:
             self = .unrecognized(value)
@@ -64,6 +68,8 @@ public enum PlanType: RawJSONRepresentable {
         case .enterpriseCbpUsageBased: return "enterprise_cbp_usage_based"
         case .enterprise: return "enterprise"
         case .edu: return "edu"
+        case .eduPlus: return "edu_plus"
+        case .eduPro: return "edu_pro"
         case .unknown: return "unknown"
         case .unrecognized(let value):
             return value

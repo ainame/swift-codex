@@ -18,6 +18,7 @@ public struct Thread: ObjectModel {
     public var parentThreadId: String?
     public var path: String?
     public var preview: String
+    public var projectId: String?
     public var recencyAt: Int?
     public var section: ThreadSection?
     public var sectionEnteredAt: Int?
@@ -44,6 +45,7 @@ public struct Thread: ObjectModel {
         parentThreadId: String? = nil,
         path: String? = nil,
         preview: String,
+        projectId: String? = nil,
         recencyAt: Int? = nil,
         section: ThreadSection? = nil,
         sectionEnteredAt: Int? = nil,
@@ -69,6 +71,7 @@ public struct Thread: ObjectModel {
         self.parentThreadId = parentThreadId
         self.path = path
         self.preview = preview
+        self.projectId = projectId
         self.recencyAt = recencyAt
         self.section = section
         self.sectionEnteredAt = sectionEnteredAt
@@ -102,6 +105,7 @@ public struct Thread: ObjectModel {
         self.parentThreadId = payload.parentThreadId
         self.path = payload.path
         self.preview = payload.preview
+        self.projectId = payload.projectId
         self.recencyAt = payload.recencyAt
         self.section = payload.section
         self.sectionEnteredAt = payload.sectionEnteredAt
@@ -134,6 +138,7 @@ public struct Thread: ObjectModel {
             parentThreadId: parentThreadId,
             path: path,
             preview: preview,
+            projectId: projectId,
             recencyAt: recencyAt,
             section: section,
             sectionEnteredAt: sectionEnteredAt,
@@ -146,7 +151,7 @@ public struct Thread: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "parentThreadId", "path", "preview", "recencyAt", "section", "sectionEnteredAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
+    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "parentThreadId", "path", "preview", "projectId", "recencyAt", "section", "sectionEnteredAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentNickname: String?
@@ -163,6 +168,7 @@ public struct Thread: ObjectModel {
         var parentThreadId: String?
         var path: String?
         var preview: String
+        var projectId: String?
         var recencyAt: Int?
         var section: ThreadSection?
         var sectionEnteredAt: Int?
@@ -188,6 +194,7 @@ public struct Thread: ObjectModel {
             case parentThreadId
             case path
             case preview
+            case projectId
             case recencyAt
             case section
             case sectionEnteredAt
@@ -215,6 +222,7 @@ public struct Thread: ObjectModel {
             parentThreadId: String?,
             path: String?,
             preview: String,
+            projectId: String?,
             recencyAt: Int?,
             section: ThreadSection?,
             sectionEnteredAt: Int?,
@@ -239,6 +247,7 @@ public struct Thread: ObjectModel {
             self.parentThreadId = parentThreadId
             self.path = path
             self.preview = preview
+            self.projectId = projectId
             self.recencyAt = recencyAt
             self.section = section
             self.sectionEnteredAt = sectionEnteredAt
@@ -266,6 +275,7 @@ public struct Thread: ObjectModel {
             self.parentThreadId = try container.decodeIfPresent(String.self, forKey: .parentThreadId)
             self.path = try container.decodeIfPresent(String.self, forKey: .path)
             self.preview = try container.decode(String.self, forKey: .preview)
+            self.projectId = try container.decodeIfPresent(String.self, forKey: .projectId)
             self.recencyAt = try container.decodeIfPresent(Int.self, forKey: .recencyAt)
             self.section = try container.decodeIfPresent(ThreadSection.self, forKey: .section)
             self.sectionEnteredAt = try container.decodeIfPresent(Int.self, forKey: .sectionEnteredAt)

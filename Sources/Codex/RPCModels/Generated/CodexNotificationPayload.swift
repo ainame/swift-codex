@@ -48,6 +48,8 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadClosed(ThreadClosedNotification)
     case contextCompacted(ContextCompactedNotification)
     case threadDeleted(ThreadDeletedNotification)
+    case environmentConnection(EnvironmentConnectionNotification)
+    case environmentConnectionDisconnected(EnvironmentConnectionNotification)
     case threadGoalCleared(ThreadGoalClearedNotification)
     case threadGoalUpdated(ThreadGoalUpdatedNotification)
     case threadNameUpdated(ThreadNameUpdatedNotification)
@@ -120,6 +122,8 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/closed": self = .threadClosed(try decodeJSONValue(ThreadClosedNotification.self, from: params))
         case "thread/compacted": self = .contextCompacted(try decodeJSONValue(ContextCompactedNotification.self, from: params))
         case "thread/deleted": self = .threadDeleted(try decodeJSONValue(ThreadDeletedNotification.self, from: params))
+        case "thread/environment/connected": self = .environmentConnection(try decodeJSONValue(EnvironmentConnectionNotification.self, from: params))
+        case "thread/environment/disconnected": self = .environmentConnectionDisconnected(try decodeJSONValue(EnvironmentConnectionNotification.self, from: params))
         case "thread/goal/cleared": self = .threadGoalCleared(try decodeJSONValue(ThreadGoalClearedNotification.self, from: params))
         case "thread/goal/updated": self = .threadGoalUpdated(try decodeJSONValue(ThreadGoalUpdatedNotification.self, from: params))
         case "thread/name/updated": self = .threadNameUpdated(try decodeJSONValue(ThreadNameUpdatedNotification.self, from: params))
@@ -195,6 +199,8 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadClosed(let value): return value.rawJSON
         case .contextCompacted(let value): return value.rawJSON
         case .threadDeleted(let value): return value.rawJSON
+        case .environmentConnection(let value): return value.rawJSON
+        case .environmentConnectionDisconnected(let value): return value.rawJSON
         case .threadGoalCleared(let value): return value.rawJSON
         case .threadGoalUpdated(let value): return value.rawJSON
         case .threadNameUpdated(let value): return value.rawJSON
@@ -254,6 +260,8 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadClosed(let value): return value.threadId
         case .contextCompacted(let value): return value.threadId
         case .threadDeleted(let value): return value.threadId
+        case .environmentConnection(let value): return value.threadId
+        case .environmentConnectionDisconnected(let value): return value.threadId
         case .threadGoalCleared(let value): return value.threadId
         case .threadGoalUpdated(let value): return value.threadId
         case .threadNameUpdated(let value): return value.threadId

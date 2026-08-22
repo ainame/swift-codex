@@ -4,15 +4,18 @@
 import Foundation
 
 public struct ThreadSection: ObjectModel {
+    public var appearance: ThreadSectionAppearance?
     public var id: String
     public var name: String
     public var additionalFields: JSONObject
 
     public init(
+        appearance: ThreadSectionAppearance? = nil,
         id: String,
         name: String,
         additionalFields: JSONObject = [:]
     ) {
+        self.appearance = appearance
         self.id = id
         self.name = name
         self.additionalFields = additionalFields
@@ -25,6 +28,7 @@ public struct ThreadSection: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ThreadSection")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.appearance = payload.appearance
         self.id = payload.id
         self.name = payload.name
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -36,18 +40,21 @@ public struct ThreadSection: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            appearance: appearance,
             id: id,
             name: name
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "name"]
+    private static let knownKeys: Set<String> = ["appearance", "id", "name"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var appearance: ThreadSectionAppearance?
         var id: String
         var name: String
 
         enum CodingKeys: String, CodingKey {
+            case appearance
             case id
             case name
         }

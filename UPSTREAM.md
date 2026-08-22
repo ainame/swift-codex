@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `be6e8eac029b183056b7e4402879f15d2c85f61b`
-- Reviewed JSON-RPC basis commit SHA: `be6e8eac029b183056b7e4402879f15d2c85f61b`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/be6e8eac029b183056b7e4402879f15d2c85f61b`
-- Last reviewed date: `2026-08-08`
+- Vendored upstream commit: `758ef40f50c1a458425c7cfbf1eb12cbc07af0b0`
+- Reviewed JSON-RPC basis commit SHA: `758ef40f50c1a458425c7cfbf1eb12cbc07af0b0`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/758ef40f50c1a458425c7cfbf1eb12cbc07af0b0`
+- Last reviewed date: `2026-08-22`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,7 +33,7 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `be6e8eac029b183056b7e4402879f15d2c85f61b` (`rust-v0.147.0`)
+- Vendored checkout: `vendor/openai-codex` at `758ef40f50c1a458425c7cfbf1eb12cbc07af0b0` (`rust-v0.149.0`)
 - Reviewed upstream files:
   - `sdk/python/src/openai_codex/_inputs.py`
   - `sdk/python/src/openai_codex/async_client.py`
@@ -41,15 +41,17 @@ When porting new behavior from upstream or validating parity:
   - `sdk/python/src/openai_codex/generated/v2_all.py`
   - `sdk/python/src/openai_codex/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
+- Reviewed generator behavior:
+  - `Scripts/generate_app_server_v2.py` now disambiguates Swift notification enum cases when upstream methods share one payload type
 - Reviewed upstream features:
-  - refreshed generated v2 models for persistent thread sections and section ordering, plugin eligibility/install metadata, model specialties, MCP read-only hints, image transparency, and external-agent import titles
-  - added onboarding entrypoint and plan variants, updated legacy app path payloads, and removed the obsolete thread pin field
-  - reviewed the upstream schema additions for MCP 2026-07-28 discovery, paginated thread history, plugin search/install, and related app-server notifications
+  - refreshed generated v2 models for per-thread token usage, async agent-message delivery, multi-agent model versions, image-generation failure details, thread project IDs, section appearance metadata, and new error and hook-handler enum values
+  - added environment connection notifications and preserved both registry methods even though they share `EnvironmentConnectionNotification`
+  - reviewed upstream changes for project APIs, thread queue/revert metadata, MCP resource scoping, strict-review notifications, reasoning efforts, and account/config payloads
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
   - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
-  - the full `rust-v0.147.0` schema includes broader account, config, MCP server status, plugin search/install, thread-section mutation, filesystem, scheduled-task, and app-server transport changes that are still not wrapped as Swift convenience APIs
+  - the full `rust-v0.149.0` schema includes broader account, config, project, MCP resource, hook, thread queue, filesystem, scheduled-task, and app-server transport changes that are still not wrapped as Swift convenience APIs
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
   - persisted goals are exposed as direct actor methods rather than the Python SDK's synchronous and asynchronous logical-turn stream wrappers
