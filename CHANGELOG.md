@@ -8,14 +8,16 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.149.0] - 2026-08-27
+
 ### Added
 
-- Added generated v2 models for per-thread token usage, environment connection notifications, async agent-message delivery, multi-agent model versions, image-generation failure details, and thread project/section appearance metadata.
+- Added generated v2 models for per-thread token usage, environment connection notifications, async agent-message delivery, multi-agent model versions, image-generation failure details, and thread project/section appearance metadata. [#22](https://github.com/ainame/swift-codex/pull/22)
 
 ### Changed
 
-- Synced focused raw app-server schema parity through `rust-v0.149.0`, including new error and hook-handler enum cases plus refreshed notification and generated-model coverage.
-- Updated the vendored upstream checkout to `rust-v0.149.0` (`758ef40f50c1a458425c7cfbf1eb12cbc07af0b0`) and fixed notification generation for multiple methods sharing one payload type.
+- Synced focused raw app-server schema parity through `rust-v0.149.0`, including new error and hook-handler enum cases plus refreshed notification and generated-model coverage. [#22](https://github.com/ainame/swift-codex/pull/22)
+- Updated the vendored upstream checkout to `rust-v0.149.0` (`758ef40f50c1a458425c7cfbf1eb12cbc07af0b0`) and fixed notification generation for multiple methods sharing one payload type. [#22](https://github.com/ainame/swift-codex/pull/22)
 
 ## [0.147.0] - 2026-08-20
 
