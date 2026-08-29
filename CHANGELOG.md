@@ -6,16 +6,18 @@ For upstream parity work, record both the Swift package version and the reviewed
 
 The format is based on Keep a Changelog and this project uses tags without a `v` prefix.
 
-## [Unreleased]
+## [0.150.1] - 2026-08-29
 
 ### Added
 
-- Added generated v2 coverage for new Bedrock access-key authentication, collaboration tool/status, hook interruption, completed subagent activity, and `writeStdin` guardian approval action values.
+- Added generated v2 coverage for Bedrock access-key authentication, collaboration tool/status values, hook interruption, completed subagent activity, and `writeStdin` guardian approval actions. [#23](https://github.com/ainame/swift-codex/pull/23)
 
 ### Changed
 
-- Synced the vendored upstream checkout to `rust-v0.150.1` (`90854393966b21e9ebfd21b122334eb09a20c93d`) and refreshed generated model coverage and upstream provenance.
-- Reviewed upstream experimental realtime and MCP event-stream schema additions; these remain outside the current Swift notification registry surface.
+- Synced the vendored upstream checkout to `rust-v0.150.1` (`90854393966b21e9ebfd21b122334eb09a20c93d`) and refreshed generated model coverage and upstream provenance. [#23](https://github.com/ainame/swift-codex/pull/23)
+- Recorded the reviewed experimental realtime and MCP event-stream schema additions as outside the current Swift notification registry surface. [#23](https://github.com/ainame/swift-codex/pull/23)
+
+## [Unreleased]
 
 ## [0.149.0] - 2026-08-27
 
