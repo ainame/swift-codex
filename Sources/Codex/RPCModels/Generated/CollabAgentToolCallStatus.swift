@@ -7,6 +7,7 @@ public enum CollabAgentToolCallStatus: RawJSONRepresentable {
     case inProgress
     case completed
     case failed
+    case interrupted
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
@@ -15,6 +16,7 @@ public enum CollabAgentToolCallStatus: RawJSONRepresentable {
         case "inProgress": self = .inProgress
         case "completed": self = .completed
         case "failed": self = .failed
+        case "interrupted": self = .interrupted
         default:
             self = .unrecognized(value)
         }
@@ -29,6 +31,7 @@ public enum CollabAgentToolCallStatus: RawJSONRepresentable {
         case .inProgress: return "inProgress"
         case .completed: return "completed"
         case .failed: return "failed"
+        case .interrupted: return "interrupted"
         case .unrecognized(let value):
             return value
         }

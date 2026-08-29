@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `758ef40f50c1a458425c7cfbf1eb12cbc07af0b0`
-- Reviewed JSON-RPC basis commit SHA: `758ef40f50c1a458425c7cfbf1eb12cbc07af0b0`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/758ef40f50c1a458425c7cfbf1eb12cbc07af0b0`
-- Last reviewed date: `2026-08-22`
+- Vendored upstream commit: `90854393966b21e9ebfd21b122334eb09a20c93d`
+- Reviewed JSON-RPC basis commit SHA: `90854393966b21e9ebfd21b122334eb09a20c93d`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/90854393966b21e9ebfd21b122334eb09a20c93d`
+- Last reviewed date: `2026-08-29`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,25 +33,31 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `758ef40f50c1a458425c7cfbf1eb12cbc07af0b0` (`rust-v0.149.0`)
+- Vendored checkout: `vendor/openai-codex` at `90854393966b21e9ebfd21b122334eb09a20c93d` (`rust-v0.150.1`)
 - Reviewed upstream files:
-  - `sdk/python/src/openai_codex/_inputs.py`
-  - `sdk/python/src/openai_codex/async_client.py`
-  - `sdk/python/src/openai_codex/client.py`
-  - `sdk/python/src/openai_codex/generated/v2_all.py`
+  - `sdk/typescript/src/exec.ts`
+  - `sdk/typescript/src/thread.ts`
+  - `sdk/typescript/src/threadOptions.ts`
   - `sdk/python/src/openai_codex/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
+  - `codex-rs/app-server-protocol/schema/json/ServerNotification.json`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/AuthMode.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/CollabAgentTool.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/GuardianApprovalReviewAction.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/HookEventName.ts`
+  - `codex-rs/app-server-protocol/schema/typescript/v2/SubAgentActivityKind.ts`
 - Reviewed generator behavior:
-  - `Scripts/generate_app_server_v2.py` now disambiguates Swift notification enum cases when upstream methods share one payload type
+  - `Scripts/generate_app_server_v2.py` regenerates the updated enum cases and `writeStdin` guardian approval action models from the vendored schema
 - Reviewed upstream features:
-  - refreshed generated v2 models for per-thread token usage, async agent-message delivery, multi-agent model versions, image-generation failure details, thread project IDs, section appearance metadata, and new error and hook-handler enum values
-  - added environment connection notifications and preserved both registry methods even though they share `EnvironmentConnectionNotification`
-  - reviewed upstream changes for project APIs, thread queue/revert metadata, MCP resource scoping, strict-review notifications, reasoning efforts, and account/config payloads
+  - added `bedrockAccessKeys`, collaboration tool/status cases, hook interruption, completed subagent activity, and `writeStdin` guardian approval action support
+  - reviewed the TypeScript `threadSource` addition; it applies to the upstream `exec` wrapper and is not part of this Swift app-server transport
+  - reviewed new experimental realtime and MCP event-stream schema records, plus browser/computer-use configuration additions
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
   - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
-  - the full `rust-v0.149.0` schema includes broader account, config, project, MCP resource, hook, thread queue, filesystem, scheduled-task, and app-server transport changes that are still not wrapped as Swift convenience APIs
+  - the new experimental realtime timeline and MCP event-stream notifications are schema-only upstream additions not included in the Python notification registry or Swift notification payload enum yet
+  - browser/computer-use configuration, expanded login/config requirements, and other schema additions remain outside the current Swift convenience API
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
   - persisted goals are exposed as direct actor methods rather than the Python SDK's synchronous and asynchronous logical-turn stream wrappers

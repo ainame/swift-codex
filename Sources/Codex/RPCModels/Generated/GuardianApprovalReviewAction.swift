@@ -7,6 +7,7 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
 
     case command(CommandGuardianApprovalReviewAction)
     case execve(ExecveGuardianApprovalReviewAction)
+    case writeStdin(WriteStdinGuardianApprovalReviewAction)
     case applyPatch(ApplyPatchGuardianApprovalReviewAction)
     case networkAccess(NetworkAccessGuardianApprovalReviewAction)
     case mcpToolCall(McpToolCallGuardianApprovalReviewAction)
@@ -32,6 +33,11 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
             case "execve":
                 if let value = try? decodeJSONValue(ExecveGuardianApprovalReviewAction.self, from: raw) {
                     self = .execve(value)
+                    return
+                }
+            case "writeStdin":
+                if let value = try? decodeJSONValue(WriteStdinGuardianApprovalReviewAction.self, from: raw) {
+                    self = .writeStdin(value)
                     return
                 }
             case "applyPatch":
@@ -60,6 +66,7 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
         }
         if let value = try? decodeJSONValue(CommandGuardianApprovalReviewAction.self, from: raw) { self = .command(value); return }
         if let value = try? decodeJSONValue(ExecveGuardianApprovalReviewAction.self, from: raw) { self = .execve(value); return }
+        if let value = try? decodeJSONValue(WriteStdinGuardianApprovalReviewAction.self, from: raw) { self = .writeStdin(value); return }
         if let value = try? decodeJSONValue(ApplyPatchGuardianApprovalReviewAction.self, from: raw) { self = .applyPatch(value); return }
         if let value = try? decodeJSONValue(NetworkAccessGuardianApprovalReviewAction.self, from: raw) { self = .networkAccess(value); return }
         if let value = try? decodeJSONValue(McpToolCallGuardianApprovalReviewAction.self, from: raw) { self = .mcpToolCall(value); return }
@@ -72,6 +79,7 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
 
         case .command(let value): try value.encode(to: encoder)
         case .execve(let value): try value.encode(to: encoder)
+        case .writeStdin(let value): try value.encode(to: encoder)
         case .applyPatch(let value): try value.encode(to: encoder)
         case .networkAccess(let value): try value.encode(to: encoder)
         case .mcpToolCall(let value): try value.encode(to: encoder)
@@ -86,6 +94,7 @@ public enum GuardianApprovalReviewAction: RawJSONRepresentable {
 
         case .command(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.command")
         case .execve(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.execve")
+        case .writeStdin(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.writeStdin")
         case .applyPatch(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.applyPatch")
         case .networkAccess(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.networkAccess")
         case .mcpToolCall(let value): return losslessEncodeJSONValue(value, context: "GuardianApprovalReviewAction.mcpToolCall")

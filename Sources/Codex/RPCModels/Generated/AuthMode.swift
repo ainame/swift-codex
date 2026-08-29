@@ -11,6 +11,7 @@ public enum AuthMode: RawJSONRepresentable {
     case agentIdentity
     case personalAccessToken
     case bedrockApiKey
+    case bedrockAccessKeys
 
     case unknown(JSONValue)
 
@@ -25,6 +26,7 @@ public enum AuthMode: RawJSONRepresentable {
             case "agentIdentity": self = .agentIdentity; return
             case "personalAccessToken": self = .personalAccessToken; return
             case "bedrockApiKey": self = .bedrockApiKey; return
+            case "bedrockAccessKeys": self = .bedrockAccessKeys; return
             default:
                 break
             }
@@ -41,6 +43,7 @@ public enum AuthMode: RawJSONRepresentable {
         case .agentIdentity: try "agentIdentity".encode(to: encoder)
         case .personalAccessToken: try "personalAccessToken".encode(to: encoder)
         case .bedrockApiKey: try "bedrockApiKey".encode(to: encoder)
+        case .bedrockAccessKeys: try "bedrockAccessKeys".encode(to: encoder)
 
         case .unknown(let value):
             try value.encode(to: encoder)
@@ -56,6 +59,7 @@ public enum AuthMode: RawJSONRepresentable {
         case .agentIdentity: return .string("agentIdentity")
         case .personalAccessToken: return .string("personalAccessToken")
         case .bedrockApiKey: return .string("bedrockApiKey")
+        case .bedrockAccessKeys: return .string("bedrockAccessKeys")
 
         case .unknown(let value):
             return value
