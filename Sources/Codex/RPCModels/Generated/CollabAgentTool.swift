@@ -9,6 +9,10 @@ public enum CollabAgentTool: RawJSONRepresentable {
     case resumeAgent
     case wait
     case closeAgent
+    case sendMessage
+    case followupTask
+    case interruptAgent
+    case listAgents
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
@@ -19,6 +23,10 @@ public enum CollabAgentTool: RawJSONRepresentable {
         case "resumeAgent": self = .resumeAgent
         case "wait": self = .wait
         case "closeAgent": self = .closeAgent
+        case "sendMessage": self = .sendMessage
+        case "followupTask": self = .followupTask
+        case "interruptAgent": self = .interruptAgent
+        case "listAgents": self = .listAgents
         default:
             self = .unrecognized(value)
         }
@@ -35,6 +43,10 @@ public enum CollabAgentTool: RawJSONRepresentable {
         case .resumeAgent: return "resumeAgent"
         case .wait: return "wait"
         case .closeAgent: return "closeAgent"
+        case .sendMessage: return "sendMessage"
+        case .followupTask: return "followupTask"
+        case .interruptAgent: return "interruptAgent"
+        case .listAgents: return "listAgents"
         case .unrecognized(let value):
             return value
         }

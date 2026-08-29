@@ -15,6 +15,7 @@ public enum HookEventName: RawJSONRepresentable {
     case subagentStart
     case subagentStop
     case stop
+    case interrupt
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
@@ -31,6 +32,7 @@ public enum HookEventName: RawJSONRepresentable {
         case "subagentStart": self = .subagentStart
         case "subagentStop": self = .subagentStop
         case "stop": self = .stop
+        case "interrupt": self = .interrupt
         default:
             self = .unrecognized(value)
         }
@@ -53,6 +55,7 @@ public enum HookEventName: RawJSONRepresentable {
         case .subagentStart: return "subagentStart"
         case .subagentStop: return "subagentStop"
         case .stop: return "stop"
+        case .interrupt: return "interrupt"
         case .unrecognized(let value):
             return value
         }

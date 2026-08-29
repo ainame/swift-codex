@@ -678,6 +678,36 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func generatedModelsDecodeRust0150Additions() throws {
+        #expect(AuthMode.bedrockAccessKeys.rawJSON == .string("bedrockAccessKeys"))
+        #expect(CollabAgentTool.sendMessage.rawJSON == .string("sendMessage"))
+        #expect(CollabAgentTool.followupTask.rawJSON == .string("followupTask"))
+        #expect(CollabAgentTool.interruptAgent.rawJSON == .string("interruptAgent"))
+        #expect(CollabAgentTool.listAgents.rawJSON == .string("listAgents"))
+        #expect(CollabAgentToolCallStatus.interrupted.rawJSON == .string("interrupted"))
+        #expect(HookEventName.interrupt.rawJSON == .string("interrupt"))
+        #expect(SubAgentActivityKind.completed.rawJSON == .string("completed"))
+
+        let action = WriteStdinGuardianApprovalReviewAction(
+            approvalId: "approval_150",
+            cwd: LegacyAppPathString(rawValue: "/tmp/project"),
+            processId: "process_150",
+            stdin: "confirm",
+            type: .writeStdin
+        )
+        let decodedAction = try decodeJSONValue(WriteStdinGuardianApprovalReviewAction.self, from: action.rawJSON)
+        #expect(decodedAction.approvalId == "approval_150")
+        #expect(decodedAction.stdin == "confirm")
+
+        let decodedUnion = try decodeJSONValue(GuardianApprovalReviewAction.self, from: action.rawJSON)
+        if case .writeStdin(let decodedAction) = decodedUnion {
+            #expect(decodedAction.processId == "process_150")
+        } else {
+            Issue.record("Expected write-stdin guardian approval action")
+        }
+    }
+
+    @Test
     func environmentConnectionNotificationsDecodeFromRegistry() throws {
         let params: JSONValue = .object([
             "environmentId": .string("environment_149"),

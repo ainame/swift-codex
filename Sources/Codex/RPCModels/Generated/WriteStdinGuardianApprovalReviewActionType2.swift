@@ -3,20 +3,14 @@
 
 import Foundation
 
-public enum SubAgentActivityKind: RawJSONRepresentable {
-    case started
-    case interacted
-    case interrupted
-    case completed
+public enum WriteStdinGuardianApprovalReviewActionType2: RawJSONRepresentable {
+    case writeStdin
     case unrecognized(String)
 
     public init(from decoder: any Decoder) throws {
         let value = try String(from: decoder)
         switch value {
-        case "started": self = .started
-        case "interacted": self = .interacted
-        case "interrupted": self = .interrupted
-        case "completed": self = .completed
+        case "writeStdin": self = .writeStdin
         default:
             self = .unrecognized(value)
         }
@@ -28,10 +22,7 @@ public enum SubAgentActivityKind: RawJSONRepresentable {
 
     public var rawValue: String {
         switch self {
-        case .started: return "started"
-        case .interacted: return "interacted"
-        case .interrupted: return "interrupted"
-        case .completed: return "completed"
+        case .writeStdin: return "writeStdin"
         case .unrecognized(let value):
             return value
         }

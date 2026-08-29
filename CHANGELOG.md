@@ -8,6 +8,15 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Added generated v2 coverage for new Bedrock access-key authentication, collaboration tool/status, hook interruption, completed subagent activity, and `writeStdin` guardian approval action values.
+
+### Changed
+
+- Synced the vendored upstream checkout to `rust-v0.150.1` (`90854393966b21e9ebfd21b122334eb09a20c93d`) and refreshed generated model coverage and upstream provenance.
+- Reviewed upstream experimental realtime and MCP event-stream schema additions; these remain outside the current Swift notification registry surface.
+
 ## [0.149.0] - 2026-08-27
 
 ### Added
