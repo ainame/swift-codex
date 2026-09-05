@@ -6,6 +6,18 @@ For upstream parity work, record both the Swift package version and the reviewed
 
 The format is based on Keep a Changelog and this project uses tags without a `v` prefix.
 
+## [Unreleased]
+
+## [0.153.4] - 2026-09-05
+
+### Added
+
+- Added generated v2 models for paginated thread metadata, async user-input questions, function-call output items, rate-limit metadata, and misalignment error details. [#24](https://github.com/ainame/swift-codex/pull/24)
+
+### Changed
+
+- Synced the vendored upstream checkout to `rust-v0.153.4` (`3d2ee51ca2d5db578f328aa75e20aa22c0197c9a`) and refreshed generated-model coverage and upstream provenance. [#24](https://github.com/ainame/swift-codex/pull/24)
+
 ## [0.150.1] - 2026-08-29
 
 ### Added
@@ -16,16 +28,6 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 - Synced the vendored upstream checkout to `rust-v0.150.1` (`90854393966b21e9ebfd21b122334eb09a20c93d`) and refreshed generated model coverage and upstream provenance. [#23](https://github.com/ainame/swift-codex/pull/23)
 - Recorded the reviewed experimental realtime and MCP event-stream schema additions as outside the current Swift notification registry surface. [#23](https://github.com/ainame/swift-codex/pull/23)
-
-## [Unreleased]
-
-### Added
-
-- Added generated v2 models for paginated thread metadata, async user-input questions, function-call output items, rate-limit metadata, and misalignment error details.
-
-### Changed
-
-- Synced the vendored upstream checkout to `rust-v0.153.4` (`3d2ee51ca2d5db578f328aa75e20aa22c0197c9a`) and refreshed generated-model coverage and upstream provenance.
 
 ## [0.149.0] - 2026-08-27
 
