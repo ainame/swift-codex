@@ -32,4 +32,3 @@ public enum NpmPluginSourceType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -60,4 +60,3 @@ public struct LocalImageUserInput2: ObjectModel {
         }
     }
 }
-

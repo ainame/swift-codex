@@ -41,4 +41,3 @@ public enum CollabAgentToolCallStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

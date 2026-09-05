@@ -137,4 +137,3 @@ public struct HookRunSummary: ObjectModel {
         }
     }
 }
-

@@ -38,4 +38,3 @@ public enum MultiAgentVersion: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

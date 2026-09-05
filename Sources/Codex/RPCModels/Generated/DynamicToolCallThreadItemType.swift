@@ -32,4 +32,3 @@ public enum DynamicToolCallThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

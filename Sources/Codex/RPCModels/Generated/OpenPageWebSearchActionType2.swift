@@ -32,4 +32,3 @@ public enum OpenPageWebSearchActionType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

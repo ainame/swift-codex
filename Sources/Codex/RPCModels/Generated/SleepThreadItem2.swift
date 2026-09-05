@@ -60,4 +60,3 @@ public struct SleepThreadItem2: ObjectModel {
         }
     }
 }
-

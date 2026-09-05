@@ -32,4 +32,3 @@ public enum ReadCommandActionType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

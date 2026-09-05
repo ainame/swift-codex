@@ -95,4 +95,3 @@ public struct PluginShareContext: ObjectModel {
         }
     }
 }
-

@@ -827,7 +827,7 @@ def generated_file_content(body: str) -> str:
 
 import Foundation
 
-{body}
+{body.rstrip()}
 """
 
 

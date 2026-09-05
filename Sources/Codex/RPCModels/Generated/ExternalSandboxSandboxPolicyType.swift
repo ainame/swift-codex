@@ -32,4 +32,3 @@ public enum ExternalSandboxSandboxPolicyType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -32,4 +32,3 @@ public enum IdleThreadStatusType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

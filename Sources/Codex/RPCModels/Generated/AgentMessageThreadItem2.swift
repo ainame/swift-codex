@@ -8,6 +8,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
     public var id: String
     public var memoryCitation: MemoryCitation?
     public var phase: MessagePhase?
+    public var questions: [AsyncUserInputQuestion]?
     public var text: String
     public var type: AgentMessageThreadItemType2
     public var additionalFields: JSONObject
@@ -17,6 +18,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         id: String,
         memoryCitation: MemoryCitation? = nil,
         phase: MessagePhase? = nil,
+        questions: [AsyncUserInputQuestion]? = nil,
         text: String,
         type: AgentMessageThreadItemType2,
         additionalFields: JSONObject = [:]
@@ -25,6 +27,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         self.id = id
         self.memoryCitation = memoryCitation
         self.phase = phase
+        self.questions = questions
         self.text = text
         self.type = type
         self.additionalFields = additionalFields
@@ -41,6 +44,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         self.id = payload.id
         self.memoryCitation = payload.memoryCitation
         self.phase = payload.phase
+        self.questions = payload.questions
         self.text = payload.text
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -56,18 +60,20 @@ public struct AgentMessageThreadItem2: ObjectModel {
             id: id,
             memoryCitation: memoryCitation,
             phase: phase,
+            questions: questions,
             text: text,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["delivery", "id", "memoryCitation", "phase", "text", "type"]
+    private static let knownKeys: Set<String> = ["delivery", "id", "memoryCitation", "phase", "questions", "text", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var delivery: AgentMessageDelivery?
         var id: String
         var memoryCitation: MemoryCitation?
         var phase: MessagePhase?
+        var questions: [AsyncUserInputQuestion]?
         var text: String
         var type: AgentMessageThreadItemType2
 
@@ -76,9 +82,9 @@ public struct AgentMessageThreadItem2: ObjectModel {
             case id
             case memoryCitation
             case phase
+            case questions
             case text
             case type
         }
     }
 }
-

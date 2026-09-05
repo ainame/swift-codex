@@ -41,4 +41,3 @@ public enum RemoteControlConnectionStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

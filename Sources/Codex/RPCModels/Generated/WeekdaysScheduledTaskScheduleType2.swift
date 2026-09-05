@@ -32,4 +32,3 @@ public enum WeekdaysScheduledTaskScheduleType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

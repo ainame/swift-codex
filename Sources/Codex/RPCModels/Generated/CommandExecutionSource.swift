@@ -41,4 +41,3 @@ public enum CommandExecutionSource: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

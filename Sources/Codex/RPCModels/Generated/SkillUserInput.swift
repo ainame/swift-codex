@@ -60,4 +60,3 @@ public struct SkillUserInput: ObjectModel {
         }
     }
 }
-

@@ -123,4 +123,3 @@ public struct ThreadSettings: ObjectModel {
         }
     }
 }
-

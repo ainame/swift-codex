@@ -67,4 +67,3 @@ public struct PluginSharePrincipal: ObjectModel {
         }
     }
 }
-

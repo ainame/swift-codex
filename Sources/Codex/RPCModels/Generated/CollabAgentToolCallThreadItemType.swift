@@ -32,4 +32,3 @@ public enum CollabAgentToolCallThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -32,4 +32,3 @@ public enum ModelVerification: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -60,4 +60,3 @@ public struct WeeklyScheduledTaskSchedule2: ObjectModel {
         }
     }
 }
-

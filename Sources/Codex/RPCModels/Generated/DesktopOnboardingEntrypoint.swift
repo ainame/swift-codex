@@ -32,4 +32,3 @@ public enum DesktopOnboardingEntrypoint: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

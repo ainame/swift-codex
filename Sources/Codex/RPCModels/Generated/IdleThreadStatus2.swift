@@ -46,4 +46,3 @@ public struct IdleThreadStatus2: ObjectModel {
         }
     }
 }
-

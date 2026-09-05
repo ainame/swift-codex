@@ -32,4 +32,3 @@ public enum McpToolCallThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

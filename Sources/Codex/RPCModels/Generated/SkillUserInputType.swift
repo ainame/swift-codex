@@ -32,4 +32,3 @@ public enum SkillUserInputType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

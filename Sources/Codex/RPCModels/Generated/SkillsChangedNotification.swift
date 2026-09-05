@@ -37,4 +37,3 @@ public struct SkillsChangedNotification: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {}
 }
-

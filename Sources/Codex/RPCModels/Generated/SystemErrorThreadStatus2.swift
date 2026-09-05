@@ -46,4 +46,3 @@ public struct SystemErrorThreadStatus2: ObjectModel {
         }
     }
 }
-

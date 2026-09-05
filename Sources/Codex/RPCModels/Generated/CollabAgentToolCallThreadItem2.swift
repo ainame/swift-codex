@@ -109,4 +109,3 @@ public struct CollabAgentToolCallThreadItem2: ObjectModel {
         }
     }
 }
-

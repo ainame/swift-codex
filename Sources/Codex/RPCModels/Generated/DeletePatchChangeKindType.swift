@@ -32,4 +32,3 @@ public enum DeletePatchChangeKindType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

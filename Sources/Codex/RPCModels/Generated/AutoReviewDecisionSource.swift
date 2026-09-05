@@ -32,4 +32,3 @@ public enum AutoReviewDecisionSource: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

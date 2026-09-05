@@ -102,4 +102,3 @@ public struct RateLimitSnapshot: ObjectModel {
         }
     }
 }
-

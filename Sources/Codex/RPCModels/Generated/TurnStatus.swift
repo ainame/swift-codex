@@ -41,4 +41,3 @@ public enum TurnStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

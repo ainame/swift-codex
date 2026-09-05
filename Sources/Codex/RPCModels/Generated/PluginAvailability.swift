@@ -42,4 +42,3 @@ public enum PluginAvailability: RawJSONRepresentable {
         }
     }
 }
-

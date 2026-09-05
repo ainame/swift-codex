@@ -32,4 +32,3 @@ public enum AgentMessageThreadItemType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

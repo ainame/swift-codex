@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `90854393966b21e9ebfd21b122334eb09a20c93d`
-- Reviewed JSON-RPC basis commit SHA: `90854393966b21e9ebfd21b122334eb09a20c93d`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/90854393966b21e9ebfd21b122334eb09a20c93d`
-- Last reviewed date: `2026-08-29`
+- Vendored upstream commit: `3d2ee51ca2d5db578f328aa75e20aa22c0197c9a`
+- Reviewed JSON-RPC basis commit SHA: `3d2ee51ca2d5db578f328aa75e20aa22c0197c9a`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/3d2ee51ca2d5db578f328aa75e20aa22c0197c9a`
+- Last reviewed date: `2026-09-05`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,31 +33,23 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `90854393966b21e9ebfd21b122334eb09a20c93d` (`rust-v0.150.1`)
+- Vendored checkout: `vendor/openai-codex` at `3d2ee51ca2d5db578f328aa75e20aa22c0197c9a` (`rust-v0.153.4`)
 - Reviewed upstream files:
-  - `sdk/typescript/src/exec.ts`
-  - `sdk/typescript/src/thread.ts`
-  - `sdk/typescript/src/threadOptions.ts`
   - `sdk/python/src/openai_codex/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
-  - `codex-rs/app-server-protocol/schema/json/ServerNotification.json`
-  - `codex-rs/app-server-protocol/schema/typescript/v2/AuthMode.ts`
-  - `codex-rs/app-server-protocol/schema/typescript/v2/CollabAgentTool.ts`
-  - `codex-rs/app-server-protocol/schema/typescript/v2/GuardianApprovalReviewAction.ts`
-  - `codex-rs/app-server-protocol/schema/typescript/v2/HookEventName.ts`
-  - `codex-rs/app-server-protocol/schema/typescript/v2/SubAgentActivityKind.ts`
+  - `sdk/python/src/openai_codex/generated/v2_all.py`
+  - `sdk/python/tests/test_artifact_workflow_and_binaries.py`
 - Reviewed generator behavior:
-  - `Scripts/generate_app_server_v2.py` regenerates the updated enum cases and `writeStdin` guardian approval action models from the vendored schema
+  - `Scripts/generate_app_server_v2.py` regenerates Swift v2 models from the vendored schema
 - Reviewed upstream features:
-  - added `bedrockAccessKeys`, collaboration tool/status cases, hook interruption, completed subagent activity, and `writeStdin` guardian approval action support
-  - reviewed the TypeScript `threadSource` addition; it applies to the upstream `exec` wrapper and is not part of this Swift app-server transport
-  - reviewed new experimental realtime and MCP event-stream schema records, plus browser/computer-use configuration additions
+  - added paginated thread metadata, async user-input questions, function-call output items, rate-limit error and upsell metadata, and misalignment error details
+  - reviewed app-link approval metadata, project-recency sorting, plugin reconciliation, and model-provider recovery notifications
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
   - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
-  - the new experimental realtime timeline and MCP event-stream notifications are schema-only upstream additions not included in the Python notification registry or Swift notification payload enum yet
-  - browser/computer-use configuration, expanded login/config requirements, and other schema additions remain outside the current Swift convenience API
+  - pagination, revert, and plugin-reconcile request endpoints remain schema-only because the current Swift convenience API does not expose them end to end
+  - model-provider recovery notifications are not yet part of the Python notification registry or Swift notification payload enum
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
   - persisted goals are exposed as direct actor methods rather than the Python SDK's synchronous and asynchronous logical-turn stream wrappers

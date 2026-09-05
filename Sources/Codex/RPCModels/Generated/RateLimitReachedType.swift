@@ -44,4 +44,3 @@ public enum RateLimitReachedType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

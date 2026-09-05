@@ -32,4 +32,3 @@ public enum InputTextDynamicToolCallOutputContentItemType2: RawJSONRepresentable
         .string(rawValue)
     }
 }
-

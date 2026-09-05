@@ -53,4 +53,3 @@ public struct LocalPluginSource2: ObjectModel {
         }
     }
 }
-

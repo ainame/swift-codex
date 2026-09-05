@@ -32,4 +32,3 @@ public enum WorkspaceWriteSandboxPolicyType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

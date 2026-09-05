@@ -67,4 +67,3 @@ public struct ReadCommandAction2: ObjectModel {
         }
     }
 }
-

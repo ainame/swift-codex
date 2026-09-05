@@ -95,4 +95,3 @@ public struct ThreadGoal: ObjectModel {
         }
     }
 }
-

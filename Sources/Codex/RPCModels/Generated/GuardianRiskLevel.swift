@@ -41,4 +41,3 @@ public enum GuardianRiskLevel: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

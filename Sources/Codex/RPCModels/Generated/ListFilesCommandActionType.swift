@@ -32,4 +32,3 @@ public enum ListFilesCommandActionType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

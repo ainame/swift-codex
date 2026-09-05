@@ -60,4 +60,3 @@ public struct ThreadRealtimeTranscriptDeltaNotification: ObjectModel {
         }
     }
 }
-

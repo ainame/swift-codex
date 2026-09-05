@@ -32,4 +32,3 @@ public enum ReadOnlySandboxPolicyType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

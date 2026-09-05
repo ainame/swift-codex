@@ -44,4 +44,3 @@ public enum HookRunStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -32,4 +32,3 @@ public enum SleepThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

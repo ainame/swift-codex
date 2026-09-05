@@ -102,4 +102,3 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
         }
     }
 }
-

@@ -32,4 +32,3 @@ public enum ContextCompactionThreadItemType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

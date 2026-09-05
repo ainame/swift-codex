@@ -32,4 +32,3 @@ public enum FileChangeThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

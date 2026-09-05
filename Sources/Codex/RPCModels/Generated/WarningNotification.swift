@@ -53,4 +53,3 @@ public struct WarningNotification: ObjectModel {
         }
     }
 }
-

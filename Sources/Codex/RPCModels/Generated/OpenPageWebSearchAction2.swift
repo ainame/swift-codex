@@ -53,4 +53,3 @@ public struct OpenPageWebSearchAction2: ObjectModel {
         }
     }
 }
-

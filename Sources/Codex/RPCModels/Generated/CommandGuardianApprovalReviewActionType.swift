@@ -32,4 +32,3 @@ public enum CommandGuardianApprovalReviewActionType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

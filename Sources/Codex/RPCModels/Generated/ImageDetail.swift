@@ -41,4 +41,3 @@ public enum ImageDetail: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

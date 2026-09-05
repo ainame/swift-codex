@@ -60,4 +60,3 @@ public struct SearchWebSearchAction2: ObjectModel {
         }
     }
 }
-

@@ -38,4 +38,3 @@ public enum ApprovalsReviewer: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

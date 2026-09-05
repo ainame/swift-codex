@@ -67,4 +67,3 @@ public struct CommandGuardianApprovalReviewAction2: ObjectModel {
         }
     }
 }
-

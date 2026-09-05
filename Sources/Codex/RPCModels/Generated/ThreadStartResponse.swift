@@ -148,4 +148,3 @@ public struct ThreadStartResponse: ObjectModel {
         }
     }
 }
-

@@ -50,4 +50,3 @@ public enum ScheduledTaskWeekday: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

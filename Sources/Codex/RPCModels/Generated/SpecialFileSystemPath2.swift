@@ -53,4 +53,3 @@ public struct SpecialFileSystemPath2: ObjectModel {
         }
     }
 }
-

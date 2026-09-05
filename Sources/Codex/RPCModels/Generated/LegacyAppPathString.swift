@@ -37,4 +37,3 @@ public struct LegacyAppPathString: RawRepresentable, RawJSONRepresentable {
         JSONValue.string(rawValue)
     }
 }
-

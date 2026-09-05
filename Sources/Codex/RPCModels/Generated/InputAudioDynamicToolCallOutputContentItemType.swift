@@ -32,4 +32,3 @@ public enum InputAudioDynamicToolCallOutputContentItemType: RawJSONRepresentable
         .string(rawValue)
     }
 }
-

@@ -37,4 +37,3 @@ public struct AbsolutePathBuf: RawRepresentable, RawJSONRepresentable {
         JSONValue.string(rawValue)
     }
 }
-

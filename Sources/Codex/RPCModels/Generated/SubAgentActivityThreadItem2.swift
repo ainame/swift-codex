@@ -74,4 +74,3 @@ public struct SubAgentActivityThreadItem2: ObjectModel {
         }
     }
 }
-

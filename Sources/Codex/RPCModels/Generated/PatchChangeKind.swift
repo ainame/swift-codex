@@ -68,4 +68,3 @@ public enum PatchChangeKind: RawJSONRepresentable {
         }
     }
 }
-

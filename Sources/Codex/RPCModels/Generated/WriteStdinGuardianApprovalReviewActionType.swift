@@ -32,4 +32,3 @@ public enum WriteStdinGuardianApprovalReviewActionType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

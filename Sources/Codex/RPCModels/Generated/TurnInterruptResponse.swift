@@ -37,4 +37,3 @@ public struct TurnInterruptResponse: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {}
 }
-

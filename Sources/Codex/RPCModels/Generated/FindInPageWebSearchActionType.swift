@@ -32,4 +32,3 @@ public enum FindInPageWebSearchActionType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -46,4 +46,3 @@ public struct MarketplaceInterface: ObjectModel {
         }
     }
 }
-

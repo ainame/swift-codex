@@ -32,4 +32,3 @@ public enum UserMessageThreadItemType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -67,4 +67,3 @@ public struct ProcessOutputDeltaNotification: ObjectModel {
         }
     }
 }
-

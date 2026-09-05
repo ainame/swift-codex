@@ -35,4 +35,3 @@ public enum ThreadStartSource: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

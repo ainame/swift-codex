@@ -32,4 +32,3 @@ public enum TmpdirFileSystemSpecialPath2Kind: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -60,4 +60,3 @@ public struct TextUserInput2: ObjectModel {
         }
     }
 }
-

@@ -144,4 +144,3 @@ public struct AppInfo: ObjectModel {
         }
     }
 }
-

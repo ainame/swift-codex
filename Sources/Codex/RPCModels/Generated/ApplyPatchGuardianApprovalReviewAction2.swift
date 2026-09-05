@@ -60,4 +60,3 @@ public struct ApplyPatchGuardianApprovalReviewAction2: ObjectModel {
         }
     }
 }
-

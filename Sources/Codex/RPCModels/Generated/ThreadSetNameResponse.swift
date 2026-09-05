@@ -37,4 +37,3 @@ public struct ThreadSetNameResponse: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {}
 }
-

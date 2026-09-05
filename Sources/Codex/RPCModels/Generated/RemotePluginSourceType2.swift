@@ -32,4 +32,3 @@ public enum RemotePluginSourceType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

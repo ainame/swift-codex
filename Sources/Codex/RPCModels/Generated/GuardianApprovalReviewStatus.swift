@@ -44,4 +44,3 @@ public enum GuardianApprovalReviewStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

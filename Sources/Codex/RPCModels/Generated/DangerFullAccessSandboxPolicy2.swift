@@ -46,4 +46,3 @@ public struct DangerFullAccessSandboxPolicy2: ObjectModel {
         }
     }
 }
-

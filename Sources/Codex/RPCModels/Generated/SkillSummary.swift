@@ -81,4 +81,3 @@ public struct SkillSummary: ObjectModel {
         }
     }
 }
-

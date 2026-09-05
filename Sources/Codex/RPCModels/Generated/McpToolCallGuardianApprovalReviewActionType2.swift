@@ -32,4 +32,3 @@ public enum McpToolCallGuardianApprovalReviewActionType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

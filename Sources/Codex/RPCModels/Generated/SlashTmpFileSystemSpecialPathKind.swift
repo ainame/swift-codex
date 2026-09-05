@@ -32,4 +32,3 @@ public enum SlashTmpFileSystemSpecialPathKind: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

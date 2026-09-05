@@ -41,4 +41,3 @@ public enum PatchApplyStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

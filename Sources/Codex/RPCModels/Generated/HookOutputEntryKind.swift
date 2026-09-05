@@ -44,4 +44,3 @@ public enum HookOutputEntryKind: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

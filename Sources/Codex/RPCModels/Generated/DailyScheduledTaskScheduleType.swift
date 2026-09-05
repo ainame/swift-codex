@@ -32,4 +32,3 @@ public enum DailyScheduledTaskScheduleType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

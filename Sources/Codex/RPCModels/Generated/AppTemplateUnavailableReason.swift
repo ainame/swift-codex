@@ -35,4 +35,3 @@ public enum AppTemplateUnavailableReason: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

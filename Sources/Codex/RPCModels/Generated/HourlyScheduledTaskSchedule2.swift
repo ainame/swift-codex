@@ -60,4 +60,3 @@ public struct HourlyScheduledTaskSchedule2: ObjectModel {
         }
     }
 }
-

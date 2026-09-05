@@ -46,4 +46,3 @@ public enum TurnItemsView: RawJSONRepresentable {
         }
     }
 }
-

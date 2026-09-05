@@ -53,4 +53,3 @@ public struct ContextCompactionThreadItem2: ObjectModel {
         }
     }
 }
-

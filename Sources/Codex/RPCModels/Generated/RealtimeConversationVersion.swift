@@ -38,4 +38,3 @@ public enum RealtimeConversationVersion: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

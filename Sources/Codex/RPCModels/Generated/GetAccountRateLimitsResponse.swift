@@ -4,18 +4,24 @@
 import Foundation
 
 public struct GetAccountRateLimitsResponse: ObjectModel {
+    public var accountId: String?
     public var rateLimitResetCredits: RateLimitResetCreditsSummary?
+    public var rateLimitUpsell: JSONValue?
     public var rateLimits: RateLimitSnapshot
     public var rateLimitsByLimitId: [String: RateLimitSnapshot]?
     public var additionalFields: JSONObject
 
     public init(
+        accountId: String? = nil,
         rateLimitResetCredits: RateLimitResetCreditsSummary? = nil,
+        rateLimitUpsell: JSONValue? = nil,
         rateLimits: RateLimitSnapshot,
         rateLimitsByLimitId: [String: RateLimitSnapshot]? = nil,
         additionalFields: JSONObject = [:]
     ) {
+        self.accountId = accountId
         self.rateLimitResetCredits = rateLimitResetCredits
+        self.rateLimitUpsell = rateLimitUpsell
         self.rateLimits = rateLimits
         self.rateLimitsByLimitId = rateLimitsByLimitId
         self.additionalFields = additionalFields
@@ -28,7 +34,9 @@ public struct GetAccountRateLimitsResponse: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "GetAccountRateLimitsResponse")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.accountId = payload.accountId
         self.rateLimitResetCredits = payload.rateLimitResetCredits
+        self.rateLimitUpsell = payload.rateLimitUpsell
         self.rateLimits = payload.rateLimits
         self.rateLimitsByLimitId = payload.rateLimitsByLimitId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -40,24 +48,29 @@ public struct GetAccountRateLimitsResponse: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            accountId: accountId,
             rateLimitResetCredits: rateLimitResetCredits,
+            rateLimitUpsell: rateLimitUpsell,
             rateLimits: rateLimits,
             rateLimitsByLimitId: rateLimitsByLimitId
         )
     }
 
-    private static let knownKeys: Set<String> = ["rateLimitResetCredits", "rateLimits", "rateLimitsByLimitId"]
+    private static let knownKeys: Set<String> = ["accountId", "rateLimitResetCredits", "rateLimitUpsell", "rateLimits", "rateLimitsByLimitId"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var accountId: String?
         var rateLimitResetCredits: RateLimitResetCreditsSummary?
+        var rateLimitUpsell: JSONValue?
         var rateLimits: RateLimitSnapshot
         var rateLimitsByLimitId: [String: RateLimitSnapshot]?
 
         enum CodingKeys: String, CodingKey {
+            case accountId
             case rateLimitResetCredits
+            case rateLimitUpsell
             case rateLimits
             case rateLimitsByLimitId
         }
     }
 }
-

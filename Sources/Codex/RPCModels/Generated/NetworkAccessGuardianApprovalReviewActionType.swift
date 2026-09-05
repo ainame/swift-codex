@@ -32,4 +32,3 @@ public enum NetworkAccessGuardianApprovalReviewActionType: RawJSONRepresentable 
         .string(rawValue)
     }
 }
-

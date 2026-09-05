@@ -60,4 +60,3 @@ public struct ImageViewThreadItem2: ObjectModel {
         }
     }
 }
-

@@ -41,4 +41,3 @@ public enum GuardianUserAuthorization: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

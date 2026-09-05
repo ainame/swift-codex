@@ -37,4 +37,3 @@ public struct ThreadId: RawRepresentable, RawJSONRepresentable {
         JSONValue.string(rawValue)
     }
 }
-

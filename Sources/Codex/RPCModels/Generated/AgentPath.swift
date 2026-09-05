@@ -37,4 +37,3 @@ public struct AgentPath: RawRepresentable, RawJSONRepresentable {
         JSONValue.string(rawValue)
     }
 }
-

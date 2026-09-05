@@ -35,4 +35,3 @@ public enum NonSteerableTurnKind: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

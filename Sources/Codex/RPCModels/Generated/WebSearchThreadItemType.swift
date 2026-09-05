@@ -32,4 +32,3 @@ public enum WebSearchThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

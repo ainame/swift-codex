@@ -32,4 +32,3 @@ public enum GitPluginSourceType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

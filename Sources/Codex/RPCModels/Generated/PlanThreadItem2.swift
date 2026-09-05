@@ -60,4 +60,3 @@ public struct PlanThreadItem2: ObjectModel {
         }
     }
 }
-

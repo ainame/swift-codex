@@ -77,4 +77,3 @@ public enum ThreadStatus: RawJSONRepresentable {
         }
     }
 }
-

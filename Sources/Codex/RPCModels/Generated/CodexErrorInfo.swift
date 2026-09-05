@@ -7,6 +7,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
     case contextWindowExceeded
     case sessionBudgetExceeded
     case usageLimitExceeded
+    case rateLimitExceeded
     case serverOverloaded
     case cyberPolicy
     case misalignmentPolicyViolation
@@ -30,6 +31,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
             case "contextWindowExceeded": self = .contextWindowExceeded; return
             case "sessionBudgetExceeded": self = .sessionBudgetExceeded; return
             case "usageLimitExceeded": self = .usageLimitExceeded; return
+            case "rateLimitExceeded": self = .rateLimitExceeded; return
             case "serverOverloaded": self = .serverOverloaded; return
             case "cyberPolicy": self = .cyberPolicy; return
             case "misalignmentPolicyViolation": self = .misalignmentPolicyViolation; return
@@ -56,6 +58,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .contextWindowExceeded: try "contextWindowExceeded".encode(to: encoder)
         case .sessionBudgetExceeded: try "sessionBudgetExceeded".encode(to: encoder)
         case .usageLimitExceeded: try "usageLimitExceeded".encode(to: encoder)
+        case .rateLimitExceeded: try "rateLimitExceeded".encode(to: encoder)
         case .serverOverloaded: try "serverOverloaded".encode(to: encoder)
         case .cyberPolicy: try "cyberPolicy".encode(to: encoder)
         case .misalignmentPolicyViolation: try "misalignmentPolicyViolation".encode(to: encoder)
@@ -80,6 +83,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .contextWindowExceeded: return .string("contextWindowExceeded")
         case .sessionBudgetExceeded: return .string("sessionBudgetExceeded")
         case .usageLimitExceeded: return .string("usageLimitExceeded")
+        case .rateLimitExceeded: return .string("rateLimitExceeded")
         case .serverOverloaded: return .string("serverOverloaded")
         case .cyberPolicy: return .string("cyberPolicy")
         case .misalignmentPolicyViolation: return .string("misalignmentPolicyViolation")
@@ -99,4 +103,3 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         }
     }
 }
-

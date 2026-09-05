@@ -8,12 +8,14 @@ public struct ThreadResumeResponse: ObjectModel {
     public var approvalsReviewer: ApprovalsReviewer
     public var cwd: AbsolutePathBuf
     public var instructionSources: [LegacyAppPathString]?
+    public var itemsBackwardsCursor: String?
     public var model: String
     public var modelProvider: String
     public var reasoningEffort: ReasoningEffort?
     public var sandbox: SandboxPolicy
     public var serviceTier: String?
     public var thread: Thread
+    public var turnsBackwardsCursor: String?
     public var additionalFields: JSONObject
 
     public init(
@@ -21,24 +23,28 @@ public struct ThreadResumeResponse: ObjectModel {
         approvalsReviewer: ApprovalsReviewer,
         cwd: AbsolutePathBuf,
         instructionSources: [LegacyAppPathString]? = nil,
+        itemsBackwardsCursor: String? = nil,
         model: String,
         modelProvider: String,
         reasoningEffort: ReasoningEffort? = nil,
         sandbox: SandboxPolicy,
         serviceTier: String? = nil,
         thread: Thread,
+        turnsBackwardsCursor: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.approvalPolicy = approvalPolicy
         self.approvalsReviewer = approvalsReviewer
         self.cwd = cwd
         self.instructionSources = instructionSources
+        self.itemsBackwardsCursor = itemsBackwardsCursor
         self.model = model
         self.modelProvider = modelProvider
         self.reasoningEffort = reasoningEffort
         self.sandbox = sandbox
         self.serviceTier = serviceTier
         self.thread = thread
+        self.turnsBackwardsCursor = turnsBackwardsCursor
         self.additionalFields = additionalFields
     }
 
@@ -53,12 +59,14 @@ public struct ThreadResumeResponse: ObjectModel {
         self.approvalsReviewer = payload.approvalsReviewer
         self.cwd = payload.cwd
         self.instructionSources = payload.instructionSources
+        self.itemsBackwardsCursor = payload.itemsBackwardsCursor
         self.model = payload.model
         self.modelProvider = payload.modelProvider
         self.reasoningEffort = payload.reasoningEffort
         self.sandbox = payload.sandbox
         self.serviceTier = payload.serviceTier
         self.thread = payload.thread
+        self.turnsBackwardsCursor = payload.turnsBackwardsCursor
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -72,40 +80,46 @@ public struct ThreadResumeResponse: ObjectModel {
             approvalsReviewer: approvalsReviewer,
             cwd: cwd,
             instructionSources: instructionSources,
+            itemsBackwardsCursor: itemsBackwardsCursor,
             model: model,
             modelProvider: modelProvider,
             reasoningEffort: reasoningEffort,
             sandbox: sandbox,
             serviceTier: serviceTier,
-            thread: thread
+            thread: thread,
+            turnsBackwardsCursor: turnsBackwardsCursor
         )
     }
 
-    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "instructionSources", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread"]
+    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "instructionSources", "itemsBackwardsCursor", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread", "turnsBackwardsCursor"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var approvalPolicy: AskForApproval
         var approvalsReviewer: ApprovalsReviewer
         var cwd: AbsolutePathBuf
         var instructionSources: [LegacyAppPathString]?
+        var itemsBackwardsCursor: String?
         var model: String
         var modelProvider: String
         var reasoningEffort: ReasoningEffort?
         var sandbox: SandboxPolicy
         var serviceTier: String?
         var thread: Thread
+        var turnsBackwardsCursor: String?
 
         enum CodingKeys: String, CodingKey {
             case approvalPolicy
             case approvalsReviewer
             case cwd
             case instructionSources
+            case itemsBackwardsCursor
             case model
             case modelProvider
             case reasoningEffort
             case sandbox
             case serviceTier
             case thread
+            case turnsBackwardsCursor
         }
 
 
@@ -114,23 +128,27 @@ public struct ThreadResumeResponse: ObjectModel {
             approvalsReviewer: ApprovalsReviewer,
             cwd: AbsolutePathBuf,
             instructionSources: [LegacyAppPathString]?,
+            itemsBackwardsCursor: String?,
             model: String,
             modelProvider: String,
             reasoningEffort: ReasoningEffort?,
             sandbox: SandboxPolicy,
             serviceTier: String?,
-            thread: Thread
+            thread: Thread,
+            turnsBackwardsCursor: String?
         ) {
             self.approvalPolicy = approvalPolicy
             self.approvalsReviewer = approvalsReviewer
             self.cwd = cwd
             self.instructionSources = instructionSources
+            self.itemsBackwardsCursor = itemsBackwardsCursor
             self.model = model
             self.modelProvider = modelProvider
             self.reasoningEffort = reasoningEffort
             self.sandbox = sandbox
             self.serviceTier = serviceTier
             self.thread = thread
+            self.turnsBackwardsCursor = turnsBackwardsCursor
         }
 
         init(from decoder: any Decoder) throws {
@@ -139,13 +157,14 @@ public struct ThreadResumeResponse: ObjectModel {
             self.approvalsReviewer = try container.decodeIfPresent(ApprovalsReviewer.self, forKey: .approvalsReviewer) ?? .user
             self.cwd = try container.decode(AbsolutePathBuf.self, forKey: .cwd)
             self.instructionSources = try container.decodeIfPresent([LegacyAppPathString].self, forKey: .instructionSources)
+            self.itemsBackwardsCursor = try container.decodeIfPresent(String.self, forKey: .itemsBackwardsCursor)
             self.model = try container.decode(String.self, forKey: .model)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
             self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: .reasoningEffort)
             self.sandbox = try container.decode(SandboxPolicy.self, forKey: .sandbox)
             self.serviceTier = try container.decodeIfPresent(String.self, forKey: .serviceTier)
             self.thread = try container.decode(Thread.self, forKey: .thread)
+            self.turnsBackwardsCursor = try container.decodeIfPresent(String.self, forKey: .turnsBackwardsCursor)
         }
     }
 }
-

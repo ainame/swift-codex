@@ -32,4 +32,3 @@ public enum TextUserInputType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

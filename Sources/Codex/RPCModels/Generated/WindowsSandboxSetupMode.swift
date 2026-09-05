@@ -35,4 +35,3 @@ public enum WindowsSandboxSetupMode: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-
