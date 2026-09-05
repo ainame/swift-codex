@@ -42,4 +42,3 @@ public enum CommandExecOutputStream: RawJSONRepresentable {
         }
     }
 }
-

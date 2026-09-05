@@ -67,4 +67,3 @@ public struct UserMessageThreadItem2: ObjectModel {
         }
     }
 }
-

@@ -32,4 +32,3 @@ public enum ModelRerouteReason: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

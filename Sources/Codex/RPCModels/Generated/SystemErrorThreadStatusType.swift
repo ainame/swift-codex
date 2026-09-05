@@ -32,4 +32,3 @@ public enum SystemErrorThreadStatusType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -32,4 +32,3 @@ public enum LocalPluginSourceType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

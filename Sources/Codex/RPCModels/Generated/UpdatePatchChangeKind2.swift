@@ -53,4 +53,3 @@ public struct UpdatePatchChangeKind2: ObjectModel {
         }
     }
 }
-

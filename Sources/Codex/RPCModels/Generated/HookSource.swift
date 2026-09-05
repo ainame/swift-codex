@@ -62,4 +62,3 @@ public enum HookSource: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

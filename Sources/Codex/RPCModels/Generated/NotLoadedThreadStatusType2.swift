@@ -32,4 +32,3 @@ public enum NotLoadedThreadStatusType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

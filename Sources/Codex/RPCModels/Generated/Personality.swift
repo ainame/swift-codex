@@ -38,4 +38,3 @@ public enum Personality: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

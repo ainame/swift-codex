@@ -32,4 +32,3 @@ public enum CommandExecutionThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -32,4 +32,3 @@ public enum ImageViewThreadItemType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

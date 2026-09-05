@@ -32,4 +32,3 @@ public enum ApplyPatchGuardianApprovalReviewActionType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

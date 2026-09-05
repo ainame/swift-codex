@@ -41,4 +41,3 @@ public enum McpServerStartupState: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

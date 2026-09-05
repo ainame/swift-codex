@@ -53,4 +53,3 @@ public struct TextRange: ObjectModel {
         }
     }
 }
-

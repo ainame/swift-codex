@@ -38,4 +38,3 @@ public enum TurnPlanStepStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

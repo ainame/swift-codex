@@ -35,4 +35,3 @@ public enum HookExecutionMode: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

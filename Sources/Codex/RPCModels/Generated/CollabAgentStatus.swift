@@ -50,4 +50,3 @@ public enum CollabAgentStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

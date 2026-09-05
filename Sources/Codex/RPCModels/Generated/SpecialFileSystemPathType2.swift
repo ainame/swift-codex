@@ -32,4 +32,3 @@ public enum SpecialFileSystemPathType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

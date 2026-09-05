@@ -41,4 +41,3 @@ public enum HookHandlerType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -32,4 +32,3 @@ public enum ExternalAgentImportedConnectorSource: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

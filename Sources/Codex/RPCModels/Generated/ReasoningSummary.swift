@@ -50,4 +50,3 @@ public enum ReasoningSummary: RawJSONRepresentable {
         }
     }
 }
-

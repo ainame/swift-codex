@@ -60,4 +60,3 @@ public struct WindowsSandboxSetupCompletedNotification: ObjectModel {
         }
     }
 }
-

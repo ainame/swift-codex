@@ -32,4 +32,3 @@ public enum AudioUserInputType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

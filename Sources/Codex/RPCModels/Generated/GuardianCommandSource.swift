@@ -35,4 +35,3 @@ public enum GuardianCommandSource: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

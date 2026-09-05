@@ -43,4 +43,3 @@ public enum RequestId: RawJSONRepresentable {
         }
     }
 }
-

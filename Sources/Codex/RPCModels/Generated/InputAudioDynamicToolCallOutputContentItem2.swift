@@ -53,4 +53,3 @@ public struct InputAudioDynamicToolCallOutputContentItem2: ObjectModel {
         }
     }
 }
-

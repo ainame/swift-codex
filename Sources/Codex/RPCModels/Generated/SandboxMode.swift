@@ -38,4 +38,3 @@ public enum SandboxMode: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

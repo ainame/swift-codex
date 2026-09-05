@@ -38,4 +38,3 @@ public enum WorkspaceMessageType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -60,4 +60,3 @@ public struct FindInPageWebSearchAction2: ObjectModel {
         }
     }
 }
-

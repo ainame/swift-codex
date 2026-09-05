@@ -38,4 +38,3 @@ public enum PluginShareDiscoverability: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -35,4 +35,3 @@ public enum SortDirection: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

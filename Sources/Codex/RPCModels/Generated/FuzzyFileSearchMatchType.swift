@@ -35,4 +35,3 @@ public enum FuzzyFileSearchMatchType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

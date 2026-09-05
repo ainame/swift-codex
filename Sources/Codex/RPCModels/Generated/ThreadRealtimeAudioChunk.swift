@@ -74,4 +74,3 @@ public struct ThreadRealtimeAudioChunk: ObjectModel {
         }
     }
 }
-

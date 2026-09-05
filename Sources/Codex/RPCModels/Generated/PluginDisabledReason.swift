@@ -41,4 +41,3 @@ public enum PluginDisabledReason: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

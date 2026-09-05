@@ -53,4 +53,3 @@ public struct InputTextDynamicToolCallOutputContentItem2: ObjectModel {
         }
     }
 }
-

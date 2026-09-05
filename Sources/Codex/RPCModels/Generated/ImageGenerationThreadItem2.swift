@@ -95,4 +95,3 @@ public struct ImageGenerationThreadItem2: ObjectModel {
         }
     }
 }
-

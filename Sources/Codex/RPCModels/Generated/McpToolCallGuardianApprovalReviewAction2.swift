@@ -81,4 +81,3 @@ public struct McpToolCallGuardianApprovalReviewAction2: ObjectModel {
         }
     }
 }
-

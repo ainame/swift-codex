@@ -708,6 +708,67 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func generatedModelsDecodeRust0153Additions() throws {
+        let agentMessage: JSONValue = .object([
+            "id": .string("agent_153"),
+            "questions": .array([
+                .object([
+                    "options": .array([.string("Yes"), .string("No")]),
+                    "title": .string("Continue?"),
+                ]),
+            ]),
+            "text": .string("Awaiting input"),
+            "type": .string("agentMessage"),
+        ])
+        let decodedAgentMessage = try decodeJSONValue(AgentMessageThreadItem.self, from: agentMessage)
+        #expect(decodedAgentMessage.questions?.first?.title == "Continue?")
+        #expect(decodedAgentMessage.questions?.first?.options == ["Yes", "No"])
+
+        let functionCallOutput: JSONValue = .object([
+            "id": .string("item_153"),
+            "name": .string("example_tool"),
+            "output": .string("completed"),
+            "type": .string("functionCallOutput"),
+        ])
+        let decodedItem = try decodeJSONValue(ThreadItem.self, from: functionCallOutput)
+        if case .functionCallOutput(let payload) = decodedItem {
+            #expect(payload.name == "example_tool")
+            #expect(payload.output.rawJSON == .string("completed"))
+        } else {
+            Issue.record("Expected function-call output thread item")
+        }
+
+        var thread = makeThread(id: "thread_153")
+        thread.historyMode = .paginated
+        thread.model = "gpt-6"
+        thread.reasoningEffort = .high
+        let decodedThread = try decodeJSONValue(Thread.self, from: thread.rawJSON)
+        #expect(decodedThread.historyMode == .paginated)
+        #expect(decodedThread.model == "gpt-6")
+        #expect(decodedThread.reasoningEffort == .high)
+
+        let turnError = TurnError(
+            codexErrorInfo: .rateLimitExceeded,
+            message: "Rate limit reached",
+            misalignment: MisalignmentErrorDetails(
+                detailedExplanation: "A policy check blocked this turn.",
+                errorType: "policy",
+                steer: MisalignmentSteer(message: "Try a safer request.")
+            )
+        )
+        let decodedError = try decodeJSONValue(TurnError.self, from: turnError.rawJSON)
+        #expect(decodedError.codexErrorInfo == .rateLimitExceeded)
+        #expect(decodedError.misalignment?.steer?.message == "Try a safer request.")
+
+        var rateLimitResponse = appServerAccountRateLimitsReadResponse()
+        rateLimitResponse["accountId"] = .string("account_153")
+        rateLimitResponse["rateLimitUpsell"] = .object(["title": .string("Upgrade")])
+        let decodedRateLimitResponse = try decodeJSONValue(GetAccountRateLimitsResponse.self, from: .object(rateLimitResponse))
+        #expect(decodedRateLimitResponse.accountId == "account_153")
+        #expect(decodedRateLimitResponse.rateLimitUpsell?.objectValue?["title"] == .string("Upgrade"))
+    }
+
+    @Test
     func environmentConnectionNotificationsDecodeFromRegistry() throws {
         let params: JSONValue = .object([
             "environmentId": .string("environment_149"),

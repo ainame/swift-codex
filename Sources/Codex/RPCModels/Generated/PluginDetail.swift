@@ -116,4 +116,3 @@ public struct PluginDetail: ObjectModel {
         }
     }
 }
-

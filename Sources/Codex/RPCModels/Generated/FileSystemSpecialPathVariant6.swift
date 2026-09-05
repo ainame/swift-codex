@@ -60,4 +60,3 @@ public struct FileSystemSpecialPathVariant6: ObjectModel {
         }
     }
 }
-

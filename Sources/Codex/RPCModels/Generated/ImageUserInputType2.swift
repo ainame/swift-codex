@@ -32,4 +32,3 @@ public enum ImageUserInputType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

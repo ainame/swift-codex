@@ -32,4 +32,3 @@ public enum ExitedReviewModeThreadItemType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

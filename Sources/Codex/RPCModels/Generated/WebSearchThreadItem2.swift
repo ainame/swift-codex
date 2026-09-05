@@ -74,4 +74,3 @@ public struct WebSearchThreadItem2: ObjectModel {
         }
     }
 }
-

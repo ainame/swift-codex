@@ -67,4 +67,3 @@ public struct SearchCommandAction2: ObjectModel {
         }
     }
 }
-

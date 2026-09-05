@@ -53,4 +53,3 @@ public struct ActiveThreadStatus2: ObjectModel {
         }
     }
 }
-

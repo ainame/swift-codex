@@ -80,4 +80,3 @@ public enum PlanType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

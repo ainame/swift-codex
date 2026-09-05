@@ -53,4 +53,3 @@ public struct WeekdaysScheduledTaskSchedule2: ObjectModel {
         }
     }
 }
-

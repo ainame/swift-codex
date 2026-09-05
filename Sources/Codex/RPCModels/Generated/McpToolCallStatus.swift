@@ -38,4 +38,3 @@ public enum McpToolCallStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

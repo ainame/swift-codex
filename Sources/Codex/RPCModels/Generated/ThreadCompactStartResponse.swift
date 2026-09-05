@@ -37,4 +37,3 @@ public struct ThreadCompactStartResponse: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {}
 }
-

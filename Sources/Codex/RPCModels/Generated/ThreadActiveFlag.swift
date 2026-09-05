@@ -35,4 +35,3 @@ public enum ThreadActiveFlag: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

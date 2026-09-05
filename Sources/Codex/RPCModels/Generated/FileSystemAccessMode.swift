@@ -38,4 +38,3 @@ public enum FileSystemAccessMode: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

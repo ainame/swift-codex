@@ -65,4 +65,3 @@ public enum HookEventName: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

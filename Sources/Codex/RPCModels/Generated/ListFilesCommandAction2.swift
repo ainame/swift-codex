@@ -60,4 +60,3 @@ public struct ListFilesCommandAction2: ObjectModel {
         }
     }
 }
-

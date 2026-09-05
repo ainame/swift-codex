@@ -60,4 +60,3 @@ public struct TurnDiffUpdatedNotification: ObjectModel {
         }
     }
 }
-

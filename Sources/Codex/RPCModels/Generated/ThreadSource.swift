@@ -37,4 +37,3 @@ public struct ThreadSource: RawRepresentable, RawJSONRepresentable {
         JSONValue.string(rawValue)
     }
 }
-

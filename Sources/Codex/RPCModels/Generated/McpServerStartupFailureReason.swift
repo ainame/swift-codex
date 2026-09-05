@@ -32,4 +32,3 @@ public enum McpServerStartupFailureReason: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

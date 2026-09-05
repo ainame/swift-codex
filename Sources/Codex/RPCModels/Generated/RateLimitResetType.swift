@@ -35,4 +35,3 @@ public enum RateLimitResetType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

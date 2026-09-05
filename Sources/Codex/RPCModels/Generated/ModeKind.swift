@@ -35,4 +35,3 @@ public enum ModeKind: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

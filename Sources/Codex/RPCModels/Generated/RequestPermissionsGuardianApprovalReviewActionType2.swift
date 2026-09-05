@@ -32,4 +32,3 @@ public enum RequestPermissionsGuardianApprovalReviewActionType2: RawJSONRepresen
         .string(rawValue)
     }
 }
-

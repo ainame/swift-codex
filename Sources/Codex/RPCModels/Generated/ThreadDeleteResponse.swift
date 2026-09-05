@@ -37,4 +37,3 @@ public struct ThreadDeleteResponse: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {}
 }
-

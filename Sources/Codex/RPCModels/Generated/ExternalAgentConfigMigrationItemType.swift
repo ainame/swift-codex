@@ -59,4 +59,3 @@ public enum ExternalAgentConfigMigrationItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

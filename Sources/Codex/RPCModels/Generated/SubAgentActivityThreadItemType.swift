@@ -32,4 +32,3 @@ public enum SubAgentActivityThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

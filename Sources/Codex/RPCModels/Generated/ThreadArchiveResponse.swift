@@ -37,4 +37,3 @@ public struct ThreadArchiveResponse: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {}
 }
-

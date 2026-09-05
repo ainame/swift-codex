@@ -32,4 +32,3 @@ public enum MinimalFileSystemSpecialPathKind: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

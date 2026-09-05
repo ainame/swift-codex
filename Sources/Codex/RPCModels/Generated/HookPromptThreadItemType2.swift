@@ -32,4 +32,3 @@ public enum HookPromptThreadItemType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

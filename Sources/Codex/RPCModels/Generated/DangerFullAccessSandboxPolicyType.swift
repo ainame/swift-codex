@@ -32,4 +32,3 @@ public enum DangerFullAccessSandboxPolicyType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

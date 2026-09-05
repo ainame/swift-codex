@@ -60,4 +60,3 @@ public struct RequestPermissionsGuardianApprovalReviewAction2: ObjectModel {
         }
     }
 }
-

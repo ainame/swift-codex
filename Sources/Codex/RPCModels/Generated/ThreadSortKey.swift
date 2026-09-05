@@ -41,4 +41,3 @@ public enum ThreadSortKey: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

@@ -37,4 +37,3 @@ public struct ReasoningEffort: RawRepresentable, RawJSONRepresentable {
         JSONValue.string(rawValue)
     }
 }
-

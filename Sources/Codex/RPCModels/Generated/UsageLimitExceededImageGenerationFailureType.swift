@@ -32,4 +32,3 @@ public enum UsageLimitExceededImageGenerationFailureType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

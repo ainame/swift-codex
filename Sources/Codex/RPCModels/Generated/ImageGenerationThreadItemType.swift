@@ -32,4 +32,3 @@ public enum ImageGenerationThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

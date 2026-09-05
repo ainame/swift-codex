@@ -7,17 +7,20 @@ public struct TurnError: ObjectModel {
     public var additionalDetails: String?
     public var codexErrorInfo: CodexErrorInfo?
     public var message: String
+    public var misalignment: MisalignmentErrorDetails?
     public var additionalFields: JSONObject
 
     public init(
         additionalDetails: String? = nil,
         codexErrorInfo: CodexErrorInfo? = nil,
         message: String,
+        misalignment: MisalignmentErrorDetails? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.additionalDetails = additionalDetails
         self.codexErrorInfo = codexErrorInfo
         self.message = message
+        self.misalignment = misalignment
         self.additionalFields = additionalFields
     }
 
@@ -31,6 +34,7 @@ public struct TurnError: ObjectModel {
         self.additionalDetails = payload.additionalDetails
         self.codexErrorInfo = payload.codexErrorInfo
         self.message = payload.message
+        self.misalignment = payload.misalignment
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -42,22 +46,24 @@ public struct TurnError: ObjectModel {
         Payload(
             additionalDetails: additionalDetails,
             codexErrorInfo: codexErrorInfo,
-            message: message
+            message: message,
+            misalignment: misalignment
         )
     }
 
-    private static let knownKeys: Set<String> = ["additionalDetails", "codexErrorInfo", "message"]
+    private static let knownKeys: Set<String> = ["additionalDetails", "codexErrorInfo", "message", "misalignment"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var additionalDetails: String?
         var codexErrorInfo: CodexErrorInfo?
         var message: String
+        var misalignment: MisalignmentErrorDetails?
 
         enum CodingKeys: String, CodingKey {
             case additionalDetails
             case codexErrorInfo
             case message
+            case misalignment
         }
     }
 }
-

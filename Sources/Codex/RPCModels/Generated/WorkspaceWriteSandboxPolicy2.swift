@@ -74,4 +74,3 @@ public struct WorkspaceWriteSandboxPolicy2: ObjectModel {
         }
     }
 }
-

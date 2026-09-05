@@ -53,4 +53,3 @@ public struct ReadOnlySandboxPolicy2: ObjectModel {
         }
     }
 }
-

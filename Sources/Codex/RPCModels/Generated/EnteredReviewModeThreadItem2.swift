@@ -60,4 +60,3 @@ public struct EnteredReviewModeThreadItem2: ObjectModel {
         }
     }
 }
-

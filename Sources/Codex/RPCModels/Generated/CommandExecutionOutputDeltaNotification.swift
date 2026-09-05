@@ -67,4 +67,3 @@ public struct CommandExecutionOutputDeltaNotification: ObjectModel {
         }
     }
 }
-

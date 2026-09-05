@@ -60,4 +60,3 @@ public struct HookPromptThreadItem2: ObjectModel {
         }
     }
 }
-

@@ -32,4 +32,3 @@ public enum ReasoningThreadItemType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

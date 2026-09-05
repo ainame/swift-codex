@@ -32,4 +32,3 @@ public enum AgentMessageDelivery: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

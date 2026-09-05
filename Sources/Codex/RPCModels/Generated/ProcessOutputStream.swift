@@ -42,4 +42,3 @@ public enum ProcessOutputStream: RawJSONRepresentable {
         }
     }
 }
-

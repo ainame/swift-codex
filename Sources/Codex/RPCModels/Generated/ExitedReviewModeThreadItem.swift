@@ -60,4 +60,3 @@ public struct ExitedReviewModeThreadItem: ObjectModel {
         }
     }
 }
-

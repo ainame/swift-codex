@@ -12,13 +12,16 @@ public struct Thread: ObjectModel {
     public var ephemeral: Bool
     public var forkedFromId: String?
     public var gitInfo: GitInfo?
+    public var historyMode: ThreadHistoryMode?
     public var id: String
+    public var model: String?
     public var modelProvider: String
     public var name: String?
     public var parentThreadId: String?
     public var path: String?
     public var preview: String
     public var projectId: String?
+    public var reasoningEffort: ReasoningEffort?
     public var recencyAt: Int?
     public var section: ThreadSection?
     public var sectionEnteredAt: Int?
@@ -39,13 +42,16 @@ public struct Thread: ObjectModel {
         ephemeral: Bool,
         forkedFromId: String? = nil,
         gitInfo: GitInfo? = nil,
+        historyMode: ThreadHistoryMode? = nil,
         id: String,
+        model: String? = nil,
         modelProvider: String,
         name: String? = nil,
         parentThreadId: String? = nil,
         path: String? = nil,
         preview: String,
         projectId: String? = nil,
+        reasoningEffort: ReasoningEffort? = nil,
         recencyAt: Int? = nil,
         section: ThreadSection? = nil,
         sectionEnteredAt: Int? = nil,
@@ -65,13 +71,16 @@ public struct Thread: ObjectModel {
         self.ephemeral = ephemeral
         self.forkedFromId = forkedFromId
         self.gitInfo = gitInfo
+        self.historyMode = historyMode
         self.id = id
+        self.model = model
         self.modelProvider = modelProvider
         self.name = name
         self.parentThreadId = parentThreadId
         self.path = path
         self.preview = preview
         self.projectId = projectId
+        self.reasoningEffort = reasoningEffort
         self.recencyAt = recencyAt
         self.section = section
         self.sectionEnteredAt = sectionEnteredAt
@@ -99,13 +108,16 @@ public struct Thread: ObjectModel {
         self.ephemeral = payload.ephemeral
         self.forkedFromId = payload.forkedFromId
         self.gitInfo = payload.gitInfo
+        self.historyMode = payload.historyMode
         self.id = payload.id
+        self.model = payload.model
         self.modelProvider = payload.modelProvider
         self.name = payload.name
         self.parentThreadId = payload.parentThreadId
         self.path = payload.path
         self.preview = payload.preview
         self.projectId = payload.projectId
+        self.reasoningEffort = payload.reasoningEffort
         self.recencyAt = payload.recencyAt
         self.section = payload.section
         self.sectionEnteredAt = payload.sectionEnteredAt
@@ -132,13 +144,16 @@ public struct Thread: ObjectModel {
             ephemeral: ephemeral,
             forkedFromId: forkedFromId,
             gitInfo: gitInfo,
+            historyMode: historyMode,
             id: id,
+            model: model,
             modelProvider: modelProvider,
             name: name,
             parentThreadId: parentThreadId,
             path: path,
             preview: preview,
             projectId: projectId,
+            reasoningEffort: reasoningEffort,
             recencyAt: recencyAt,
             section: section,
             sectionEnteredAt: sectionEnteredAt,
@@ -151,7 +166,7 @@ public struct Thread: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "id", "modelProvider", "name", "parentThreadId", "path", "preview", "projectId", "recencyAt", "section", "sectionEnteredAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
+    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "historyMode", "id", "model", "modelProvider", "name", "parentThreadId", "path", "preview", "projectId", "reasoningEffort", "recencyAt", "section", "sectionEnteredAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentNickname: String?
@@ -162,13 +177,16 @@ public struct Thread: ObjectModel {
         var ephemeral: Bool
         var forkedFromId: String?
         var gitInfo: GitInfo?
+        var historyMode: ThreadHistoryMode?
         var id: String
+        var model: String?
         var modelProvider: String
         var name: String?
         var parentThreadId: String?
         var path: String?
         var preview: String
         var projectId: String?
+        var reasoningEffort: ReasoningEffort?
         var recencyAt: Int?
         var section: ThreadSection?
         var sectionEnteredAt: Int?
@@ -188,13 +206,16 @@ public struct Thread: ObjectModel {
             case ephemeral
             case forkedFromId
             case gitInfo
+            case historyMode
             case id
+            case model
             case modelProvider
             case name
             case parentThreadId
             case path
             case preview
             case projectId
+            case reasoningEffort
             case recencyAt
             case section
             case sectionEnteredAt
@@ -216,13 +237,16 @@ public struct Thread: ObjectModel {
             ephemeral: Bool,
             forkedFromId: String?,
             gitInfo: GitInfo?,
+            historyMode: ThreadHistoryMode?,
             id: String,
+            model: String?,
             modelProvider: String,
             name: String?,
             parentThreadId: String?,
             path: String?,
             preview: String,
             projectId: String?,
+            reasoningEffort: ReasoningEffort?,
             recencyAt: Int?,
             section: ThreadSection?,
             sectionEnteredAt: Int?,
@@ -241,13 +265,16 @@ public struct Thread: ObjectModel {
             self.ephemeral = ephemeral
             self.forkedFromId = forkedFromId
             self.gitInfo = gitInfo
+            self.historyMode = historyMode
             self.id = id
+            self.model = model
             self.modelProvider = modelProvider
             self.name = name
             self.parentThreadId = parentThreadId
             self.path = path
             self.preview = preview
             self.projectId = projectId
+            self.reasoningEffort = reasoningEffort
             self.recencyAt = recencyAt
             self.section = section
             self.sectionEnteredAt = sectionEnteredAt
@@ -269,13 +296,16 @@ public struct Thread: ObjectModel {
             self.ephemeral = try container.decodeIfPresent(Bool.self, forKey: .ephemeral) ?? false
             self.forkedFromId = try container.decodeIfPresent(String.self, forKey: .forkedFromId)
             self.gitInfo = try container.decodeIfPresent(GitInfo.self, forKey: .gitInfo)
+            self.historyMode = try container.decodeIfPresent(ThreadHistoryMode.self, forKey: .historyMode)
             self.id = try container.decode(String.self, forKey: .id)
+            self.model = try container.decodeIfPresent(String.self, forKey: .model)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.parentThreadId = try container.decodeIfPresent(String.self, forKey: .parentThreadId)
             self.path = try container.decodeIfPresent(String.self, forKey: .path)
             self.preview = try container.decode(String.self, forKey: .preview)
             self.projectId = try container.decodeIfPresent(String.self, forKey: .projectId)
+            self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: .reasoningEffort)
             self.recencyAt = try container.decodeIfPresent(Int.self, forKey: .recencyAt)
             self.section = try container.decodeIfPresent(ThreadSection.self, forKey: .section)
             self.sectionEnteredAt = try container.decodeIfPresent(Int.self, forKey: .sectionEnteredAt)
@@ -288,4 +318,3 @@ public struct Thread: ObjectModel {
         }
     }
 }
-

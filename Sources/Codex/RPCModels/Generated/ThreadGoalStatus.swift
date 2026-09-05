@@ -47,4 +47,3 @@ public enum ThreadGoalStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

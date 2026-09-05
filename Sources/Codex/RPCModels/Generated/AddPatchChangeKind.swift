@@ -46,4 +46,3 @@ public struct AddPatchChangeKind: ObjectModel {
         }
     }
 }
-

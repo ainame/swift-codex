@@ -59,4 +59,3 @@ public enum ThreadSourceKind: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

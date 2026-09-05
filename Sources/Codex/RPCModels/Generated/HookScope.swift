@@ -35,4 +35,3 @@ public enum HookScope: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

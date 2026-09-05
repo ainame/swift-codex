@@ -81,4 +81,3 @@ public struct AppBranding: ObjectModel {
         }
     }
 }
-

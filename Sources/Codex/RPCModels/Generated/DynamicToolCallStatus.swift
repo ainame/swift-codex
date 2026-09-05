@@ -38,4 +38,3 @@ public enum DynamicToolCallStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

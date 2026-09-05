@@ -53,4 +53,3 @@ public struct InputImageDynamicToolCallOutputContentItem2: ObjectModel {
         }
     }
 }
-

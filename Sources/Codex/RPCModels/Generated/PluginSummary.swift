@@ -172,4 +172,3 @@ public struct PluginSummary: ObjectModel {
         }
     }
 }
-

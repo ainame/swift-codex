@@ -41,4 +41,3 @@ public enum NetworkApprovalProtocol: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

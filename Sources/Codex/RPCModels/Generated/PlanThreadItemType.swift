@@ -32,4 +32,3 @@ public enum PlanThreadItemType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

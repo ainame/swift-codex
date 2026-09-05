@@ -32,4 +32,3 @@ public enum SearchWebSearchActionType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

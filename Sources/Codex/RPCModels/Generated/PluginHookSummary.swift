@@ -53,4 +53,3 @@ public struct PluginHookSummary: ObjectModel {
         }
     }
 }
-

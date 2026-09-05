@@ -8,6 +8,7 @@ public enum ThreadItem: RawJSONRepresentable {
     case userMessage(UserMessageThreadItem)
     case hookPrompt(HookPromptThreadItem)
     case agentMessage(AgentMessageThreadItem)
+    case functionCallOutput(FunctionCallOutputThreadItem)
     case plan(PlanThreadItem)
     case reasoning(ReasoningThreadItem)
     case commandExecution(CommandExecutionThreadItem)
@@ -49,6 +50,11 @@ public enum ThreadItem: RawJSONRepresentable {
             case "agentMessage":
                 if let value = try? decodeJSONValue(AgentMessageThreadItem.self, from: raw) {
                     self = .agentMessage(value)
+                    return
+                }
+            case "functionCallOutput":
+                if let value = try? decodeJSONValue(FunctionCallOutputThreadItem.self, from: raw) {
+                    self = .functionCallOutput(value)
                     return
                 }
             case "plan":
@@ -133,6 +139,7 @@ public enum ThreadItem: RawJSONRepresentable {
         if let value = try? decodeJSONValue(UserMessageThreadItem.self, from: raw) { self = .userMessage(value); return }
         if let value = try? decodeJSONValue(HookPromptThreadItem.self, from: raw) { self = .hookPrompt(value); return }
         if let value = try? decodeJSONValue(AgentMessageThreadItem.self, from: raw) { self = .agentMessage(value); return }
+        if let value = try? decodeJSONValue(FunctionCallOutputThreadItem.self, from: raw) { self = .functionCallOutput(value); return }
         if let value = try? decodeJSONValue(PlanThreadItem.self, from: raw) { self = .plan(value); return }
         if let value = try? decodeJSONValue(ReasoningThreadItem.self, from: raw) { self = .reasoning(value); return }
         if let value = try? decodeJSONValue(CommandExecutionThreadItem.self, from: raw) { self = .commandExecution(value); return }
@@ -157,6 +164,7 @@ public enum ThreadItem: RawJSONRepresentable {
         case .userMessage(let value): try value.encode(to: encoder)
         case .hookPrompt(let value): try value.encode(to: encoder)
         case .agentMessage(let value): try value.encode(to: encoder)
+        case .functionCallOutput(let value): try value.encode(to: encoder)
         case .plan(let value): try value.encode(to: encoder)
         case .reasoning(let value): try value.encode(to: encoder)
         case .commandExecution(let value): try value.encode(to: encoder)
@@ -183,6 +191,7 @@ public enum ThreadItem: RawJSONRepresentable {
         case .userMessage(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.userMessage")
         case .hookPrompt(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.hookPrompt")
         case .agentMessage(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.agentMessage")
+        case .functionCallOutput(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.functionCallOutput")
         case .plan(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.plan")
         case .reasoning(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.reasoning")
         case .commandExecution(let value): return losslessEncodeJSONValue(value, context: "ThreadItem.commandExecution")
@@ -203,4 +212,3 @@ public enum ThreadItem: RawJSONRepresentable {
         }
     }
 }
-

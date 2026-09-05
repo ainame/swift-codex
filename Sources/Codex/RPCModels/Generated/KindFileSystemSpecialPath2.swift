@@ -53,4 +53,3 @@ public struct KindFileSystemSpecialPath2: ObjectModel {
         }
     }
 }
-

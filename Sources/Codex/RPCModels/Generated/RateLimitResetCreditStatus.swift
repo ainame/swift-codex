@@ -41,4 +41,3 @@ public enum RateLimitResetCreditStatus: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

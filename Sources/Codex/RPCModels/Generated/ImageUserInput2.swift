@@ -60,4 +60,3 @@ public struct ImageUserInput2: ObjectModel {
         }
     }
 }
-

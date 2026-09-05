@@ -19,6 +19,14 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Added generated v2 models for paginated thread metadata, async user-input questions, function-call output items, rate-limit metadata, and misalignment error details.
+
+### Changed
+
+- Synced the vendored upstream checkout to `rust-v0.153.4` (`3d2ee51ca2d5db578f328aa75e20aa22c0197c9a`) and refreshed generated-model coverage and upstream provenance.
+
 ## [0.149.0] - 2026-08-27
 
 ### Added

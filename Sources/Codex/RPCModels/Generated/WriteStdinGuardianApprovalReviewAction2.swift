@@ -74,4 +74,3 @@ public struct WriteStdinGuardianApprovalReviewAction2: ObjectModel {
         }
     }
 }
-

@@ -53,4 +53,3 @@ public struct GlobPatternFileSystemPath2: ObjectModel {
         }
     }
 }
-

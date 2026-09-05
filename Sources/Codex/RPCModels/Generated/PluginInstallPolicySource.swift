@@ -35,4 +35,3 @@ public enum PluginInstallPolicySource: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

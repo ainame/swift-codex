@@ -38,4 +38,3 @@ public enum PluginSharePrincipalType: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-

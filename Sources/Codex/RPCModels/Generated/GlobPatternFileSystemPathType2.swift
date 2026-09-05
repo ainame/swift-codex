@@ -32,4 +32,3 @@ public enum GlobPatternFileSystemPathType2: RawJSONRepresentable {
         .string(rawValue)
     }
 }
-
