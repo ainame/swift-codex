@@ -5,6 +5,7 @@ import Foundation
 
 public struct GetAccountRateLimitsResponse: ObjectModel {
     public var accountId: String?
+    public var ordinaryUsageAllowed: Bool?
     public var rateLimitResetCredits: RateLimitResetCreditsSummary?
     public var rateLimitUpsell: JSONValue?
     public var rateLimits: RateLimitSnapshot
@@ -13,6 +14,7 @@ public struct GetAccountRateLimitsResponse: ObjectModel {
 
     public init(
         accountId: String? = nil,
+        ordinaryUsageAllowed: Bool? = nil,
         rateLimitResetCredits: RateLimitResetCreditsSummary? = nil,
         rateLimitUpsell: JSONValue? = nil,
         rateLimits: RateLimitSnapshot,
@@ -20,6 +22,7 @@ public struct GetAccountRateLimitsResponse: ObjectModel {
         additionalFields: JSONObject = [:]
     ) {
         self.accountId = accountId
+        self.ordinaryUsageAllowed = ordinaryUsageAllowed
         self.rateLimitResetCredits = rateLimitResetCredits
         self.rateLimitUpsell = rateLimitUpsell
         self.rateLimits = rateLimits
@@ -35,6 +38,7 @@ public struct GetAccountRateLimitsResponse: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "GetAccountRateLimitsResponse")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.accountId = payload.accountId
+        self.ordinaryUsageAllowed = payload.ordinaryUsageAllowed
         self.rateLimitResetCredits = payload.rateLimitResetCredits
         self.rateLimitUpsell = payload.rateLimitUpsell
         self.rateLimits = payload.rateLimits
@@ -49,6 +53,7 @@ public struct GetAccountRateLimitsResponse: ObjectModel {
     private var payload: Payload {
         Payload(
             accountId: accountId,
+            ordinaryUsageAllowed: ordinaryUsageAllowed,
             rateLimitResetCredits: rateLimitResetCredits,
             rateLimitUpsell: rateLimitUpsell,
             rateLimits: rateLimits,
@@ -56,10 +61,11 @@ public struct GetAccountRateLimitsResponse: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["accountId", "rateLimitResetCredits", "rateLimitUpsell", "rateLimits", "rateLimitsByLimitId"]
+    private static let knownKeys: Set<String> = ["accountId", "ordinaryUsageAllowed", "rateLimitResetCredits", "rateLimitUpsell", "rateLimits", "rateLimitsByLimitId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var accountId: String?
+        var ordinaryUsageAllowed: Bool?
         var rateLimitResetCredits: RateLimitResetCreditsSummary?
         var rateLimitUpsell: JSONValue?
         var rateLimits: RateLimitSnapshot
@@ -67,6 +73,7 @@ public struct GetAccountRateLimitsResponse: ObjectModel {
 
         enum CodingKeys: String, CodingKey {
             case accountId
+            case ordinaryUsageAllowed
             case rateLimitResetCredits
             case rateLimitUpsell
             case rateLimits

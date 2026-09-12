@@ -4,14 +4,14 @@
 import Foundation
 
 public struct ApplyPatchGuardianApprovalReviewAction2: ObjectModel {
-    public var cwd: AbsolutePathBuf
-    public var files: [AbsolutePathBuf]
+    public var cwd: LegacyAppPathString
+    public var files: [LegacyAppPathString]
     public var type: ApplyPatchGuardianApprovalReviewActionType2
     public var additionalFields: JSONObject
 
     public init(
-        cwd: AbsolutePathBuf,
-        files: [AbsolutePathBuf],
+        cwd: LegacyAppPathString,
+        files: [LegacyAppPathString],
         type: ApplyPatchGuardianApprovalReviewActionType2,
         additionalFields: JSONObject = [:]
     ) {
@@ -49,8 +49,8 @@ public struct ApplyPatchGuardianApprovalReviewAction2: ObjectModel {
     private static let knownKeys: Set<String> = ["cwd", "files", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
-        var cwd: AbsolutePathBuf
-        var files: [AbsolutePathBuf]
+        var cwd: LegacyAppPathString
+        var files: [LegacyAppPathString]
         var type: ApplyPatchGuardianApprovalReviewActionType2
 
         enum CodingKeys: String, CodingKey {

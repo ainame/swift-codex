@@ -419,8 +419,14 @@ public actor CodexRPCClient {
         )
     }
 
-    public func accountRateLimitsRead() async throws -> GetAccountRateLimitsResponse {
-        try await request("account/rateLimits/read", responseType: GetAccountRateLimitsResponse.self)
+    public func accountRateLimitsRead(
+        params: GetAccountRateLimitsParams? = nil
+    ) async throws -> GetAccountRateLimitsResponse {
+        try await request(
+            "account/rateLimits/read",
+            params: params?.rawJSON.objectValue ?? [:],
+            responseType: GetAccountRateLimitsResponse.self
+        )
     }
 
     public func accountTokenUsageRead() async throws -> GetAccountTokenUsageResponse {
