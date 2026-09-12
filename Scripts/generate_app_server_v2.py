@@ -35,6 +35,7 @@ SWIFT_RESERVED = {
 ROOT_TYPES = {
     "ExternalAgentConfigImportHistoriesReadResponse",
     "ExternalAgentConfigImportHistory",
+    "GetAccountRateLimitsParams",
     "GetAccountRateLimitsResponse",
     "GetAccountTokenUsageResponse",
     "GetWorkspaceMessagesResponse",

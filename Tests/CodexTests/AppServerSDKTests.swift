@@ -769,6 +769,45 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func generatedModelsDecodeRust0154Additions() throws {
+        var thread = makeThread(id: "thread_154")
+        thread.originator = "automation"
+        let decodedThread = try decodeJSONValue(Thread.self, from: thread.rawJSON)
+        #expect(decodedThread.originator == "automation")
+
+        var rateLimitResponse = appServerAccountRateLimitsReadResponse()
+        rateLimitResponse["ordinaryUsageAllowed"] = .bool(true)
+        var rateLimits = rateLimitResponse["rateLimits"]?.objectValue ?? [:]
+        rateLimits["normalModelSlug"] = .string("gpt-6")
+        rateLimitResponse["rateLimits"] = .object(rateLimits)
+        let decodedRateLimitResponse = try decodeJSONValue(GetAccountRateLimitsResponse.self, from: .object(rateLimitResponse))
+        #expect(decodedRateLimitResponse.ordinaryUsageAllowed == true)
+        #expect(decodedRateLimitResponse.rateLimits.normalModelSlug == "gpt-6")
+
+        let params = GetAccountRateLimitsParams(
+            excludeResetCreditDetails: true,
+            supportsLunaReserve: true
+        )
+        #expect(params.rawJSON == .object([
+            "excludeResetCreditDetails": .bool(true),
+            "supportsLunaReserve": .bool(true),
+        ]))
+
+        let action: JSONValue = .object([
+            "command": .string("git status"),
+            "cwd": .string("/tmp/project"),
+            "source": .string("shell"),
+            "type": .string("command"),
+        ])
+        let decodedAction = try decodeJSONValue(GuardianApprovalReviewAction.self, from: action)
+        if case .command(let payload) = decodedAction {
+            #expect(payload.cwd == LegacyAppPathString(rawValue: "/tmp/project"))
+        } else {
+            Issue.record("Expected command guardian approval action")
+        }
+    }
+
+    @Test
     func environmentConnectionNotificationsDecodeFromRegistry() throws {
         let params: JSONValue = .object([
             "environmentId": .string("environment_149"),

@@ -160,7 +160,7 @@ struct CodexSDKTests {
             #expect(payload.targetItemId == "item_123")
             #expect(payload.review.userAuthorization == .medium)
             if case .command(let action) = payload.action {
-                #expect(action.cwd == AbsolutePathBuf(rawValue: "/tmp/project"))
+                #expect(action.cwd == LegacyAppPathString(rawValue: "/tmp/project"))
                 #expect(action.command == "git status")
                 #expect(action.source == .shell)
             } else {

@@ -5,14 +5,14 @@ import Foundation
 
 public struct CommandGuardianApprovalReviewAction: ObjectModel {
     public var command: String
-    public var cwd: AbsolutePathBuf
+    public var cwd: LegacyAppPathString
     public var source: GuardianCommandSource
     public var type: CommandGuardianApprovalReviewActionType
     public var additionalFields: JSONObject
 
     public init(
         command: String,
-        cwd: AbsolutePathBuf,
+        cwd: LegacyAppPathString,
         source: GuardianCommandSource,
         type: CommandGuardianApprovalReviewActionType,
         additionalFields: JSONObject = [:]
@@ -55,7 +55,7 @@ public struct CommandGuardianApprovalReviewAction: ObjectModel {
 
     private struct Payload: Codable, Hashable, Sendable {
         var command: String
-        var cwd: AbsolutePathBuf
+        var cwd: LegacyAppPathString
         var source: GuardianCommandSource
         var type: CommandGuardianApprovalReviewActionType
 

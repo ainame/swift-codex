@@ -8,6 +8,7 @@ public struct RateLimitSnapshot: ObjectModel {
     public var individualLimit: SpendControlLimitSnapshot?
     public var limitId: String?
     public var limitName: String?
+    public var normalModelSlug: String?
     public var planType: PlanType?
     public var primary: RateLimitWindow?
     public var rateLimitReachedType: RateLimitReachedType?
@@ -20,6 +21,7 @@ public struct RateLimitSnapshot: ObjectModel {
         individualLimit: SpendControlLimitSnapshot? = nil,
         limitId: String? = nil,
         limitName: String? = nil,
+        normalModelSlug: String? = nil,
         planType: PlanType? = nil,
         primary: RateLimitWindow? = nil,
         rateLimitReachedType: RateLimitReachedType? = nil,
@@ -31,6 +33,7 @@ public struct RateLimitSnapshot: ObjectModel {
         self.individualLimit = individualLimit
         self.limitId = limitId
         self.limitName = limitName
+        self.normalModelSlug = normalModelSlug
         self.planType = planType
         self.primary = primary
         self.rateLimitReachedType = rateLimitReachedType
@@ -50,6 +53,7 @@ public struct RateLimitSnapshot: ObjectModel {
         self.individualLimit = payload.individualLimit
         self.limitId = payload.limitId
         self.limitName = payload.limitName
+        self.normalModelSlug = payload.normalModelSlug
         self.planType = payload.planType
         self.primary = payload.primary
         self.rateLimitReachedType = payload.rateLimitReachedType
@@ -68,6 +72,7 @@ public struct RateLimitSnapshot: ObjectModel {
             individualLimit: individualLimit,
             limitId: limitId,
             limitName: limitName,
+            normalModelSlug: normalModelSlug,
             planType: planType,
             primary: primary,
             rateLimitReachedType: rateLimitReachedType,
@@ -76,13 +81,14 @@ public struct RateLimitSnapshot: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["credits", "individualLimit", "limitId", "limitName", "planType", "primary", "rateLimitReachedType", "secondary", "spendControlReached"]
+    private static let knownKeys: Set<String> = ["credits", "individualLimit", "limitId", "limitName", "normalModelSlug", "planType", "primary", "rateLimitReachedType", "secondary", "spendControlReached"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var credits: CreditsSnapshot?
         var individualLimit: SpendControlLimitSnapshot?
         var limitId: String?
         var limitName: String?
+        var normalModelSlug: String?
         var planType: PlanType?
         var primary: RateLimitWindow?
         var rateLimitReachedType: RateLimitReachedType?
@@ -94,6 +100,7 @@ public struct RateLimitSnapshot: ObjectModel {
             case individualLimit
             case limitId
             case limitName
+            case normalModelSlug
             case planType
             case primary
             case rateLimitReachedType

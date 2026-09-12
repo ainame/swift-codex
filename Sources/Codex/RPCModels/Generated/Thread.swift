@@ -17,6 +17,7 @@ public struct Thread: ObjectModel {
     public var model: String?
     public var modelProvider: String
     public var name: String?
+    public var originator: String?
     public var parentThreadId: String?
     public var path: String?
     public var preview: String
@@ -47,6 +48,7 @@ public struct Thread: ObjectModel {
         model: String? = nil,
         modelProvider: String,
         name: String? = nil,
+        originator: String? = nil,
         parentThreadId: String? = nil,
         path: String? = nil,
         preview: String,
@@ -76,6 +78,7 @@ public struct Thread: ObjectModel {
         self.model = model
         self.modelProvider = modelProvider
         self.name = name
+        self.originator = originator
         self.parentThreadId = parentThreadId
         self.path = path
         self.preview = preview
@@ -113,6 +116,7 @@ public struct Thread: ObjectModel {
         self.model = payload.model
         self.modelProvider = payload.modelProvider
         self.name = payload.name
+        self.originator = payload.originator
         self.parentThreadId = payload.parentThreadId
         self.path = payload.path
         self.preview = payload.preview
@@ -149,6 +153,7 @@ public struct Thread: ObjectModel {
             model: model,
             modelProvider: modelProvider,
             name: name,
+            originator: originator,
             parentThreadId: parentThreadId,
             path: path,
             preview: preview,
@@ -166,7 +171,7 @@ public struct Thread: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "historyMode", "id", "model", "modelProvider", "name", "parentThreadId", "path", "preview", "projectId", "reasoningEffort", "recencyAt", "section", "sectionEnteredAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
+    private static let knownKeys: Set<String> = ["agentNickname", "agentRole", "cliVersion", "createdAt", "cwd", "ephemeral", "forkedFromId", "gitInfo", "historyMode", "id", "model", "modelProvider", "name", "originator", "parentThreadId", "path", "preview", "projectId", "reasoningEffort", "recencyAt", "section", "sectionEnteredAt", "sessionId", "source", "status", "threadSource", "turns", "updatedAt"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentNickname: String?
@@ -182,6 +187,7 @@ public struct Thread: ObjectModel {
         var model: String?
         var modelProvider: String
         var name: String?
+        var originator: String?
         var parentThreadId: String?
         var path: String?
         var preview: String
@@ -211,6 +217,7 @@ public struct Thread: ObjectModel {
             case model
             case modelProvider
             case name
+            case originator
             case parentThreadId
             case path
             case preview
@@ -242,6 +249,7 @@ public struct Thread: ObjectModel {
             model: String?,
             modelProvider: String,
             name: String?,
+            originator: String?,
             parentThreadId: String?,
             path: String?,
             preview: String,
@@ -270,6 +278,7 @@ public struct Thread: ObjectModel {
             self.model = model
             self.modelProvider = modelProvider
             self.name = name
+            self.originator = originator
             self.parentThreadId = parentThreadId
             self.path = path
             self.preview = preview
@@ -301,6 +310,7 @@ public struct Thread: ObjectModel {
             self.model = try container.decodeIfPresent(String.self, forKey: .model)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
+            self.originator = try container.decodeIfPresent(String.self, forKey: .originator)
             self.parentThreadId = try container.decodeIfPresent(String.self, forKey: .parentThreadId)
             self.path = try container.decodeIfPresent(String.self, forKey: .path)
             self.preview = try container.decode(String.self, forKey: .preview)

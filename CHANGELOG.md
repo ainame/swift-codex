@@ -8,6 +8,14 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Added typed rate-limit capability parameters plus thread-originator and ordinary-usage availability metadata from `rust-v0.154.0`.
+
+### Changed
+
+- Synced the vendored upstream checkout to `rust-v0.154.0` (`6b9826e3aa83b1a5947db50f4332cb9c65f1b340`) and refreshed generated Guardian action path types.
+
 ## [0.153.4] - 2026-09-05
 
 ### Added
