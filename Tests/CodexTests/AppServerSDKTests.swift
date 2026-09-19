@@ -879,6 +879,65 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func lowLevelClientSupportsThreadAttachments() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        let attachment = ThreadAttachment(
+            attachmentType: "artifact",
+            createdAt: 1,
+            id: "attachment_1",
+            identityKey: "report.md",
+            payload: .object(["path": .string("/tmp/report.md")])
+        )
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            threadAttachmentAddResponses: [jsonObject(ThreadAttachmentAddResponse(
+                attachment: attachment,
+                outcome: .created
+            ))],
+            threadAttachmentListResponses: [jsonObject(ThreadAttachmentListResponse(
+                data: [attachment],
+                nextCursor: "next"
+            ))],
+            threadAttachmentRemoveResponses: [appServerEmptyResponse()]
+        ))
+
+        let client = CodexRPCClient(config: stub.makeConfig())
+        _ = try await client.initialize()
+        let added = try await client.threadAttachmentAdd(.init(
+            attachmentType: "artifact",
+            identityKey: "report.md",
+            payload: .object(["path": .string("/tmp/report.md")]),
+            threadId: "thread_attachments"
+        ))
+        #expect(added.attachment.id == "attachment_1")
+        #expect(added.outcome == .created)
+
+        let listed = try await client.threadAttachmentList(.init(
+            limit: 20,
+            threadId: "thread_attachments"
+        ))
+        #expect(listed.data.map(\.identityKey) == ["report.md"])
+        #expect(listed.nextCursor == "next")
+
+        _ = try await client.threadAttachmentRemove(.init(
+            attachmentType: "artifact",
+            identityKey: "report.md",
+            threadId: "thread_attachments"
+        ))
+
+        let messages = try stub.appServerMessages(forInvocation: 0)
+        let methods = messages.compactMap { $0.stringValue(forKey: "method") }
+        #expect(methods == [
+            "initialize", "initialized", "thread/attachment/add",
+            "thread/attachment/list", "thread/attachment/remove",
+        ])
+        let addParams = try #require(messages.first { $0.stringValue(forKey: "method") == "thread/attachment/add" }?.objectValue(forKey: "params"))
+        #expect(addParams["threadId"] == .string("thread_attachments"))
+        #expect(addParams["payload"] == .object(["path": .string("/tmp/report.md")]))
+        await client.close()
+    }
+
+    @Test
     func lowLevelClientSupportsPluginList() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }

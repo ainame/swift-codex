@@ -8,6 +8,14 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Added typed low-level thread attachment add, list, and remove APIs, plus generated attachment and app-server notification models from `rust-v0.155.1`.
+
+### Changed
+
+- Synced the vendored upstream checkout to `rust-v0.155.1` (`be2951ea34f0d295ed0becf97079f92fa5f6950e`) and refreshed upstream provenance.
+
 ## [0.154.0] - 2026-09-15
 
 ### Added
