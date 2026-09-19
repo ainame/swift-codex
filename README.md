@@ -18,7 +18,7 @@ Current implementation includes:
 - thread start, resume, fork, archive, unarchive, rename, compact, list, and read
 - thread instruction source metadata, fork/subagent ancestry, multi-cwd list filtering, and typed guardian auto-review payloads from the latest v2 schema
 - plugin list retrieval with typed marketplace metadata
-- account rate-limit, token-usage, and workspace-message reads plus external-agent import-history reads and skills extra-root updates through the low-level RPC client
+- account rate-limit, token-usage, and workspace-message reads plus external-agent import-history reads, thread attachment management, and skills extra-root updates through the low-level RPC client
 - turn start, steer, interrupt, buffered run, and streamed notifications
 - friendly sandbox presets for thread and turn APIs
 - typed goal, model-verification, process, remote-control, moderation-metadata, and guardian-warning notifications from the latest upstream registry
@@ -41,7 +41,7 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `6b9826e3aa83b1a5947db50f4332cb9c65f1b340` (`rust-v0.154.0`)
+- Vendored upstream commit: `be2951ea34f0d295ed0becf97079f92fa5f6950e` (`rust-v0.155.1`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`

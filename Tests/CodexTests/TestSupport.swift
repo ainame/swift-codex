@@ -74,6 +74,9 @@ struct CodexStub {
         thread_archive_responses = scenario.get("threadArchiveResponses", [])
         thread_unarchive_responses = scenario.get("threadUnarchiveResponses", [])
         thread_delete_responses = scenario.get("threadDeleteResponses", [])
+        thread_attachment_add_responses = scenario.get("threadAttachmentAddResponses", [])
+        thread_attachment_list_responses = scenario.get("threadAttachmentListResponses", [])
+        thread_attachment_remove_responses = scenario.get("threadAttachmentRemoveResponses", [])
         thread_set_name_responses = scenario.get("threadSetNameResponses", [])
         thread_compact_responses = scenario.get("threadCompactResponses", [])
         thread_goal_set_responses = scenario.get("threadGoalSetResponses", [])
@@ -99,6 +102,9 @@ struct CodexStub {
         thread_archive_index = 0
         thread_unarchive_index = 0
         thread_delete_index = 0
+        thread_attachment_add_index = 0
+        thread_attachment_list_index = 0
+        thread_attachment_remove_index = 0
         thread_set_name_index = 0
         thread_compact_index = 0
         thread_goal_set_index = 0
@@ -199,6 +205,24 @@ struct CodexStub {
             if method == "thread/delete":
                 response = response_at(thread_delete_responses, thread_delete_index, {})
                 thread_delete_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/attachment/add":
+                response = response_at(thread_attachment_add_responses, thread_attachment_add_index, {})
+                thread_attachment_add_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/attachment/list":
+                response = response_at(thread_attachment_list_responses, thread_attachment_list_index, {"data": []})
+                thread_attachment_list_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/attachment/remove":
+                response = response_at(thread_attachment_remove_responses, thread_attachment_remove_index, {})
+                thread_attachment_remove_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
@@ -409,6 +433,9 @@ struct AppServerScenario: Encodable {
     var threadArchiveResponses: [JSONObject]
     var threadUnarchiveResponses: [JSONObject]
     var threadDeleteResponses: [JSONObject]
+    var threadAttachmentAddResponses: [JSONObject]
+    var threadAttachmentListResponses: [JSONObject]
+    var threadAttachmentRemoveResponses: [JSONObject]
     var threadSetNameResponses: [JSONObject]
     var threadCompactResponses: [JSONObject]
     var threadGoalSetResponses: [JSONObject]
@@ -437,6 +464,9 @@ struct AppServerScenario: Encodable {
         threadArchiveResponses: [JSONObject] = [],
         threadUnarchiveResponses: [JSONObject] = [],
         threadDeleteResponses: [JSONObject] = [],
+        threadAttachmentAddResponses: [JSONObject] = [],
+        threadAttachmentListResponses: [JSONObject] = [],
+        threadAttachmentRemoveResponses: [JSONObject] = [],
         threadSetNameResponses: [JSONObject] = [],
         threadCompactResponses: [JSONObject] = [],
         threadGoalSetResponses: [JSONObject] = [],
@@ -464,6 +494,9 @@ struct AppServerScenario: Encodable {
         self.threadArchiveResponses = threadArchiveResponses
         self.threadUnarchiveResponses = threadUnarchiveResponses
         self.threadDeleteResponses = threadDeleteResponses
+        self.threadAttachmentAddResponses = threadAttachmentAddResponses
+        self.threadAttachmentListResponses = threadAttachmentListResponses
+        self.threadAttachmentRemoveResponses = threadAttachmentRemoveResponses
         self.threadSetNameResponses = threadSetNameResponses
         self.threadCompactResponses = threadCompactResponses
         self.threadGoalSetResponses = threadGoalSetResponses

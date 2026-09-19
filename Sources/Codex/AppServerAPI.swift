@@ -326,6 +326,36 @@ public actor CodexRPCClient {
         try await request("thread/delete", params: ["threadId": .string(threadID)], responseType: ThreadDeleteResponse.self)
     }
 
+    public func threadAttachmentAdd(
+        _ params: ThreadAttachmentAddParams
+    ) async throws -> ThreadAttachmentAddResponse {
+        try await request(
+            "thread/attachment/add",
+            params: params.rawJSON.objectValue ?? [:],
+            responseType: ThreadAttachmentAddResponse.self
+        )
+    }
+
+    public func threadAttachmentList(
+        _ params: ThreadAttachmentListParams
+    ) async throws -> ThreadAttachmentListResponse {
+        try await request(
+            "thread/attachment/list",
+            params: params.rawJSON.objectValue ?? [:],
+            responseType: ThreadAttachmentListResponse.self
+        )
+    }
+
+    public func threadAttachmentRemove(
+        _ params: ThreadAttachmentRemoveParams
+    ) async throws -> ThreadAttachmentRemoveResponse {
+        try await request(
+            "thread/attachment/remove",
+            params: params.rawJSON.objectValue ?? [:],
+            responseType: ThreadAttachmentRemoveResponse.self
+        )
+    }
+
     public func threadSetName(threadID: String, name: String) async throws -> ThreadSetNameResponse {
         try await request(
             "thread/name/set",

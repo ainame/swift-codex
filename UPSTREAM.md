@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `6b9826e3aa83b1a5947db50f4332cb9c65f1b340`
-- Reviewed JSON-RPC basis commit SHA: `6b9826e3aa83b1a5947db50f4332cb9c65f1b340`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/6b9826e3aa83b1a5947db50f4332cb9c65f1b340`
-- Last reviewed date: `2026-09-12`
+- Vendored upstream commit: `be2951ea34f0d295ed0becf97079f92fa5f6950e`
+- Reviewed JSON-RPC basis commit SHA: `be2951ea34f0d295ed0becf97079f92fa5f6950e`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/be2951ea34f0d295ed0becf97079f92fa5f6950e`
+- Last reviewed date: `2026-09-19`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,23 +33,26 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `6b9826e3aa83b1a5947db50f4332cb9c65f1b340` (`rust-v0.154.0`)
+- Vendored checkout: `vendor/openai-codex` at `be2951ea34f0d295ed0becf97079f92fa5f6950e` (`rust-v0.155.1`)
 - Reviewed upstream files:
+  - `sdk/python/src/openai_codex/api.py`
+  - `sdk/python/src/openai_codex/_inputs.py`
+  - `sdk/python/src/openai_codex/_message_router.py`
   - `sdk/python/src/openai_codex/generated/notification_registry.py`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
   - `sdk/python/src/openai_codex/generated/v2_all.py`
 - Reviewed generator behavior:
   - `Scripts/generate_app_server_v2.py` regenerates Swift v2 models from the vendored schema
 - Reviewed upstream features:
-  - added thread originator metadata, ordinary-usage availability, quota-alias model slugs, and optional usage-read capability parameters
-  - updated Guardian command and apply-patch action paths to the app server's native legacy path-string representation
-  - reviewed application network requirements, durable reasoning configuration updates, MCP tool-discovery errors, loaded thread environments, and thread-originator filters
+  - added typed low-level `thread/attachment/add`, `thread/attachment/list`, and `thread/attachment/remove` requests plus attachment lifecycle notifications
+  - refreshed generated registry coverage for project, queue, revert, realtime, MCP event-stream, strict-review, and auth-recovery notifications
+  - reviewed Python SDK external-message inputs, resumed-thread turn-history selection, per-turn options, and independently subscribable turn streams
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
   - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
-  - pagination, revert, and plugin-reconcile request endpoints remain schema-only because the current Swift convenience API does not expose them end to end
-  - application network requirements, durable reasoning configuration updates, MCP tool-discovery errors, loaded thread environments, and thread-originator filters remain schema-only because the current Swift convenience API does not expose them end to end
+  - Python's external-message input, resumed-thread turn-history selection, per-turn options, and independently subscribable turn streams remain unported from the high-level Swift API
+  - pagination, revert, plugin-reconcile, realtime, and MCP event-stream request endpoints remain schema-only because the current Swift convenience API does not expose them end to end
 - Intentional Swift-specific deviations:
   - the repository still follows Swift API conventions and async/await rather than upstream TypeScript or Python wrappers
   - persisted goals are exposed as direct actor methods rather than the Python SDK's synchronous and asynchronous logical-turn stream wrappers

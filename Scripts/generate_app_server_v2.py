@@ -57,6 +57,14 @@ ROOT_TYPES = {
     "SortDirection",
     "Thread",
     "ThreadArchiveResponse",
+    "ThreadAttachment",
+    "ThreadAttachmentAddOutcome",
+    "ThreadAttachmentAddParams",
+    "ThreadAttachmentAddResponse",
+    "ThreadAttachmentListParams",
+    "ThreadAttachmentListResponse",
+    "ThreadAttachmentRemoveParams",
+    "ThreadAttachmentRemoveResponse",
     "ThreadCompactStartResponse",
     "ThreadDeleteResponse",
     "ThreadForkResponse",
@@ -364,6 +372,7 @@ def render_object(name: str, schema: dict, registry: Registry) -> str:
     known_keys = ", ".join(json_string(json_name) for _, json_name, _, _ in fields)
     coding_keys = render_coding_keys(coding_pairs)
     payload_properties = payload_fields if payload_fields else ""
+    payload_accessor = "encodedPayload" if any(property_name == "payload" for property_name, _, _, _ in fields) else "payload"
     if fields:
         initializer_signature = f"{init_params},\n        additionalFields: JSONObject = [:]"
         payload_initializer = f"        Payload(\n{payload_assignment}\n        )"
@@ -433,7 +442,7 @@ def render_object(name: str, schema: dict, registry: Registry) -> str:
     }}
 
     public var rawJSON: JSONValue {{
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: {json_string(name)}))
+        .object(mergedJSONObject({payload_accessor}, additionalFields: additionalFields, context: {json_string(name)}))
     }}
 
     public init(from decoder: any Decoder) throws {{
@@ -444,10 +453,10 @@ def render_object(name: str, schema: dict, registry: Registry) -> str:
     }}
 
     public func encode(to encoder: any Encoder) throws {{
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: {json_string(name)}, to: encoder)
+        try encodeJSONObject({payload_accessor}, additionalFields: additionalFields, context: {json_string(name)}, to: encoder)
     }}
 
-    private var payload: Payload {{
+    private var {payload_accessor}: Payload {{
 {payload_initializer}
     }}
 
