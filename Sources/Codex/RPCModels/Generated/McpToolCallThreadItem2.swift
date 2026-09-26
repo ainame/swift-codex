@@ -10,6 +10,7 @@ public struct McpToolCallThreadItem2: ObjectModel {
     public var error: McpToolCallError?
     public var id: String
     public var mcpAppResourceUri: String?
+    public var mcpAppUi: McpAppUi?
     public var pluginId: String?
     public var readOnlyHint: Bool?
     public var result: McpToolCallResult?
@@ -26,6 +27,7 @@ public struct McpToolCallThreadItem2: ObjectModel {
         error: McpToolCallError? = nil,
         id: String,
         mcpAppResourceUri: String? = nil,
+        mcpAppUi: McpAppUi? = nil,
         pluginId: String? = nil,
         readOnlyHint: Bool? = nil,
         result: McpToolCallResult? = nil,
@@ -41,6 +43,7 @@ public struct McpToolCallThreadItem2: ObjectModel {
         self.error = error
         self.id = id
         self.mcpAppResourceUri = mcpAppResourceUri
+        self.mcpAppUi = mcpAppUi
         self.pluginId = pluginId
         self.readOnlyHint = readOnlyHint
         self.result = result
@@ -64,6 +67,7 @@ public struct McpToolCallThreadItem2: ObjectModel {
         self.error = payload.error
         self.id = payload.id
         self.mcpAppResourceUri = payload.mcpAppResourceUri
+        self.mcpAppUi = payload.mcpAppUi
         self.pluginId = payload.pluginId
         self.readOnlyHint = payload.readOnlyHint
         self.result = payload.result
@@ -86,6 +90,7 @@ public struct McpToolCallThreadItem2: ObjectModel {
             error: error,
             id: id,
             mcpAppResourceUri: mcpAppResourceUri,
+            mcpAppUi: mcpAppUi,
             pluginId: pluginId,
             readOnlyHint: readOnlyHint,
             result: result,
@@ -96,7 +101,7 @@ public struct McpToolCallThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["appContext", "arguments", "durationMs", "error", "id", "mcpAppResourceUri", "pluginId", "readOnlyHint", "result", "server", "status", "tool", "type"]
+    private static let knownKeys: Set<String> = ["appContext", "arguments", "durationMs", "error", "id", "mcpAppResourceUri", "mcpAppUi", "pluginId", "readOnlyHint", "result", "server", "status", "tool", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var appContext: McpToolCallAppContext?
@@ -105,6 +110,7 @@ public struct McpToolCallThreadItem2: ObjectModel {
         var error: McpToolCallError?
         var id: String
         var mcpAppResourceUri: String?
+        var mcpAppUi: McpAppUi?
         var pluginId: String?
         var readOnlyHint: Bool?
         var result: McpToolCallResult?
@@ -120,6 +126,7 @@ public struct McpToolCallThreadItem2: ObjectModel {
             case error
             case id
             case mcpAppResourceUri
+            case mcpAppUi
             case pluginId
             case readOnlyHint
             case result

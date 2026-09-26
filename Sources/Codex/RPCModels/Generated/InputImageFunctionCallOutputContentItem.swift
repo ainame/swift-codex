@@ -3,60 +3,58 @@
 
 import Foundation
 
-public struct InputImageFunctionCallOutputContentItem: ObjectModel {
-    public var detail: ImageDetail?
-    public var imageUrl: String
-    public var type: InputImageFunctionCallOutputContentItemType
-    public var additionalFields: JSONObject
+public enum InputImageFunctionCallOutputContentItem: RawJSONRepresentable {
 
-    public init(
-        detail: ImageDetail? = nil,
-        imageUrl: String,
-        type: InputImageFunctionCallOutputContentItemType,
-        additionalFields: JSONObject = [:]
-    ) {
-        self.detail = detail
-        self.imageUrl = imageUrl
-        self.type = type
-        self.additionalFields = additionalFields
-    }
-
-    public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "InputImageFunctionCallOutputContentItem"))
-    }
+    case imageUrlFunctionCallOutputContentItem(ImageUrlFunctionCallOutputContentItem)
+    case fileIdFunctionCallOutputContentItem(FileIdFunctionCallOutputContentItem)
+    case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "InputImageFunctionCallOutputContentItem")
-        let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.detail = payload.detail
-        self.imageUrl = payload.imageUrl
-        self.type = payload.type
-        self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
+        let raw = try JSONValue(from: decoder)
+        if case .string(let value) = raw {
+            switch value {
+
+            default:
+                break
+            }
+        }
+        if case .object(let object) = raw, let discriminator = object["type"]?.stringValue {
+            switch discriminator {
+            case "input_image":
+                if let value = try? decodeJSONValue(ImageUrlFunctionCallOutputContentItem.self, from: raw) {
+                    self = .imageUrlFunctionCallOutputContentItem(value)
+                    return
+                }
+                if let value = try? decodeJSONValue(FileIdFunctionCallOutputContentItem.self, from: raw) {
+                    self = .fileIdFunctionCallOutputContentItem(value)
+                    return
+                }
+            default:
+                break
+            }
+        }
+        if let value = try? decodeJSONValue(ImageUrlFunctionCallOutputContentItem.self, from: raw) { self = .imageUrlFunctionCallOutputContentItem(value); return }
+        if let value = try? decodeJSONValue(FileIdFunctionCallOutputContentItem.self, from: raw) { self = .fileIdFunctionCallOutputContentItem(value); return }
+        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "InputImageFunctionCallOutputContentItem", to: encoder)
+        switch self {
+
+        case .imageUrlFunctionCallOutputContentItem(let value): try value.encode(to: encoder)
+        case .fileIdFunctionCallOutputContentItem(let value): try value.encode(to: encoder)
+        case .unknown(let value):
+            try value.encode(to: encoder)
+        }
     }
 
-    private var payload: Payload {
-        Payload(
-            detail: detail,
-            imageUrl: imageUrl,
-            type: type
-        )
-    }
+    public var rawJSON: JSONValue {
+        switch self {
 
-    private static let knownKeys: Set<String> = ["detail", "image_url", "type"]
-
-    private struct Payload: Codable, Hashable, Sendable {
-        var detail: ImageDetail?
-        var imageUrl: String
-        var type: InputImageFunctionCallOutputContentItemType
-
-        enum CodingKeys: String, CodingKey {
-            case detail
-            case imageUrl = "image_url"
-            case type
+        case .imageUrlFunctionCallOutputContentItem(let value): return losslessEncodeJSONValue(value, context: "InputImageFunctionCallOutputContentItem.imageUrlFunctionCallOutputContentItem")
+        case .fileIdFunctionCallOutputContentItem(let value): return losslessEncodeJSONValue(value, context: "InputImageFunctionCallOutputContentItem.fileIdFunctionCallOutputContentItem")
+        case .unknown(let value):
+            return value
         }
     }
 }

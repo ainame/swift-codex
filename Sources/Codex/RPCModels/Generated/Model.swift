@@ -6,6 +6,7 @@ import Foundation
 public struct Model: ObjectModel {
     public var additionalSpeedTiers: [String]?
     public var availabilityNux: ModelAvailabilityNux?
+    public var availableAccessPrograms: ModelAccessPrograms?
     public var defaultReasoningEffort: ReasoningEffort
     public var defaultServiceTier: String?
     public var description: String
@@ -27,6 +28,7 @@ public struct Model: ObjectModel {
     public init(
         additionalSpeedTiers: [String]? = nil,
         availabilityNux: ModelAvailabilityNux? = nil,
+        availableAccessPrograms: ModelAccessPrograms? = nil,
         defaultReasoningEffort: ReasoningEffort,
         defaultServiceTier: String? = nil,
         description: String,
@@ -47,6 +49,7 @@ public struct Model: ObjectModel {
     ) {
         self.additionalSpeedTiers = additionalSpeedTiers
         self.availabilityNux = availabilityNux
+        self.availableAccessPrograms = availableAccessPrograms
         self.defaultReasoningEffort = defaultReasoningEffort
         self.defaultServiceTier = defaultServiceTier
         self.description = description
@@ -75,6 +78,7 @@ public struct Model: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.additionalSpeedTiers = payload.additionalSpeedTiers
         self.availabilityNux = payload.availabilityNux
+        self.availableAccessPrograms = payload.availableAccessPrograms
         self.defaultReasoningEffort = payload.defaultReasoningEffort
         self.defaultServiceTier = payload.defaultServiceTier
         self.description = payload.description
@@ -102,6 +106,7 @@ public struct Model: ObjectModel {
         Payload(
             additionalSpeedTiers: additionalSpeedTiers,
             availabilityNux: availabilityNux,
+            availableAccessPrograms: availableAccessPrograms,
             defaultReasoningEffort: defaultReasoningEffort,
             defaultServiceTier: defaultServiceTier,
             description: description,
@@ -121,11 +126,12 @@ public struct Model: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["additionalSpeedTiers", "availabilityNux", "defaultReasoningEffort", "defaultServiceTier", "description", "displayName", "hidden", "id", "inputModalities", "isDefault", "model", "modelSpecialty", "multiAgentVersion", "serviceTiers", "supportedReasoningEfforts", "supportsPersonality", "upgrade", "upgradeInfo"]
+    private static let knownKeys: Set<String> = ["additionalSpeedTiers", "availabilityNux", "availableAccessPrograms", "defaultReasoningEffort", "defaultServiceTier", "description", "displayName", "hidden", "id", "inputModalities", "isDefault", "model", "modelSpecialty", "multiAgentVersion", "serviceTiers", "supportedReasoningEfforts", "supportsPersonality", "upgrade", "upgradeInfo"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var additionalSpeedTiers: [String]?
         var availabilityNux: ModelAvailabilityNux?
+        var availableAccessPrograms: ModelAccessPrograms?
         var defaultReasoningEffort: ReasoningEffort
         var defaultServiceTier: String?
         var description: String
@@ -146,6 +152,7 @@ public struct Model: ObjectModel {
         enum CodingKeys: String, CodingKey {
             case additionalSpeedTiers
             case availabilityNux
+            case availableAccessPrograms
             case defaultReasoningEffort
             case defaultServiceTier
             case description

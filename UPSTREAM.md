@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `be2951ea34f0d295ed0becf97079f92fa5f6950e`
-- Reviewed JSON-RPC basis commit SHA: `be2951ea34f0d295ed0becf97079f92fa5f6950e`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/be2951ea34f0d295ed0becf97079f92fa5f6950e`
-- Last reviewed date: `2026-09-19`
+- Vendored upstream commit: `36650394c5b38c2990ccf2a3457165ca3e9d9726`
+- Reviewed JSON-RPC basis commit SHA: `36650394c5b38c2990ccf2a3457165ca3e9d9726`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/36650394c5b38c2990ccf2a3457165ca3e9d9726`
+- Last reviewed date: `2026-09-26`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -33,7 +33,7 @@ When porting new behavior from upstream or validating parity:
 
 ### Unreleased
 
-- Vendored checkout: `vendor/openai-codex` at `be2951ea34f0d295ed0becf97079f92fa5f6950e` (`rust-v0.155.1`)
+- Vendored checkout: `vendor/openai-codex` at `36650394c5b38c2990ccf2a3457165ca3e9d9726` (`rust-v0.157.1`)
 - Reviewed upstream files:
   - `sdk/python/src/openai_codex/api.py`
   - `sdk/python/src/openai_codex/_inputs.py`
@@ -44,12 +44,17 @@ When porting new behavior from upstream or validating parity:
 - Reviewed generator behavior:
   - `Scripts/generate_app_server_v2.py` regenerates Swift v2 models from the vendored schema
 - Reviewed upstream features:
+  - file-ID image sources for user input and tool output, with shared discriminator/detail fields and existing realtime session IDs preserved by the generator
+  - gateway OAuth status notifications, model access programs, plugin extensions, and MCP app UI metadata
+  - disabled plugin IDs on thread lifecycle responses/settings and collaboration mode on resume responses
+  - reviewed Python API documentation changes; TypeScript SDK has no changes since the previous basis
   - added typed low-level `thread/attachment/add`, `thread/attachment/list`, and `thread/attachment/remove` requests plus attachment lifecycle notifications
   - refreshed generated registry coverage for project, queue, revert, realtime, MCP event-stream, strict-review, and auth-recovery notifications
   - reviewed Python SDK external-message inputs, resumed-thread turn-history selection, per-turn options, and independently subscribable turn streams
 - Parity target:
   - focused raw app-server schema parity for the Swift model and low-level RPC surfaces used by this package
 - Remaining upstream gaps not ported end to end:
+  - gateway OAuth request helpers, MCP resource-read parameters, and broader account/configuration request additions remain outside the focused generated roots and convenience API
   - the Python SDK's logical goal-operation orchestration, notification coalescing, cancellation recovery, and per-thread start locking are not yet ported; this sync exposes the underlying persisted-goal RPCs only
   - Python's external-message input, resumed-thread turn-history selection, per-turn options, and independently subscribable turn streams remain unported from the high-level Swift API
   - pagination, revert, plugin-reconcile, realtime, and MCP event-stream request endpoints remain schema-only because the current Swift convenience API does not expose them end to end

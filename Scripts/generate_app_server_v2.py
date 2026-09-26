@@ -203,6 +203,22 @@ def non_null_variants(schema: dict) -> list[dict] | None:
     return None
 
 
+def normalize_object_unions(value):
+    """Carry shared object constraints into each inline union branch."""
+    if isinstance(value, list):
+        return [normalize_object_unions(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+    result = {key: normalize_object_unions(item) for key, item in value.items()}
+    if result.get("type") == "object" and result.get("properties"):
+        for key in ("anyOf", "oneOf"):
+            for variant in result.get(key, []):
+                if variant.get("type") == "object" and "$ref" not in variant:
+                    variant["properties"] = {**result["properties"], **variant.get("properties", {})}
+                    variant["required"] = sorted(set(result.get("required", [])) | set(variant.get("required", [])))
+    return result
+
+
 class Registry:
     def __init__(self, definitions: dict[str, dict]) -> None:
         self.definitions = deepcopy(definitions)
@@ -596,9 +612,15 @@ def render_union(name: str, schema: dict, registry: Registry) -> str:
         f"    case {case_name}({type_name})"
         for case_name, type_name in associated_cases
     )
+    dispatch_groups: dict[str, list[str]] = {}
+    for key, literal, case_name in object_dispatch:
+        type_name = next(type_name for candidate, type_name in associated_cases if candidate == case_name)
+        dispatch_groups.setdefault(literal, []).append(
+            f"                if let value = try? decodeJSONValue({type_name}.self, from: raw) {{\n                    self = .{case_name}(value)\n                    return\n                }}"
+        )
     dispatch_blocks = "\n".join(
-        f"            case {json_string(literal)}:\n                if let value = try? decodeJSONValue({next(type_name for case_name2, type_name in associated_cases if case_name2 == case_name)}.self, from: raw) {{\n                    self = .{case_name}(value)\n                    return\n                }}"
-        for key, literal, case_name in object_dispatch
+        f"            case {json_string(literal)}:\n" + "\n".join(blocks)
+        for literal, blocks in dispatch_groups.items()
     )
     raw_cases = "\n".join(
         f"        case .{case_name}(let value): return losslessEncodeJSONValue(value, context: {json_string(name + '.' + case_name)})"
@@ -846,7 +868,7 @@ def main() -> None:
     schema = json.loads(SCHEMA_PATH.read_text())
     definitions = schema.get("definitions", {})
     definitions.update(MANUAL_DEFINITIONS)
-    REGISTRY = Registry(definitions)
+    REGISTRY = Registry(normalize_object_unions(definitions))
 
     mapping = read_notification_registry()
     for root in sorted(ROOT_TYPES):
