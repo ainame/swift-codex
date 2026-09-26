@@ -4,13 +4,19 @@
 import Foundation
 
 public struct RealtimeSessionStartedThreadRealtimeItem2: ObjectModel {
+    public var id: String
+    public var realtimeSessionId: String
     public var type: RealtimeSessionStartedThreadRealtimeItemType2
     public var additionalFields: JSONObject
 
     public init(
+        id: String,
+        realtimeSessionId: String,
         type: RealtimeSessionStartedThreadRealtimeItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.id = id
+        self.realtimeSessionId = realtimeSessionId
         self.type = type
         self.additionalFields = additionalFields
     }
@@ -22,6 +28,8 @@ public struct RealtimeSessionStartedThreadRealtimeItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "RealtimeSessionStartedThreadRealtimeItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.id = payload.id
+        self.realtimeSessionId = payload.realtimeSessionId
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -32,16 +40,22 @@ public struct RealtimeSessionStartedThreadRealtimeItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            id: id,
+            realtimeSessionId: realtimeSessionId,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["type"]
+    private static let knownKeys: Set<String> = ["id", "realtimeSessionId", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var id: String
+        var realtimeSessionId: String
         var type: RealtimeSessionStartedThreadRealtimeItemType2
 
         enum CodingKeys: String, CodingKey {
+            case id
+            case realtimeSessionId
             case type
         }
     }

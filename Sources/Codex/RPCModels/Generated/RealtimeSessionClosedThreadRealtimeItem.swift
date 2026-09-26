@@ -4,15 +4,21 @@
 import Foundation
 
 public struct RealtimeSessionClosedThreadRealtimeItem: ObjectModel {
+    public var id: String
+    public var realtimeSessionId: String
     public var outcome: ThreadRealtimeSessionOutcome
     public var type: RealtimeSessionClosedThreadRealtimeItemType
     public var additionalFields: JSONObject
 
     public init(
+        id: String,
+        realtimeSessionId: String,
         outcome: ThreadRealtimeSessionOutcome,
         type: RealtimeSessionClosedThreadRealtimeItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.id = id
+        self.realtimeSessionId = realtimeSessionId
         self.outcome = outcome
         self.type = type
         self.additionalFields = additionalFields
@@ -25,6 +31,8 @@ public struct RealtimeSessionClosedThreadRealtimeItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "RealtimeSessionClosedThreadRealtimeItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.id = payload.id
+        self.realtimeSessionId = payload.realtimeSessionId
         self.outcome = payload.outcome
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -36,18 +44,24 @@ public struct RealtimeSessionClosedThreadRealtimeItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            id: id,
+            realtimeSessionId: realtimeSessionId,
             outcome: outcome,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["outcome", "type"]
+    private static let knownKeys: Set<String> = ["id", "realtimeSessionId", "outcome", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var id: String
+        var realtimeSessionId: String
         var outcome: ThreadRealtimeSessionOutcome
         var type: RealtimeSessionClosedThreadRealtimeItemType
 
         enum CodingKeys: String, CodingKey {
+            case id
+            case realtimeSessionId
             case outcome
             case type
         }

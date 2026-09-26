@@ -7,6 +7,7 @@ public struct ThreadStartResponse: ObjectModel {
     public var approvalPolicy: AskForApproval
     public var approvalsReviewer: ApprovalsReviewer
     public var cwd: AbsolutePathBuf
+    public var disabledPluginIds: [String]?
     public var instructionSources: [LegacyAppPathString]?
     public var model: String
     public var modelProvider: String
@@ -20,6 +21,7 @@ public struct ThreadStartResponse: ObjectModel {
         approvalPolicy: AskForApproval,
         approvalsReviewer: ApprovalsReviewer,
         cwd: AbsolutePathBuf,
+        disabledPluginIds: [String]? = nil,
         instructionSources: [LegacyAppPathString]? = nil,
         model: String,
         modelProvider: String,
@@ -32,6 +34,7 @@ public struct ThreadStartResponse: ObjectModel {
         self.approvalPolicy = approvalPolicy
         self.approvalsReviewer = approvalsReviewer
         self.cwd = cwd
+        self.disabledPluginIds = disabledPluginIds
         self.instructionSources = instructionSources
         self.model = model
         self.modelProvider = modelProvider
@@ -52,6 +55,7 @@ public struct ThreadStartResponse: ObjectModel {
         self.approvalPolicy = payload.approvalPolicy
         self.approvalsReviewer = payload.approvalsReviewer
         self.cwd = payload.cwd
+        self.disabledPluginIds = payload.disabledPluginIds
         self.instructionSources = payload.instructionSources
         self.model = payload.model
         self.modelProvider = payload.modelProvider
@@ -71,6 +75,7 @@ public struct ThreadStartResponse: ObjectModel {
             approvalPolicy: approvalPolicy,
             approvalsReviewer: approvalsReviewer,
             cwd: cwd,
+            disabledPluginIds: disabledPluginIds,
             instructionSources: instructionSources,
             model: model,
             modelProvider: modelProvider,
@@ -81,12 +86,13 @@ public struct ThreadStartResponse: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "instructionSources", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread"]
+    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "disabledPluginIds", "instructionSources", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var approvalPolicy: AskForApproval
         var approvalsReviewer: ApprovalsReviewer
         var cwd: AbsolutePathBuf
+        var disabledPluginIds: [String]?
         var instructionSources: [LegacyAppPathString]?
         var model: String
         var modelProvider: String
@@ -99,6 +105,7 @@ public struct ThreadStartResponse: ObjectModel {
             case approvalPolicy
             case approvalsReviewer
             case cwd
+            case disabledPluginIds
             case instructionSources
             case model
             case modelProvider
@@ -113,6 +120,7 @@ public struct ThreadStartResponse: ObjectModel {
             approvalPolicy: AskForApproval,
             approvalsReviewer: ApprovalsReviewer,
             cwd: AbsolutePathBuf,
+            disabledPluginIds: [String]?,
             instructionSources: [LegacyAppPathString]?,
             model: String,
             modelProvider: String,
@@ -124,6 +132,7 @@ public struct ThreadStartResponse: ObjectModel {
             self.approvalPolicy = approvalPolicy
             self.approvalsReviewer = approvalsReviewer
             self.cwd = cwd
+            self.disabledPluginIds = disabledPluginIds
             self.instructionSources = instructionSources
             self.model = model
             self.modelProvider = modelProvider
@@ -138,6 +147,7 @@ public struct ThreadStartResponse: ObjectModel {
             self.approvalPolicy = try container.decode(AskForApproval.self, forKey: .approvalPolicy)
             self.approvalsReviewer = try container.decodeIfPresent(ApprovalsReviewer.self, forKey: .approvalsReviewer) ?? .user
             self.cwd = try container.decode(AbsolutePathBuf.self, forKey: .cwd)
+            self.disabledPluginIds = try container.decodeIfPresent([String].self, forKey: .disabledPluginIds)
             self.instructionSources = try container.decodeIfPresent([LegacyAppPathString].self, forKey: .instructionSources)
             self.model = try container.decode(String.self, forKey: .model)
             self.modelProvider = try container.decode(String.self, forKey: .modelProvider)

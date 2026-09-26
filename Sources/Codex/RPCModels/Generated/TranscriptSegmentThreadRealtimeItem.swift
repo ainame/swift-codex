@@ -4,17 +4,23 @@
 import Foundation
 
 public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
+    public var id: String
+    public var realtimeSessionId: String
     public var role: ThreadRealtimeTranscriptRole
     public var text: String
     public var type: TranscriptSegmentThreadRealtimeItemType
     public var additionalFields: JSONObject
 
     public init(
+        id: String,
+        realtimeSessionId: String,
         role: ThreadRealtimeTranscriptRole,
         text: String,
         type: TranscriptSegmentThreadRealtimeItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.id = id
+        self.realtimeSessionId = realtimeSessionId
         self.role = role
         self.text = text
         self.type = type
@@ -28,6 +34,8 @@ public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "TranscriptSegmentThreadRealtimeItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.id = payload.id
+        self.realtimeSessionId = payload.realtimeSessionId
         self.role = payload.role
         self.text = payload.text
         self.type = payload.type
@@ -40,20 +48,26 @@ public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            id: id,
+            realtimeSessionId: realtimeSessionId,
             role: role,
             text: text,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["role", "text", "type"]
+    private static let knownKeys: Set<String> = ["id", "realtimeSessionId", "role", "text", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var id: String
+        var realtimeSessionId: String
         var role: ThreadRealtimeTranscriptRole
         var text: String
         var type: TranscriptSegmentThreadRealtimeItemType
 
         enum CodingKeys: String, CodingKey {
+            case id
+            case realtimeSessionId
             case role
             case text
             case type

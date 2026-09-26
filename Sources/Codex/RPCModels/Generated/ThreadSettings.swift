@@ -9,6 +9,7 @@ public struct ThreadSettings: ObjectModel {
     public var approvalsReviewer: ApprovalsReviewer
     public var collaborationMode: CollaborationMode
     public var cwd: AbsolutePathBuf
+    public var disabledPluginIds: [String]?
     public var effort: ReasoningEffort?
     public var model: String
     public var modelProvider: String
@@ -24,6 +25,7 @@ public struct ThreadSettings: ObjectModel {
         approvalsReviewer: ApprovalsReviewer,
         collaborationMode: CollaborationMode,
         cwd: AbsolutePathBuf,
+        disabledPluginIds: [String]? = nil,
         effort: ReasoningEffort? = nil,
         model: String,
         modelProvider: String,
@@ -38,6 +40,7 @@ public struct ThreadSettings: ObjectModel {
         self.approvalsReviewer = approvalsReviewer
         self.collaborationMode = collaborationMode
         self.cwd = cwd
+        self.disabledPluginIds = disabledPluginIds
         self.effort = effort
         self.model = model
         self.modelProvider = modelProvider
@@ -60,6 +63,7 @@ public struct ThreadSettings: ObjectModel {
         self.approvalsReviewer = payload.approvalsReviewer
         self.collaborationMode = payload.collaborationMode
         self.cwd = payload.cwd
+        self.disabledPluginIds = payload.disabledPluginIds
         self.effort = payload.effort
         self.model = payload.model
         self.modelProvider = payload.modelProvider
@@ -81,6 +85,7 @@ public struct ThreadSettings: ObjectModel {
             approvalsReviewer: approvalsReviewer,
             collaborationMode: collaborationMode,
             cwd: cwd,
+            disabledPluginIds: disabledPluginIds,
             effort: effort,
             model: model,
             modelProvider: modelProvider,
@@ -91,7 +96,7 @@ public struct ThreadSettings: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["activePermissionProfile", "approvalPolicy", "approvalsReviewer", "collaborationMode", "cwd", "effort", "model", "modelProvider", "personality", "sandboxPolicy", "serviceTier", "summary"]
+    private static let knownKeys: Set<String> = ["activePermissionProfile", "approvalPolicy", "approvalsReviewer", "collaborationMode", "cwd", "disabledPluginIds", "effort", "model", "modelProvider", "personality", "sandboxPolicy", "serviceTier", "summary"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var activePermissionProfile: ActivePermissionProfile?
@@ -99,6 +104,7 @@ public struct ThreadSettings: ObjectModel {
         var approvalsReviewer: ApprovalsReviewer
         var collaborationMode: CollaborationMode
         var cwd: AbsolutePathBuf
+        var disabledPluginIds: [String]?
         var effort: ReasoningEffort?
         var model: String
         var modelProvider: String
@@ -113,6 +119,7 @@ public struct ThreadSettings: ObjectModel {
             case approvalsReviewer
             case collaborationMode
             case cwd
+            case disabledPluginIds
             case effort
             case model
             case modelProvider

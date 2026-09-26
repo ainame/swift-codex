@@ -6,7 +6,9 @@ import Foundation
 public struct ThreadResumeResponse: ObjectModel {
     public var approvalPolicy: AskForApproval
     public var approvalsReviewer: ApprovalsReviewer
+    public var collaborationMode: CollaborationMode?
     public var cwd: AbsolutePathBuf
+    public var disabledPluginIds: [String]?
     public var instructionSources: [LegacyAppPathString]?
     public var itemsBackwardsCursor: String?
     public var model: String
@@ -21,7 +23,9 @@ public struct ThreadResumeResponse: ObjectModel {
     public init(
         approvalPolicy: AskForApproval,
         approvalsReviewer: ApprovalsReviewer,
+        collaborationMode: CollaborationMode? = nil,
         cwd: AbsolutePathBuf,
+        disabledPluginIds: [String]? = nil,
         instructionSources: [LegacyAppPathString]? = nil,
         itemsBackwardsCursor: String? = nil,
         model: String,
@@ -35,7 +39,9 @@ public struct ThreadResumeResponse: ObjectModel {
     ) {
         self.approvalPolicy = approvalPolicy
         self.approvalsReviewer = approvalsReviewer
+        self.collaborationMode = collaborationMode
         self.cwd = cwd
+        self.disabledPluginIds = disabledPluginIds
         self.instructionSources = instructionSources
         self.itemsBackwardsCursor = itemsBackwardsCursor
         self.model = model
@@ -57,7 +63,9 @@ public struct ThreadResumeResponse: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.approvalPolicy = payload.approvalPolicy
         self.approvalsReviewer = payload.approvalsReviewer
+        self.collaborationMode = payload.collaborationMode
         self.cwd = payload.cwd
+        self.disabledPluginIds = payload.disabledPluginIds
         self.instructionSources = payload.instructionSources
         self.itemsBackwardsCursor = payload.itemsBackwardsCursor
         self.model = payload.model
@@ -78,7 +86,9 @@ public struct ThreadResumeResponse: ObjectModel {
         Payload(
             approvalPolicy: approvalPolicy,
             approvalsReviewer: approvalsReviewer,
+            collaborationMode: collaborationMode,
             cwd: cwd,
+            disabledPluginIds: disabledPluginIds,
             instructionSources: instructionSources,
             itemsBackwardsCursor: itemsBackwardsCursor,
             model: model,
@@ -91,12 +101,14 @@ public struct ThreadResumeResponse: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "cwd", "instructionSources", "itemsBackwardsCursor", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread", "turnsBackwardsCursor"]
+    private static let knownKeys: Set<String> = ["approvalPolicy", "approvalsReviewer", "collaborationMode", "cwd", "disabledPluginIds", "instructionSources", "itemsBackwardsCursor", "model", "modelProvider", "reasoningEffort", "sandbox", "serviceTier", "thread", "turnsBackwardsCursor"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var approvalPolicy: AskForApproval
         var approvalsReviewer: ApprovalsReviewer
+        var collaborationMode: CollaborationMode?
         var cwd: AbsolutePathBuf
+        var disabledPluginIds: [String]?
         var instructionSources: [LegacyAppPathString]?
         var itemsBackwardsCursor: String?
         var model: String
@@ -110,7 +122,9 @@ public struct ThreadResumeResponse: ObjectModel {
         enum CodingKeys: String, CodingKey {
             case approvalPolicy
             case approvalsReviewer
+            case collaborationMode
             case cwd
+            case disabledPluginIds
             case instructionSources
             case itemsBackwardsCursor
             case model
@@ -126,7 +140,9 @@ public struct ThreadResumeResponse: ObjectModel {
         init(
             approvalPolicy: AskForApproval,
             approvalsReviewer: ApprovalsReviewer,
+            collaborationMode: CollaborationMode?,
             cwd: AbsolutePathBuf,
+            disabledPluginIds: [String]?,
             instructionSources: [LegacyAppPathString]?,
             itemsBackwardsCursor: String?,
             model: String,
@@ -139,7 +155,9 @@ public struct ThreadResumeResponse: ObjectModel {
         ) {
             self.approvalPolicy = approvalPolicy
             self.approvalsReviewer = approvalsReviewer
+            self.collaborationMode = collaborationMode
             self.cwd = cwd
+            self.disabledPluginIds = disabledPluginIds
             self.instructionSources = instructionSources
             self.itemsBackwardsCursor = itemsBackwardsCursor
             self.model = model
@@ -155,7 +173,9 @@ public struct ThreadResumeResponse: ObjectModel {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.approvalPolicy = try container.decode(AskForApproval.self, forKey: .approvalPolicy)
             self.approvalsReviewer = try container.decodeIfPresent(ApprovalsReviewer.self, forKey: .approvalsReviewer) ?? .user
+            self.collaborationMode = try container.decodeIfPresent(CollaborationMode.self, forKey: .collaborationMode)
             self.cwd = try container.decode(AbsolutePathBuf.self, forKey: .cwd)
+            self.disabledPluginIds = try container.decodeIfPresent([String].self, forKey: .disabledPluginIds)
             self.instructionSources = try container.decodeIfPresent([LegacyAppPathString].self, forKey: .instructionSources)
             self.itemsBackwardsCursor = try container.decodeIfPresent(String.self, forKey: .itemsBackwardsCursor)
             self.model = try container.decode(String.self, forKey: .model)

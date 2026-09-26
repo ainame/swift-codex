@@ -4,6 +4,7 @@
 import Foundation
 
 public enum CodexNotificationPayload: RawJSONRepresentable {
+    case gatewayOAuthChanged(GatewayOAuthChangedNotification)
     case accountLoginCompleted(AccountLoginCompletedNotification)
     case accountRateLimitsUpdated(AccountRateLimitsUpdatedNotification)
     case accountUpdated(AccountUpdatedNotification)
@@ -90,6 +91,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
 
     init(method: String, params: JSONValue) throws {
         switch method {
+        case "account/gatewayOAuth/changed": self = .gatewayOAuthChanged(try decodeJSONValue(GatewayOAuthChangedNotification.self, from: params))
         case "account/login/completed": self = .accountLoginCompleted(try decodeJSONValue(AccountLoginCompletedNotification.self, from: params))
         case "account/rateLimits/updated": self = .accountRateLimitsUpdated(try decodeJSONValue(AccountRateLimitsUpdatedNotification.self, from: params))
         case "account/updated": self = .accountUpdated(try decodeJSONValue(AccountUpdatedNotification.self, from: params))
@@ -179,6 +181,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
 
     public var rawJSON: JSONValue {
         switch self {
+        case .gatewayOAuthChanged(let value): return value.rawJSON
         case .accountLoginCompleted(let value): return value.rawJSON
         case .accountRateLimitsUpdated(let value): return value.rawJSON
         case .accountUpdated(let value): return value.rawJSON

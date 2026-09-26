@@ -10,9 +10,13 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Added
 
+- Regenerated `rust-v0.157.1` models for file-ID image sources, gateway OAuth notifications, model access programs, plugin extensions, MCP app UI, and thread disabled-plugin/collaboration metadata.
+
 - Added typed low-level thread attachment add, list, and remove APIs, plus generated attachment and app-server notification models from `rust-v0.155.1`.
 
 ### Changed
+
+- Synced the vendor to `rust-v0.157.1` (`36650394c5b38c2990ccf2a3457165ca3e9d9726`) and fixed generation of shared fields on object union branches. The generated image models now use URL/file-ID enum variants.
 
 - Synced the vendored upstream checkout to `rust-v0.155.1` (`be2951ea34f0d295ed0becf97079f92fa5f6950e`) and refreshed upstream provenance.
 

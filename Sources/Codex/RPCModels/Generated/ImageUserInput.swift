@@ -3,60 +3,58 @@
 
 import Foundation
 
-public struct ImageUserInput: ObjectModel {
-    public var detail: ImageDetail?
-    public var type: ImageUserInputType
-    public var url: String
-    public var additionalFields: JSONObject
+public enum ImageUserInput: RawJSONRepresentable {
 
-    public init(
-        detail: ImageDetail? = nil,
-        type: ImageUserInputType,
-        url: String,
-        additionalFields: JSONObject = [:]
-    ) {
-        self.detail = detail
-        self.type = type
-        self.url = url
-        self.additionalFields = additionalFields
-    }
-
-    public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "ImageUserInput"))
-    }
+    case urlUserInput(UrlUserInput)
+    case fileIdUserInput(FileIdUserInput)
+    case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "ImageUserInput")
-        let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.detail = payload.detail
-        self.type = payload.type
-        self.url = payload.url
-        self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
+        let raw = try JSONValue(from: decoder)
+        if case .string(let value) = raw {
+            switch value {
+
+            default:
+                break
+            }
+        }
+        if case .object(let object) = raw, let discriminator = object["type"]?.stringValue {
+            switch discriminator {
+            case "image":
+                if let value = try? decodeJSONValue(UrlUserInput.self, from: raw) {
+                    self = .urlUserInput(value)
+                    return
+                }
+                if let value = try? decodeJSONValue(FileIdUserInput.self, from: raw) {
+                    self = .fileIdUserInput(value)
+                    return
+                }
+            default:
+                break
+            }
+        }
+        if let value = try? decodeJSONValue(UrlUserInput.self, from: raw) { self = .urlUserInput(value); return }
+        if let value = try? decodeJSONValue(FileIdUserInput.self, from: raw) { self = .fileIdUserInput(value); return }
+        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "ImageUserInput", to: encoder)
+        switch self {
+
+        case .urlUserInput(let value): try value.encode(to: encoder)
+        case .fileIdUserInput(let value): try value.encode(to: encoder)
+        case .unknown(let value):
+            try value.encode(to: encoder)
+        }
     }
 
-    private var payload: Payload {
-        Payload(
-            detail: detail,
-            type: type,
-            url: url
-        )
-    }
+    public var rawJSON: JSONValue {
+        switch self {
 
-    private static let knownKeys: Set<String> = ["detail", "type", "url"]
-
-    private struct Payload: Codable, Hashable, Sendable {
-        var detail: ImageDetail?
-        var type: ImageUserInputType
-        var url: String
-
-        enum CodingKeys: String, CodingKey {
-            case detail
-            case type
-            case url
+        case .urlUserInput(let value): return losslessEncodeJSONValue(value, context: "ImageUserInput.urlUserInput")
+        case .fileIdUserInput(let value): return losslessEncodeJSONValue(value, context: "ImageUserInput.fileIdUserInput")
+        case .unknown(let value):
+            return value
         }
     }
 }

@@ -4,6 +4,8 @@
 import Foundation
 
 public struct BemItemPromotedThreadRealtimeItem: ObjectModel {
+    public var id: String
+    public var realtimeSessionId: String
     public var itemId: String
     public var presentation: ThreadRealtimeBemItemPresentation
     public var turnId: String
@@ -11,12 +13,16 @@ public struct BemItemPromotedThreadRealtimeItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        id: String,
+        realtimeSessionId: String,
         itemId: String,
         presentation: ThreadRealtimeBemItemPresentation,
         turnId: String,
         type: BemItemPromotedThreadRealtimeItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.id = id
+        self.realtimeSessionId = realtimeSessionId
         self.itemId = itemId
         self.presentation = presentation
         self.turnId = turnId
@@ -31,6 +37,8 @@ public struct BemItemPromotedThreadRealtimeItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "BemItemPromotedThreadRealtimeItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.id = payload.id
+        self.realtimeSessionId = payload.realtimeSessionId
         self.itemId = payload.itemId
         self.presentation = payload.presentation
         self.turnId = payload.turnId
@@ -44,6 +52,8 @@ public struct BemItemPromotedThreadRealtimeItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            id: id,
+            realtimeSessionId: realtimeSessionId,
             itemId: itemId,
             presentation: presentation,
             turnId: turnId,
@@ -51,15 +61,19 @@ public struct BemItemPromotedThreadRealtimeItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["item_id", "presentation", "turn_id", "type"]
+    private static let knownKeys: Set<String> = ["id", "realtimeSessionId", "item_id", "presentation", "turn_id", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var id: String
+        var realtimeSessionId: String
         var itemId: String
         var presentation: ThreadRealtimeBemItemPresentation
         var turnId: String
         var type: BemItemPromotedThreadRealtimeItemType
 
         enum CodingKeys: String, CodingKey {
+            case id
+            case realtimeSessionId
             case itemId = "item_id"
             case presentation
             case turnId = "turn_id"
