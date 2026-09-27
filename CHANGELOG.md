@@ -8,17 +8,21 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.157.1] - 2026-09-27
+
 ### Added
 
-- Regenerated `rust-v0.157.1` models for file-ID image sources, gateway OAuth notifications, model access programs, plugin extensions, MCP app UI, and thread disabled-plugin/collaboration metadata.
-
-- Added typed low-level thread attachment add, list, and remove APIs, plus generated attachment and app-server notification models from `rust-v0.155.1`.
+- Added typed low-level thread attachment add, list, and remove APIs, plus attachment and app-server notification models. [#26](https://github.com/ainame/swift-codex/pull/26)
+- Added generated file-ID image sources, gateway OAuth notifications, model access programs, plugin extensions, MCP app UI, and thread disabled-plugin/collaboration metadata. [#27](https://github.com/ainame/swift-codex/pull/27)
 
 ### Changed
 
-- Synced the vendor to `rust-v0.157.1` (`36650394c5b38c2990ccf2a3457165ca3e9d9726`) and fixed generation of shared fields on object union branches. The generated image models now use URL/file-ID enum variants.
+- Updated the vendored upstream basis to `rust-v0.157.1` (`36650394c5b38c2990ccf2a3457165ca3e9d9726`). Generated image input and tool-output image models now use URL/file-ID enum variants; generated realtime variants require their shared IDs. [#27](https://github.com/ainame/swift-codex/pull/27)
 
-- Synced the vendored upstream checkout to `rust-v0.155.1` (`be2951ea34f0d295ed0becf97079f92fa5f6950e`) and refreshed upstream provenance.
+### Fixed
+
+- Fixed generated model field-name collisions for schema fields named `payload`. [#26](https://github.com/ainame/swift-codex/pull/26)
+- Preserved shared fields on nested object union branches and grouped branches with identical discriminators during generation. [#27](https://github.com/ainame/swift-codex/pull/27)
 
 ## [0.154.0] - 2026-09-15
 
