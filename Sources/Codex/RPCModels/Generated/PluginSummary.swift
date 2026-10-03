@@ -9,7 +9,6 @@ public struct PluginSummary: ObjectModel {
     public var disabledReason: PluginDisabledReason?
     public var eligiblePlanTypes: [String]?
     public var enabled: Bool
-    public var extensions: PluginExtensions?
     public var id: String
     public var installPolicy: PluginInstallPolicy
     public var installPolicySource: PluginInstallPolicySource?
@@ -32,7 +31,6 @@ public struct PluginSummary: ObjectModel {
         disabledReason: PluginDisabledReason? = nil,
         eligiblePlanTypes: [String]? = nil,
         enabled: Bool,
-        extensions: PluginExtensions? = nil,
         id: String,
         installPolicy: PluginInstallPolicy,
         installPolicySource: PluginInstallPolicySource? = nil,
@@ -54,7 +52,6 @@ public struct PluginSummary: ObjectModel {
         self.disabledReason = disabledReason
         self.eligiblePlanTypes = eligiblePlanTypes
         self.enabled = enabled
-        self.extensions = extensions
         self.id = id
         self.installPolicy = installPolicy
         self.installPolicySource = installPolicySource
@@ -84,7 +81,6 @@ public struct PluginSummary: ObjectModel {
         self.disabledReason = payload.disabledReason
         self.eligiblePlanTypes = payload.eligiblePlanTypes
         self.enabled = payload.enabled
-        self.extensions = payload.extensions
         self.id = payload.id
         self.installPolicy = payload.installPolicy
         self.installPolicySource = payload.installPolicySource
@@ -113,7 +109,6 @@ public struct PluginSummary: ObjectModel {
             disabledReason: disabledReason,
             eligiblePlanTypes: eligiblePlanTypes,
             enabled: enabled,
-            extensions: extensions,
             id: id,
             installPolicy: installPolicy,
             installPolicySource: installPolicySource,
@@ -131,7 +126,7 @@ public struct PluginSummary: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["authPolicy", "availability", "disabledReason", "eligiblePlanTypes", "enabled", "extensions", "id", "installPolicy", "installPolicySource", "installed", "installedAt", "interface", "keywords", "localVersion", "mustShowInstallationInterstitial", "name", "remotePluginId", "shareContext", "source", "version"]
+    private static let knownKeys: Set<String> = ["authPolicy", "availability", "disabledReason", "eligiblePlanTypes", "enabled", "id", "installPolicy", "installPolicySource", "installed", "installedAt", "interface", "keywords", "localVersion", "mustShowInstallationInterstitial", "name", "remotePluginId", "shareContext", "source", "version"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var authPolicy: PluginAuthPolicy
@@ -139,7 +134,6 @@ public struct PluginSummary: ObjectModel {
         var disabledReason: PluginDisabledReason?
         var eligiblePlanTypes: [String]?
         var enabled: Bool
-        var extensions: PluginExtensions?
         var id: String
         var installPolicy: PluginInstallPolicy
         var installPolicySource: PluginInstallPolicySource?
@@ -161,7 +155,6 @@ public struct PluginSummary: ObjectModel {
             case disabledReason
             case eligiblePlanTypes
             case enabled
-            case extensions
             case id
             case installPolicy
             case installPolicySource
