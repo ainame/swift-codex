@@ -41,12 +41,12 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `36650394c5b38c2990ccf2a3457165ca3e9d9726` (`rust-v0.157.1`)
+- Vendored upstream commit: `a956835d020762cb2b570053af06f643a11c0ecc` (`rust-v0.160.0`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
-The `rust-v0.157.1` sync adds generated file-ID image sources, gateway OAuth notifications, model access programs, plugin extensions, and MCP app UI metadata. Generated image input and tool-output image models now use URL/file-ID enum variants; each variant carries the shared image type and detail fields. Realtime item variants also expose their required IDs.
+The `rust-v0.160.0` sync adds generated `flexUnavailable` and `tooManyDenials` error cases and the `promax` plan type. This stable release's schema omits the earlier plugin extension definitions, so the generated plugin extension types and `PluginSummary.extensions` property are no longer present. Unknown plugin fields remain available through `PluginSummary.additionalFields`.
 
 See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files, the raw app-server schema parity target used for this sync, and the remaining schema-only request surfaces not wrapped by the Swift convenience API yet.
 

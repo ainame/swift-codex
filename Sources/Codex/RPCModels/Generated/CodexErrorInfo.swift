@@ -8,9 +8,11 @@ public enum CodexErrorInfo: RawJSONRepresentable {
     case sessionBudgetExceeded
     case usageLimitExceeded
     case rateLimitExceeded
+    case flexUnavailable
     case serverOverloaded
     case cyberPolicy
     case misalignmentPolicyViolation
+    case tooManyDenials
     case internalServerError
     case unauthorized
     case badRequest
@@ -32,9 +34,11 @@ public enum CodexErrorInfo: RawJSONRepresentable {
             case "sessionBudgetExceeded": self = .sessionBudgetExceeded; return
             case "usageLimitExceeded": self = .usageLimitExceeded; return
             case "rateLimitExceeded": self = .rateLimitExceeded; return
+            case "flexUnavailable": self = .flexUnavailable; return
             case "serverOverloaded": self = .serverOverloaded; return
             case "cyberPolicy": self = .cyberPolicy; return
             case "misalignmentPolicyViolation": self = .misalignmentPolicyViolation; return
+            case "tooManyDenials": self = .tooManyDenials; return
             case "internalServerError": self = .internalServerError; return
             case "unauthorized": self = .unauthorized; return
             case "badRequest": self = .badRequest; return
@@ -59,9 +63,11 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .sessionBudgetExceeded: try "sessionBudgetExceeded".encode(to: encoder)
         case .usageLimitExceeded: try "usageLimitExceeded".encode(to: encoder)
         case .rateLimitExceeded: try "rateLimitExceeded".encode(to: encoder)
+        case .flexUnavailable: try "flexUnavailable".encode(to: encoder)
         case .serverOverloaded: try "serverOverloaded".encode(to: encoder)
         case .cyberPolicy: try "cyberPolicy".encode(to: encoder)
         case .misalignmentPolicyViolation: try "misalignmentPolicyViolation".encode(to: encoder)
+        case .tooManyDenials: try "tooManyDenials".encode(to: encoder)
         case .internalServerError: try "internalServerError".encode(to: encoder)
         case .unauthorized: try "unauthorized".encode(to: encoder)
         case .badRequest: try "badRequest".encode(to: encoder)
@@ -84,9 +90,11 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .sessionBudgetExceeded: return .string("sessionBudgetExceeded")
         case .usageLimitExceeded: return .string("usageLimitExceeded")
         case .rateLimitExceeded: return .string("rateLimitExceeded")
+        case .flexUnavailable: return .string("flexUnavailable")
         case .serverOverloaded: return .string("serverOverloaded")
         case .cyberPolicy: return .string("cyberPolicy")
         case .misalignmentPolicyViolation: return .string("misalignmentPolicyViolation")
+        case .tooManyDenials: return .string("tooManyDenials")
         case .internalServerError: return .string("internalServerError")
         case .unauthorized: return .string("unauthorized")
         case .badRequest: return .string("badRequest")

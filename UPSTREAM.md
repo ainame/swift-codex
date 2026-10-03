@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `36650394c5b38c2990ccf2a3457165ca3e9d9726`
-- Reviewed JSON-RPC basis commit SHA: `36650394c5b38c2990ccf2a3457165ca3e9d9726`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/36650394c5b38c2990ccf2a3457165ca3e9d9726`
-- Last reviewed date: `2026-09-26`
+- Vendored upstream commit: `a956835d020762cb2b570053af06f643a11c0ecc`
+- Reviewed JSON-RPC basis commit SHA: `a956835d020762cb2b570053af06f643a11c0ecc`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/a956835d020762cb2b570053af06f643a11c0ecc`
+- Last reviewed date: `2026-10-03`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -32,6 +32,20 @@ When porting new behavior from upstream or validating parity:
 ## Sync Notes
 
 ### Unreleased
+
+- Vendored checkout: `vendor/openai-codex` at `a956835d020762cb2b570053af06f643a11c0ecc` (`rust-v0.160.0`)
+- Reviewed upstream files:
+  - `sdk/python/src/openai_codex/generated/v2_all.py`
+  - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
+  - `sdk/python/src/openai_codex/api.py` and `sdk/python/src/openai_codex/generated/notification_registry.py` (unchanged from the prior basis)
+  - `sdk/typescript` (unchanged from the prior basis)
+- Parity target: focused raw app-server schema parity for the generated Swift model roots.
+- Generated additions: `flexUnavailable` and `tooManyDenials` error cases, and the `promax` plan type.
+- The stable release was cut from a branch that diverged before the prior vendored commit. Its schema removes plugin extension definitions and the typed `PluginSummary.extensions` field. Unknown plugin fields continue to round-trip through `additionalFields`; callers using the removed generated types or property must migrate.
+- Remaining schema-only gaps: `ListMcpServerStatusParams.serverName` and the item-history cursor/anchor additions have no Swift convenience API. The previously recorded Python SDK and broader request-surface gaps also remain.
+- Intentional Swift-specific deviations: Swift API conventions and async/await remain unchanged; the generated model scope stays limited to the roots in `Scripts/generate_app_server_v2.py`.
+
+### 0.157.1
 
 - Vendored checkout: `vendor/openai-codex` at `36650394c5b38c2990ccf2a3457165ca3e9d9726` (`rust-v0.157.1`)
 - Reviewed upstream files:

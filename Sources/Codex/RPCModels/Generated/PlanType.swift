@@ -9,6 +9,7 @@ public enum PlanType: RawJSONRepresentable {
     case plus
     case pro
     case prolite
+    case promax
     case team
     case selfServeBusinessProlite
     case selfServeBusinessUsageBased
@@ -31,6 +32,7 @@ public enum PlanType: RawJSONRepresentable {
         case "plus": self = .plus
         case "pro": self = .pro
         case "prolite": self = .prolite
+        case "promax": self = .promax
         case "team": self = .team
         case "self_serve_business_prolite": self = .selfServeBusinessProlite
         case "self_serve_business_usage_based": self = .selfServeBusinessUsageBased
@@ -59,6 +61,7 @@ public enum PlanType: RawJSONRepresentable {
         case .plus: return "plus"
         case .pro: return "pro"
         case .prolite: return "prolite"
+        case .promax: return "promax"
         case .team: return "team"
         case .selfServeBusinessProlite: return "self_serve_business_prolite"
         case .selfServeBusinessUsageBased: return "self_serve_business_usage_based"

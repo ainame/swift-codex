@@ -808,6 +808,26 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func generatedModelsDecodeRust0160Additions() throws {
+        #expect(try decodeJSONValue(CodexErrorInfo.self, from: .string("flexUnavailable")) == .flexUnavailable)
+        #expect(try decodeJSONValue(CodexErrorInfo.self, from: .string("tooManyDenials")) == .tooManyDenials)
+        #expect(try decodeJSONValue(PlanType.self, from: .string("promax")) == .promax)
+
+        let plugin = PluginSummary(
+            authPolicy: .oNUSE,
+            enabled: true,
+            id: "plugin_160",
+            installPolicy: .aVAILABLE,
+            installed: false,
+            name: "Plugin",
+            source: .remote(RemotePluginSource(type: .remote)),
+            additionalFields: ["extensions": .object(["futureField": .bool(true)])]
+        )
+        let decoded = try decodeJSONValue(PluginSummary.self, from: plugin.rawJSON)
+        #expect(decoded.additionalFields["extensions"] == .object(["futureField": .bool(true)]))
+    }
+
+    @Test
     func environmentConnectionNotificationsDecodeFromRegistry() throws {
         let params: JSONValue = .object([
             "environmentId": .string("environment_149"),
