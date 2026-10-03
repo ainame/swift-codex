@@ -8,13 +8,15 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.160.0] - 2026-10-03
+
 ### Added
 
-- Synced generated error cases `flexUnavailable` and `tooManyDenials`, and plan type `promax`, from `rust-v0.160.0`.
+- Synced generated error cases `flexUnavailable` and `tooManyDenials`, and plan type `promax`, from `rust-v0.160.0`. [#28](https://github.com/ainame/swift-codex/pull/28)
 
 ### Changed
 
-- Updated the vendored upstream basis to `rust-v0.160.0` (`a956835d020762cb2b570053af06f643a11c0ecc`). Its stable schema omits plugin extension definitions, removing generated plugin extension types and the typed `PluginSummary.extensions` property. Unknown plugin fields still round-trip through `additionalFields`.
+- Updated the vendored upstream basis to `rust-v0.160.0` (`a956835d020762cb2b570053af06f643a11c0ecc`). Its stable schema omits plugin extension definitions, removing generated plugin extension types and the typed `PluginSummary.extensions` property. Unknown plugin fields still round-trip through `additionalFields`. [#28](https://github.com/ainame/swift-codex/pull/28)
 
 ## [0.157.1] - 2026-09-27
 
