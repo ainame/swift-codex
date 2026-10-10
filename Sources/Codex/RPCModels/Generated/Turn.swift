@@ -10,6 +10,7 @@ public struct Turn: ObjectModel {
     public var id: String
     public var items: [ThreadItem]
     public var itemsView: TurnItemsView?
+    public var rootTurnId: String?
     public var startedAt: Int?
     public var status: TurnStatus
     public var additionalFields: JSONObject
@@ -21,6 +22,7 @@ public struct Turn: ObjectModel {
         id: String,
         items: [ThreadItem],
         itemsView: TurnItemsView? = nil,
+        rootTurnId: String? = nil,
         startedAt: Int? = nil,
         status: TurnStatus,
         additionalFields: JSONObject = [:]
@@ -31,6 +33,7 @@ public struct Turn: ObjectModel {
         self.id = id
         self.items = items
         self.itemsView = itemsView
+        self.rootTurnId = rootTurnId
         self.startedAt = startedAt
         self.status = status
         self.additionalFields = additionalFields
@@ -49,6 +52,7 @@ public struct Turn: ObjectModel {
         self.id = payload.id
         self.items = payload.items
         self.itemsView = payload.itemsView
+        self.rootTurnId = payload.rootTurnId
         self.startedAt = payload.startedAt
         self.status = payload.status
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -66,12 +70,13 @@ public struct Turn: ObjectModel {
             id: id,
             items: items,
             itemsView: itemsView,
+            rootTurnId: rootTurnId,
             startedAt: startedAt,
             status: status
         )
     }
 
-    private static let knownKeys: Set<String> = ["completedAt", "durationMs", "error", "id", "items", "itemsView", "startedAt", "status"]
+    private static let knownKeys: Set<String> = ["completedAt", "durationMs", "error", "id", "items", "itemsView", "rootTurnId", "startedAt", "status"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var completedAt: Int?
@@ -80,6 +85,7 @@ public struct Turn: ObjectModel {
         var id: String
         var items: [ThreadItem]
         var itemsView: TurnItemsView?
+        var rootTurnId: String?
         var startedAt: Int?
         var status: TurnStatus
 
@@ -90,6 +96,7 @@ public struct Turn: ObjectModel {
             case id
             case items
             case itemsView
+            case rootTurnId
             case startedAt
             case status
         }

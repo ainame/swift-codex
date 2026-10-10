@@ -5,6 +5,7 @@ import Foundation
 
 public enum MessagePhase: RawJSONRepresentable {
     case commentary
+    case partialAnswer
     case finalAnswer
 
     case unknown(JSONValue)
@@ -14,6 +15,7 @@ public enum MessagePhase: RawJSONRepresentable {
         if case .string(let value) = raw {
             switch value {
             case "commentary": self = .commentary; return
+            case "partial_answer": self = .partialAnswer; return
             case "final_answer": self = .finalAnswer; return
             default:
                 break
@@ -25,6 +27,7 @@ public enum MessagePhase: RawJSONRepresentable {
     public func encode(to encoder: any Encoder) throws {
         switch self {
         case .commentary: try "commentary".encode(to: encoder)
+        case .partialAnswer: try "partial_answer".encode(to: encoder)
         case .finalAnswer: try "final_answer".encode(to: encoder)
 
         case .unknown(let value):
@@ -35,6 +38,7 @@ public enum MessagePhase: RawJSONRepresentable {
     public var rawJSON: JSONValue {
         switch self {
         case .commentary: return .string("commentary")
+        case .partialAnswer: return .string("partial_answer")
         case .finalAnswer: return .string("final_answer")
 
         case .unknown(let value):

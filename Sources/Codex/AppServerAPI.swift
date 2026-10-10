@@ -379,7 +379,8 @@ public actor CodexRPCClient {
         threadID: String,
         objective: String? = nil,
         status: ThreadGoalStatus? = nil,
-        tokenBudget: Int64? = nil
+        tokenBudget: Int64? = nil,
+        origin: ThreadGoalMutationOrigin? = nil
     ) async throws -> ThreadGoalSetResponse {
         var params: JSONObject = ["threadId": .string(threadID)]
         if let objective {
@@ -391,6 +392,9 @@ public actor CodexRPCClient {
         if let tokenBudget {
             params["tokenBudget"] = .number(Double(tokenBudget))
         }
+        if let origin {
+            params["origin"] = origin.rawJSON
+        }
         return try await request("thread/goal/set", params: params, responseType: ThreadGoalSetResponse.self)
     }
 
@@ -398,8 +402,15 @@ public actor CodexRPCClient {
         try await request("thread/goal/get", params: ["threadId": .string(threadID)], responseType: ThreadGoalGetResponse.self)
     }
 
-    public func threadGoalClear(threadID: String) async throws -> ThreadGoalClearResponse {
-        try await request("thread/goal/clear", params: ["threadId": .string(threadID)], responseType: ThreadGoalClearResponse.self)
+    public func threadGoalClear(
+        threadID: String,
+        origin: ThreadGoalMutationOrigin? = nil
+    ) async throws -> ThreadGoalClearResponse {
+        var params: JSONObject = ["threadId": .string(threadID)]
+        if let origin {
+            params["origin"] = origin.rawJSON
+        }
+        return try await request("thread/goal/clear", params: params, responseType: ThreadGoalClearResponse.self)
     }
 
     public func turnStart(
@@ -579,6 +590,9 @@ public actor CodexRPCClient {
         if let approvalsReviewer = options.approvalsReviewer {
             params["approvalsReviewer"] = approvalsReviewer.rawJSON
         }
+        if let cyberAccessProgram = options.cyberAccessProgram {
+            params["cyberAccessProgram"] = cyberAccessProgram.rawJSON
+        }
         if let cwd = options.cwd {
             params["cwd"] = .string(cwd)
         }
@@ -590,6 +604,12 @@ public actor CodexRPCClient {
         }
         if let outputSchema = options.outputSchema {
             params["outputSchema"] = .object(outputSchema)
+        }
+        if let parentTurnID = options.parentTurnID {
+            params["parentTurnId"] = .string(parentTurnID)
+        }
+        if let rootTurnID = options.rootTurnID {
+            params["rootTurnId"] = .string(rootTurnID)
         }
         if let personality = options.personality {
             params["personality"] = personality.rawJSON
@@ -844,13 +864,15 @@ public struct CodexThread: Sendable {
     public func setGoal(
         objective: String? = nil,
         status: ThreadGoalStatus? = nil,
-        tokenBudget: Int64? = nil
+        tokenBudget: Int64? = nil,
+        origin: ThreadGoalMutationOrigin? = nil
     ) async throws -> ThreadGoalSetResponse {
         try await client.threadGoalSet(
             threadID: id,
             objective: objective,
             status: status,
-            tokenBudget: tokenBudget
+            tokenBudget: tokenBudget,
+            origin: origin
         )
     }
 
@@ -858,8 +880,8 @@ public struct CodexThread: Sendable {
         try await client.threadGoalGet(threadID: id)
     }
 
-    public func clearGoal() async throws -> ThreadGoalClearResponse {
-        try await client.threadGoalClear(threadID: id)
+    public func clearGoal(origin: ThreadGoalMutationOrigin? = nil) async throws -> ThreadGoalClearResponse {
+        try await client.threadGoalClear(threadID: id, origin: origin)
     }
 }
 

@@ -6,10 +6,10 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `a956835d020762cb2b570053af06f643a11c0ecc`
-- Reviewed JSON-RPC basis commit SHA: `a956835d020762cb2b570053af06f643a11c0ecc`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/a956835d020762cb2b570053af06f643a11c0ecc`
-- Last reviewed date: `2026-10-03`
+- Vendored upstream commit: `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
+- Reviewed JSON-RPC basis commit SHA: `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
+- Last reviewed date: `2026-10-10`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
@@ -32,6 +32,22 @@ When porting new behavior from upstream or validating parity:
 ## Sync Notes
 
 ### Unreleased
+
+- Vendored checkout: `vendor/openai-codex` at `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d` (`rust-v0.162.1`), verified as the latest stable GitHub release on 2026-10-10 the release branch diverges from the previous pin at `c248f6d48b97eb4a2aa56147a0b11b7d763278b9`. The reviewed delta retains prior generated features apart from the documented skill path wrapper change.
+- Reviewed upstream files:
+  - `sdk/typescript/src/{exec,thread,turnOptions,index}.ts` and `sdk/typescript/tests/run.test.ts`
+  - `sdk/python/src/openai_codex/generated/v2_all.py` and `generated/notification_registry.py`
+  - `sdk/python/src/openai_codex` handwritten runtime files (unchanged from the prior basis)
+  - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
+- Parity target: focused raw app-server schema parity for generated models and existing RPC APIs; TypeScript's per-turn cyber selection is exposed through the app-server transport.
+- Generated additions: thread prediction notifications/results, partial-answer phases, turn root IDs, subagent model/reasoning metadata, MCP OAuth login IDs, misalignment review targets, and goal mutation origins.
+- Existing turn APIs now accept per-turn cyber selection and parent/root turn IDs. Existing goal set/clear APIs forward optional explicit provenance; omitted provenance does not supply user authorization.
+- Skill paths changed from `AbsolutePathBuf` to `LegacyAppPathString`, matching upstream's legacy path support. Callers constructing typed skill paths may need to update their wrapper type.
+- The schema's new unconstrained error branch uses Swift's existing `.unknown(JSONValue)` fallback, preserving round trips and known-case decoding.
+- Remaining schema-only gaps: attachment-owner lookup, environment skill requirements, browser extension headers, independent speed-mode requirements, additional-tools raw response items, and broader request surfaces are not exposed by new convenience APIs. Previously recorded Python orchestration, item-history cursor/anchor, and MCP server-name filtering gaps remain.
+- Intentional Swift-specific deviations: Swift API conventions and async/await remain unchanged; cyber selections use app-server camel-case wire values rather than exec CLI snake-case flags. Model generation remains limited to the roots in `Scripts/generate_app_server_v2.py` and notification registry.
+
+### 0.160.0
 
 - Vendored checkout: `vendor/openai-codex` at `a956835d020762cb2b570053af06f643a11c0ecc` (`rust-v0.160.0`)
 - Reviewed upstream files:
