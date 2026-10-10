@@ -8,18 +8,20 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.162.1] - 2026-10-10
+
 ### Added
 
-- Added generated thread prediction notifications/results, partial-answer phases, turn root IDs, subagent model/reasoning metadata, MCP OAuth login IDs, and misalignment review targets.
-- Added per-turn cyber access selection and parent/root turn IDs to `TurnOptions`, plus optional mutation origin provenance to goal set/clear APIs.
+- Added generated thread prediction notifications/results, partial-answer phases, turn root IDs, subagent model/reasoning metadata, MCP OAuth login IDs, and misalignment review targets. [#29](https://github.com/ainame/swift-codex/pull/29)
+- Added per-turn cyber access selection and parent/root turn IDs to `TurnOptions`, plus optional mutation origin provenance to goal set/clear APIs. [#29](https://github.com/ainame/swift-codex/pull/29)
 
 ### Changed
 
-- Updated the vendored upstream basis to `rust-v0.162.1` (`092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`). Generated skill paths now use `LegacyAppPathString` instead of `AbsolutePathBuf`; callers using the old wrapper type must migrate.
+- Updated the vendored upstream basis to `rust-v0.162.1` (`092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`). Generated skill paths now use `LegacyAppPathString` instead of `AbsolutePathBuf`; callers using the old wrapper type must migrate. [#29](https://github.com/ainame/swift-codex/pull/29)
 
 ### Fixed
 
-- Kept unconstrained schema union branches in the existing `.unknown(JSONValue)` fallback, preserving unknown error decoding without introducing a redundant generated enum case.
+- Kept unconstrained schema union branches in the existing `.unknown(JSONValue)` fallback, preserving unknown error decoding without introducing a redundant generated enum case. [#29](https://github.com/ainame/swift-codex/pull/29)
 
 ## [0.160.0] - 2026-10-03
 
