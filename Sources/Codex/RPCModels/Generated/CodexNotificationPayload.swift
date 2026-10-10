@@ -60,6 +60,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadGoalCleared(ThreadGoalClearedNotification)
     case threadGoalUpdated(ThreadGoalUpdatedNotification)
     case threadNameUpdated(ThreadNameUpdatedNotification)
+    case threadPredictionUpdated(ThreadPredictionUpdatedNotification)
     case threadProjectUpdated(ThreadProjectUpdatedNotification)
     case threadQueueChanged(ThreadQueueChangedNotification)
     case threadRealtimeClosed(ThreadRealtimeClosedNotification)
@@ -147,6 +148,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/goal/cleared": self = .threadGoalCleared(try decodeJSONValue(ThreadGoalClearedNotification.self, from: params))
         case "thread/goal/updated": self = .threadGoalUpdated(try decodeJSONValue(ThreadGoalUpdatedNotification.self, from: params))
         case "thread/name/updated": self = .threadNameUpdated(try decodeJSONValue(ThreadNameUpdatedNotification.self, from: params))
+        case "thread/prediction/updated": self = .threadPredictionUpdated(try decodeJSONValue(ThreadPredictionUpdatedNotification.self, from: params))
         case "thread/project/updated": self = .threadProjectUpdated(try decodeJSONValue(ThreadProjectUpdatedNotification.self, from: params))
         case "thread/queue/changed": self = .threadQueueChanged(try decodeJSONValue(ThreadQueueChangedNotification.self, from: params))
         case "thread/realtime/closed": self = .threadRealtimeClosed(try decodeJSONValue(ThreadRealtimeClosedNotification.self, from: params))
@@ -237,6 +239,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadGoalCleared(let value): return value.rawJSON
         case .threadGoalUpdated(let value): return value.rawJSON
         case .threadNameUpdated(let value): return value.rawJSON
+        case .threadPredictionUpdated(let value): return value.rawJSON
         case .threadProjectUpdated(let value): return value.rawJSON
         case .threadQueueChanged(let value): return value.rawJSON
         case .threadRealtimeClosed(let value): return value.rawJSON
@@ -308,6 +311,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadGoalCleared(let value): return value.threadId
         case .threadGoalUpdated(let value): return value.threadId
         case .threadNameUpdated(let value): return value.threadId
+        case .threadPredictionUpdated(let value): return value.threadId
         case .threadProjectUpdated(let value): return value.threadId
         case .threadQueueChanged(let value): return value.threadId
         case .threadRealtimeClosed(let value): return value.threadId

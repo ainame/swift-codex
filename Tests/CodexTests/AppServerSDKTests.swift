@@ -828,6 +828,87 @@ struct AppServerSDKTests {
     }
 
     @Test
+    func generatedModelsDecodeRust0162Additions() throws {
+        #expect(try decodeJSONValue(MessagePhase.self, from: .string("partial_answer")) == .partialAnswer)
+        let futureError: JSONValue = .object(["futureError": .object(["code": .number(42)])])
+        #expect(try decodeJSONValue(CodexErrorInfo.self, from: futureError) == .unknown(futureError))
+        #expect(try decodeJSONValue(CodexErrorInfo.self, from: .string("futureError")) == .unknown(.string("futureError")))
+        var turn = appServerTurnStartResponse(id: "turn_162")["turn"]?.objectValue ?? [:]
+        turn["rootTurnId"] = .string("root_162")
+        let decodedTurn = try decodeJSONValue(Turn.self, from: .object(turn))
+        #expect(decodedTurn.rootTurnId == "root_162")
+        #expect(decodedTurn.rawJSON.objectValue?["rootTurnId"] == .string("root_162"))
+
+        let activity: JSONValue = .object([
+            "type": .string("subAgentActivity"), "kind": .string("started"),
+            "agentPath": .string("/root/child"), "agentThreadId": .string("child"),
+            "id": .string("activity"), "model": .string("gpt-6"),
+            "reasoningEffort": .string("high"),
+        ])
+        let decodedActivity = try decodeJSONValue(ThreadItem.self, from: activity)
+        if case .subAgentActivity(let payload) = decodedActivity {
+            #expect(payload.model == "gpt-6")
+            #expect(payload.reasoningEffort == .high)
+        } else {
+            Issue.record("Expected subagent activity")
+        }
+        #expect(decodedActivity.rawJSON == activity)
+
+        let oauth = McpServerOauthLoginCompletedNotification(loginId: "login_162", name: "mcp", success: true)
+        let decodedOAuth = try decodeJSONValue(McpServerOauthLoginCompletedNotification.self, from: oauth.rawJSON)
+        #expect(decodedOAuth.loginId == "login_162")
+        let skill = SkillSummary(description: "Check", enabled: true, name: "checks", path: .init(rawValue: "legacy:checks"))
+        #expect(try decodeJSONValue(SkillSummary.self, from: skill.rawJSON).path?.rawValue == "legacy:checks")
+        let error = MisalignmentErrorDetails(reviewTarget: "block_162")
+        #expect(try decodeJSONValue(MisalignmentErrorDetails.self, from: error.rawJSON).reviewTarget == "block_162")
+    }
+
+    @Test(arguments: ["completed", "failed"])
+    func predictionNotificationsRoundTrip(resultType: String) throws {
+        var result: JSONObject = ["type": .string(resultType)]
+        if resultType == "completed" { result["text"] = .string("Next step") }
+        let params: JSONValue = .object([
+            "result": .object(result), "sourceTurnId": .string("turn_162"),
+            "threadId": .string("thread_162"), "futureField": .bool(true),
+        ])
+        let notification = CodexNotification(method: "thread/prediction/updated", params: params)
+        #expect(notification.threadID == "thread_162")
+        if case .threadPredictionUpdated(let payload) = notification.payload {
+            #expect(payload.sourceTurnId == "turn_162")
+            #expect(payload.result.rawJSON == .object(result))
+            #expect(payload.rawJSON == params)
+        } else {
+            Issue.record("Expected typed prediction notification")
+        }
+    }
+
+    @Test
+    func turnOptionsDoNotCarryOverBetweenRequests() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
+            turnStartResponses: (0..<4).map { appServerTurnStartResponse(id: "turn_\($0)") },
+            turnStartSequences: [[], [], [], []]
+        ))
+        let client = CodexRPCClient(config: stub.makeConfig())
+        _ = try await client.initialize()
+        for program in [CyberAccessProgram.daybreakBlue, .daybreakRed, .standard] {
+            _ = try await client.turnStart(threadID: "thread_162", input: [.text("Work")], options: .init(
+                cyberAccessProgram: program, parentTurnID: "parent", rootTurnID: "root"
+            ))
+        }
+        _ = try await client.turnStart(threadID: "thread_162", input: [.text("Defaults")])
+        let messages = try stub.appServerMessages(forInvocation: 0)
+        let params = messages.filter { $0.stringValue(forKey: "method") == "turn/start" }
+            .compactMap { $0.objectValue(forKey: "params") }
+        #expect(params.count == 4)
+        #expect(params.map { $0["cyberAccessProgram"] } == [.string("daybreakBlue"), .string("daybreakRed"), .string("standard"), nil])
+        #expect(params.map { $0["parentTurnId"] } == [.string("parent"), .string("parent"), .string("parent"), nil])
+        #expect(params.map { $0["rootTurnId"] } == [.string("root"), .string("root"), .string("root"), nil])
+        await client.close()
+    }
+
+    @Test
     func environmentConnectionNotificationsDecodeFromRegistry() throws {
         let params: JSONValue = .object([
             "environmentId": .string("environment_149"),
@@ -851,8 +932,8 @@ struct AppServerSDKTests {
         }
     }
 
-    @Test
-    func lowLevelClientSupportsThreadDeleteAndGoals() async throws {
+    @Test(arguments: [nil, ThreadGoalMutationOrigin.user, .automatic])
+    func lowLevelClientSupportsThreadDeleteAndGoals(origin: ThreadGoalMutationOrigin?) async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
         let goal = ThreadGoal(
@@ -878,11 +959,12 @@ struct AppServerSDKTests {
             threadID: "thread_goal",
             objective: "Ship the sync",
             status: .active,
-            tokenBudget: 4000
+            tokenBudget: 4000,
+            origin: origin
         )
         #expect(set.goal.objective == "Ship the sync")
         #expect(try await client.threadGoalGet(threadID: "thread_goal").goal?.status == .active)
-        #expect(try await client.threadGoalClear(threadID: "thread_goal").cleared)
+        #expect(try await client.threadGoalClear(threadID: "thread_goal", origin: origin).cleared)
         _ = try await client.threadDelete(threadID: "thread_goal")
 
         let messages = try stub.appServerMessages(forInvocation: 0)
@@ -895,6 +977,9 @@ struct AppServerSDKTests {
         #expect(params["objective"] == .string("Ship the sync"))
         #expect(params["status"] == .string("active"))
         #expect(params["tokenBudget"] == .number(4000))
+        #expect(params["origin"] == origin?.rawJSON)
+        let clearParams = try #require(messages.first { $0.stringValue(forKey: "method") == "thread/goal/clear" }?.objectValue(forKey: "params"))
+        #expect(clearParams["origin"] == origin?.rawJSON)
         await client.close()
     }
 

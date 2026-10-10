@@ -41,12 +41,12 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `a956835d020762cb2b570053af06f643a11c0ecc` (`rust-v0.160.0`)
+- Vendored upstream commit: `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d` (`rust-v0.162.1`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
-The `rust-v0.160.0` sync adds generated `flexUnavailable` and `tooManyDenials` error cases and the `promax` plan type. This stable release's schema omits the earlier plugin extension definitions, so the generated plugin extension types and `PluginSummary.extensions` property are no longer present. Unknown plugin fields remain available through `PluginSummary.additionalFields`.
+The `rust-v0.162.1` sync adds thread prediction notifications, partial-answer phases, turn root IDs, subagent model/reasoning metadata, MCP OAuth login IDs, and misalignment review targets. `TurnOptions` supports per-turn `cyberAccessProgram`, `parentTurnID`, and `rootTurnID`; goal set/clear APIs accept optional `origin` provenance (`.user` or `.automatic`). Omitted provenance does not supply user authorization. Skill paths now use `LegacyAppPathString` rather than `AbsolutePathBuf`.
 
 See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files, the raw app-server schema parity target used for this sync, and the remaining schema-only request surfaces not wrapped by the Swift convenience API yet.
 

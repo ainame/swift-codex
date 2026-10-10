@@ -6,17 +6,20 @@ import Foundation
 public struct MisalignmentErrorDetails: ObjectModel {
     public var detailedExplanation: String?
     public var errorType: String?
+    public var reviewTarget: String?
     public var steer: MisalignmentSteer?
     public var additionalFields: JSONObject
 
     public init(
         detailedExplanation: String? = nil,
         errorType: String? = nil,
+        reviewTarget: String? = nil,
         steer: MisalignmentSteer? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.detailedExplanation = detailedExplanation
         self.errorType = errorType
+        self.reviewTarget = reviewTarget
         self.steer = steer
         self.additionalFields = additionalFields
     }
@@ -30,6 +33,7 @@ public struct MisalignmentErrorDetails: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.detailedExplanation = payload.detailedExplanation
         self.errorType = payload.errorType
+        self.reviewTarget = payload.reviewTarget
         self.steer = payload.steer
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -42,20 +46,23 @@ public struct MisalignmentErrorDetails: ObjectModel {
         Payload(
             detailedExplanation: detailedExplanation,
             errorType: errorType,
+            reviewTarget: reviewTarget,
             steer: steer
         )
     }
 
-    private static let knownKeys: Set<String> = ["detailedExplanation", "errorType", "steer"]
+    private static let knownKeys: Set<String> = ["detailedExplanation", "errorType", "reviewTarget", "steer"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var detailedExplanation: String?
         var errorType: String?
+        var reviewTarget: String?
         var steer: MisalignmentSteer?
 
         enum CodingKeys: String, CodingKey {
             case detailedExplanation
             case errorType
+            case reviewTarget
             case steer
         }
     }

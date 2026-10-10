@@ -69,6 +69,7 @@ ROOT_TYPES = {
     "ThreadDeleteResponse",
     "ThreadForkResponse",
     "ThreadGoalClearResponse",
+    "ThreadGoalMutationOrigin",
     "ThreadGoalGetResponse",
     "ThreadGoalSetResponse",
     "ThreadItem",
@@ -593,6 +594,9 @@ def render_union(name: str, schema: dict, registry: Registry) -> str:
             continue
 
         type_name = swift_type(registry, variant, f"{name}Variant{index}")
+        # Unconstrained branches already round-trip through the unknown case.
+        if type_name == "JSONValue":
+            continue
         raw_variant_name = type_name
         case_name = union_case_name(name, raw_variant_name, f"variant{index}")
         associated_cases.append((case_name, type_name))

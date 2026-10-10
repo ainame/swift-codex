@@ -5,6 +5,7 @@ import Foundation
 
 public struct McpServerOauthLoginCompletedNotification: ObjectModel {
     public var error: String?
+    public var loginId: String?
     public var name: String
     public var success: Bool
     public var threadId: String?
@@ -12,12 +13,14 @@ public struct McpServerOauthLoginCompletedNotification: ObjectModel {
 
     public init(
         error: String? = nil,
+        loginId: String? = nil,
         name: String,
         success: Bool,
         threadId: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.error = error
+        self.loginId = loginId
         self.name = name
         self.success = success
         self.threadId = threadId
@@ -32,6 +35,7 @@ public struct McpServerOauthLoginCompletedNotification: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "McpServerOauthLoginCompletedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.error = payload.error
+        self.loginId = payload.loginId
         self.name = payload.name
         self.success = payload.success
         self.threadId = payload.threadId
@@ -45,22 +49,25 @@ public struct McpServerOauthLoginCompletedNotification: ObjectModel {
     private var payload: Payload {
         Payload(
             error: error,
+            loginId: loginId,
             name: name,
             success: success,
             threadId: threadId
         )
     }
 
-    private static let knownKeys: Set<String> = ["error", "name", "success", "threadId"]
+    private static let knownKeys: Set<String> = ["error", "loginId", "name", "success", "threadId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var error: String?
+        var loginId: String?
         var name: String
         var success: Bool
         var threadId: String?
 
         enum CodingKeys: String, CodingKey {
             case error
+            case loginId
             case name
             case success
             case threadId

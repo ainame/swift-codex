@@ -8,7 +8,7 @@ public struct SkillSummary: ObjectModel {
     public var enabled: Bool
     public var interface: SkillInterface?
     public var name: String
-    public var path: AbsolutePathBuf?
+    public var path: LegacyAppPathString?
     public var shortDescription: String?
     public var additionalFields: JSONObject
 
@@ -17,7 +17,7 @@ public struct SkillSummary: ObjectModel {
         enabled: Bool,
         interface: SkillInterface? = nil,
         name: String,
-        path: AbsolutePathBuf? = nil,
+        path: LegacyAppPathString? = nil,
         shortDescription: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
@@ -68,7 +68,7 @@ public struct SkillSummary: ObjectModel {
         var enabled: Bool
         var interface: SkillInterface?
         var name: String
-        var path: AbsolutePathBuf?
+        var path: LegacyAppPathString?
         var shortDescription: String?
 
         enum CodingKeys: String, CodingKey {

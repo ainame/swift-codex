@@ -8,6 +8,8 @@ public struct SubAgentActivityThreadItem2: ObjectModel {
     public var agentThreadId: String
     public var id: String
     public var kind: SubAgentActivityKind
+    public var model: String?
+    public var reasoningEffort: ReasoningEffort?
     public var type: SubAgentActivityThreadItemType2
     public var additionalFields: JSONObject
 
@@ -16,6 +18,8 @@ public struct SubAgentActivityThreadItem2: ObjectModel {
         agentThreadId: String,
         id: String,
         kind: SubAgentActivityKind,
+        model: String? = nil,
+        reasoningEffort: ReasoningEffort? = nil,
         type: SubAgentActivityThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
@@ -23,6 +27,8 @@ public struct SubAgentActivityThreadItem2: ObjectModel {
         self.agentThreadId = agentThreadId
         self.id = id
         self.kind = kind
+        self.model = model
+        self.reasoningEffort = reasoningEffort
         self.type = type
         self.additionalFields = additionalFields
     }
@@ -38,6 +44,8 @@ public struct SubAgentActivityThreadItem2: ObjectModel {
         self.agentThreadId = payload.agentThreadId
         self.id = payload.id
         self.kind = payload.kind
+        self.model = payload.model
+        self.reasoningEffort = payload.reasoningEffort
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -52,17 +60,21 @@ public struct SubAgentActivityThreadItem2: ObjectModel {
             agentThreadId: agentThreadId,
             id: id,
             kind: kind,
+            model: model,
+            reasoningEffort: reasoningEffort,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentPath", "agentThreadId", "id", "kind", "type"]
+    private static let knownKeys: Set<String> = ["agentPath", "agentThreadId", "id", "kind", "model", "reasoningEffort", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var agentPath: String
         var agentThreadId: String
         var id: String
         var kind: SubAgentActivityKind
+        var model: String?
+        var reasoningEffort: ReasoningEffort?
         var type: SubAgentActivityThreadItemType2
 
         enum CodingKeys: String, CodingKey {
@@ -70,6 +82,8 @@ public struct SubAgentActivityThreadItem2: ObjectModel {
             case agentThreadId
             case id
             case kind
+            case model
+            case reasoningEffort
             case type
         }
     }
