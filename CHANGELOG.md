@@ -8,6 +8,18 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- Added experimental client-defined dynamic tools with function/namespace registration, typed async call handlers, and tool result models.
+
+### Fixed
+
+- Accept integer server request IDs and echo their JSON type; return a tool failure when no dynamic-tool handler is configured.
+
+### Changed
+
+- Audit all upstream RPCs and experimental request fields during sync, including existing deferred gaps and runtime support beyond generated models.
+
 ## [0.162.1] - 2026-10-10
 
 ### Added

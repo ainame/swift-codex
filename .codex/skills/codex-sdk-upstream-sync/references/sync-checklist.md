@@ -35,20 +35,30 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
   - `sdk/python/examples/`
   - `sdk/python/tests/`
 
-## 3. Check release ancestry before moving vendor
+## 3. Audit coverage and existing gaps
+
+- Generate the complete method and experimental-field inventory with `python3 Scripts/audit_app_server_surface.py > /tmp/swift-codex-surface.md`.
+- Compare it to the previous basis and carry forward the deferred gaps in `UPSTREAM.md`, including unchanged features.
+- Read Rust client/server wire declarations and standalone server-request exports. Stable combined schemas can filter experimental fields and methods.
+- Classify reviewed gaps as implemented, intentionally unsupported (with a reason), or deferred. Source matches are not evidence of semantic parity.
+- For selected features, trace public options → serialization → dispatch → response → turn/item lifecycle and test the full path.
+- Use upstream request IDs of both integer and string types. Check capability negotiation, missing handlers, generic-handler precedence, arbitrary JSON, and start/resume/fork applicability as relevant.
+- Do not report full app-server parity based on deterministic generation or existing tests alone.
+
+## 4. Check release ancestry before moving vendor
 
 - Confirm whether the current vendored commit is behind or ahead of the latest stable release in the relevant paths.
 - Do not assume “latest release” means “newer than current pin”.
 - If moving the submodule pointer would drop already-vendored behavior, call that out explicitly.
 
-## 4. Port the implementation
+## 5. Port the implementation
 
 - Update Swift sources for reviewed behavior changes.
 - Regenerate typed models when the vendored schema changed.
 - Add or revise tests for each ported change.
 - Keep intentional Swift-only differences explicit.
 
-## 5. Update metadata
+## 6. Update metadata
 
 - Update `UPSTREAM.md`:
   - vendored checkout path and pinned commit
@@ -68,19 +78,19 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
 - Update `NOTICE` only if legal attribution changed.
 - If the repo versions releases to match upstream, update the visible release version references to that same upstream version.
 
-## 6. Verify
+## 7. Verify
 
 - Run `swift test` for behavior changes.
 - Run `swift build` if tests are not the right verification target.
 - Build examples if public API changed.
 
-## 7. Ship Flow
+## 8. Ship Flow
 
 - If the sync should ship immediately, open a PR for the sync branch first.
 - Merge the PR before creating the release tag.
 - Switch to the latest `main` and prepare the matching repository release there.
 
-## 8. Report
+## 9. Report
 
 Include:
 

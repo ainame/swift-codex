@@ -518,7 +518,7 @@ struct AppServerScenario: Encodable {
 
 enum AppServerScriptStep: Encodable {
     case notification(method: String, params: JSONObject)
-    case request(id: String, method: String, params: JSONValue)
+    case request(id: JSONValue, method: String, params: JSONValue)
 
     private enum CodingKeys: String, CodingKey {
         case kind

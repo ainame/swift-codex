@@ -201,7 +201,10 @@ actor CodexRPCTransport {
             let message = try JSONDecoder().decode(JSONObject.self, from: data)
 
             if let method = message.stringValue(forKey: "method") {
-                if let requestID = message.stringValue(forKey: "id") {
+                if let requestID = message["id"] {
+                    guard isValidServerRequestID(requestID) else {
+                        throw CodexError.invalidRequestID
+                    }
                     try await handleServerRequest(
                         method: method,
                         requestID: requestID,
@@ -217,7 +220,7 @@ actor CodexRPCTransport {
             }
 
             guard let requestID = message.stringValue(forKey: "id") else {
-            throw CodexError.invalidRequestID
+                throw CodexError.invalidRequestID
             }
 
             if let errorPayload = message["error"] {
@@ -243,18 +246,27 @@ actor CodexRPCTransport {
         }
     }
 
-    private func handleServerRequest(method: String, requestID: String, params: JSONValue?) async throws {
+    private func isValidServerRequestID(_ id: JSONValue) -> Bool {
+        switch id {
+        case .string: return true
+        case .number(let value):
+            return value.isFinite && value.rounded() == value
+        default: return false
+        }
+    }
+
+    private func handleServerRequest(method: String, requestID: JSONValue, params: JSONValue?) async throws {
         logger.debug(
             "Handling server request",
             metadata: [
                 "method": .string(method),
-                "request_id": .string(requestID),
+                "request_id": .string(String(describing: requestID)),
             ]
         )
         let result = await makeServerRequestResult(method: method, params: params)
         try send(
             .object([
-                "id": .string(requestID),
+                "id": requestID,
                 "result": result.jsonValue,
             ])
         )
@@ -267,6 +279,19 @@ actor CodexRPCTransport {
             return await serverRequestHandler(request)
         }
 
+        if method == "item/tool/call" {
+            guard let params, let request = try? decode(DynamicToolCallParams.self, from: params) else {
+                return .dynamicToolCall(DynamicToolCallResponse(contentItems: [], success: false))
+            }
+            if let handler = config.dynamicToolCallHandler {
+                return .dynamicToolCall(await handler(request))
+            }
+            return .dynamicToolCall(DynamicToolCallResponse(
+                contentItems: [.inputText(InputTextDynamicToolCallOutputContentItem(
+                    text: "No dynamic tool handler registered for \(request.tool)", type: .inputText
+                ))], success: false
+            ))
+        }
         let objectParams = params?.objectValue
         switch method {
         case "item/commandExecution/requestApproval":
@@ -381,6 +406,11 @@ actor CodexRPCTransport {
                     reason: objectParams?.stringValue(forKey: "reason")
                 )
             )
+        case "item/tool/call":
+            if let params, let request = try? decode(DynamicToolCallParams.self, from: params) {
+                return .dynamicToolCall(request)
+            }
+            return .unknown(method: method, params: params)
         case "item/fileChange/requestApproval":
             return .fileChangeApproval(
                 FileChangeApprovalRequest(
