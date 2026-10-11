@@ -8,31 +8,22 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
-### Added
-
-- Added experimental client-defined dynamic tools with function/namespace registration, typed async call handlers, and tool result models.
-
-### Fixed
-
-- Accept integer server request IDs and echo their JSON type; return a tool failure when no dynamic-tool handler is configured.
-
-### Changed
-
-- Audit all upstream RPCs and experimental request fields during sync, including existing deferred gaps and runtime support beyond generated models.
-
-## [0.162.1] - 2026-10-10
+## [0.162.1] - 2026-10-11
 
 ### Added
 
+- Added experimental client-defined dynamic tools with function/namespace registration, typed async call handlers, and tool result models. [#30](https://github.com/ainame/swift-codex/pull/30)
 - Added generated thread prediction notifications/results, partial-answer phases, turn root IDs, subagent model/reasoning metadata, MCP OAuth login IDs, and misalignment review targets. [#29](https://github.com/ainame/swift-codex/pull/29)
 - Added per-turn cyber access selection and parent/root turn IDs to `TurnOptions`, plus optional mutation origin provenance to goal set/clear APIs. [#29](https://github.com/ainame/swift-codex/pull/29)
 
 ### Changed
 
+- Audit all upstream RPCs and experimental request fields during sync, including existing deferred gaps and runtime support beyond generated models. [#30](https://github.com/ainame/swift-codex/pull/30)
 - Updated the vendored upstream basis to `rust-v0.162.1` (`092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`). Generated skill paths now use `LegacyAppPathString` instead of `AbsolutePathBuf`; callers using the old wrapper type must migrate. [#29](https://github.com/ainame/swift-codex/pull/29)
 
 ### Fixed
 
+- Accept integer server request IDs and echo their JSON type; return a tool failure when no dynamic-tool handler is configured. [#30](https://github.com/ainame/swift-codex/pull/30)
 - Kept unconstrained schema union branches in the existing `.unknown(JSONValue)` fallback, preserving unknown error decoding without introducing a redundant generated enum case. [#29](https://github.com/ainame/swift-codex/pull/29)
 
 ## [0.160.0] - 2026-10-03
