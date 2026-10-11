@@ -59,17 +59,21 @@ public struct FileChangeApprovalRequest: Sendable, Hashable, Codable {
 public enum ServerRequest: Sendable, Hashable, Codable {
     case commandApproval(CommandApprovalRequest)
     case fileChangeApproval(FileChangeApprovalRequest)
+    case dynamicToolCall(DynamicToolCallParams)
     case unknown(method: String, params: JSONValue?)
 }
 
 public enum ServerRequestResult: Sendable, Hashable, Codable {
     case approval(ApprovalDecision)
     case json(JSONValue)
+    case dynamicToolCall(DynamicToolCallResponse)
 
     var jsonValue: JSONValue {
         switch self {
         case .approval(let decision):
             return .object(["decision": .string(decision == .approve ? "accept" : "decline")])
+        case .dynamicToolCall(let response):
+            return response.rawJSON
         case .json(let value):
             return value
         }
@@ -94,6 +98,7 @@ public struct RunResult: Sendable, Hashable, Codable {
 
 public struct CodexConfig: Sendable {
     public typealias ServerRequestHandler = @Sendable (ServerRequest) async -> ServerRequestResult
+    public typealias DynamicToolCallHandler = @Sendable (DynamicToolCallParams) async -> DynamicToolCallResponse
     public typealias CommandApprovalHandler = @Sendable (CommandApprovalRequest) async -> ApprovalDecision
     public typealias FileChangeApprovalHandler = @Sendable (FileChangeApprovalRequest) async -> ApprovalDecision
 
@@ -108,7 +113,9 @@ public struct CodexConfig: Sendable {
     public var clientTitle: String
     public var clientVersion: String
     public var experimentalAPI: Bool
+    /// A custom server request handler takes precedence over specialized handlers.
     public var serverRequestHandler: ServerRequestHandler?
+    public var dynamicToolCallHandler: DynamicToolCallHandler?
     public var commandApprovalHandler: CommandApprovalHandler
     public var fileChangeApprovalHandler: FileChangeApprovalHandler
 
@@ -125,6 +132,7 @@ public struct CodexConfig: Sendable {
         clientVersion: String = "dev",
         experimentalAPI: Bool = true,
         serverRequestHandler: ServerRequestHandler? = nil,
+        dynamicToolCallHandler: DynamicToolCallHandler? = nil,
         commandApprovalHandler: @escaping CommandApprovalHandler = { _ in .approve },
         fileChangeApprovalHandler: @escaping FileChangeApprovalHandler = { _ in .approve }
     ) {
@@ -140,6 +148,7 @@ public struct CodexConfig: Sendable {
         self.clientVersion = clientVersion
         self.experimentalAPI = experimentalAPI
         self.serverRequestHandler = serverRequestHandler
+        self.dynamicToolCallHandler = dynamicToolCallHandler
         self.commandApprovalHandler = commandApprovalHandler
         self.fileChangeApprovalHandler = fileChangeApprovalHandler
     }
@@ -284,10 +293,17 @@ public actor CodexRPCClient {
     }
 
     public func threadStart(options: ThreadOptions = .init()) async throws -> ThreadStartResponse {
-        try await request("thread/start", params: makeThreadStartParams(options), responseType: ThreadStartResponse.self)
+        var params = makeThreadStartParams(options)
+        if let tools = options.dynamicTools {
+            params["dynamicTools"] = .array(tools.map(\.rawJSON))
+        }
+        return try await request("thread/start", params: params, responseType: ThreadStartResponse.self)
     }
 
     public func threadResume(threadID: String, options: ThreadOptions = .init()) async throws -> ThreadResumeResponse {
+        guard options.dynamicTools == nil else {
+            throw CodexError.invalidConfig("dynamicTools can only be registered with thread/start; resumed and forked threads inherit their saved tools")
+        }
         var params = makeThreadStartParams(options)
         params["threadId"] = .string(threadID)
         return try await request("thread/resume", params: params, responseType: ThreadResumeResponse.self)
@@ -309,6 +325,9 @@ public actor CodexRPCClient {
     }
 
     public func threadFork(threadID: String, options: ThreadOptions = .init()) async throws -> ThreadForkResponse {
+        guard options.dynamicTools == nil else {
+            throw CodexError.invalidConfig("dynamicTools can only be registered with thread/start; resumed and forked threads inherit their saved tools")
+        }
         var params = makeThreadStartParams(options)
         params["threadId"] = .string(threadID)
         return try await request("thread/fork", params: params, responseType: ThreadForkResponse.self)

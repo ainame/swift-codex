@@ -5,6 +5,8 @@ public struct ThreadOptions: Sendable, Hashable, Codable {
     public var config: JSONObject?
     public var cwd: String?
     public var developerInstructions: String?
+    /// Experimental client tools registered on thread/start. Resume and fork inherit saved tools.
+    public var dynamicTools: [DynamicToolSpec]?
     public var ephemeral: Bool?
     public var model: String?
     public var modelProvider: String?
@@ -22,6 +24,7 @@ public struct ThreadOptions: Sendable, Hashable, Codable {
         config: JSONObject? = nil,
         cwd: String? = nil,
         developerInstructions: String? = nil,
+        dynamicTools: [DynamicToolSpec]? = nil,
         ephemeral: Bool? = nil,
         model: String? = nil,
         modelProvider: String? = nil,
@@ -38,6 +41,7 @@ public struct ThreadOptions: Sendable, Hashable, Codable {
         self.config = config
         self.cwd = cwd
         self.developerInstructions = developerInstructions
+        self.dynamicTools = dynamicTools
         self.ephemeral = ephemeral
         self.model = model
         self.modelProvider = modelProvider

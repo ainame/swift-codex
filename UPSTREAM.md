@@ -9,9 +9,45 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 - Vendored upstream commit: `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
 - Reviewed JSON-RPC basis commit SHA: `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
 - Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
-- Last reviewed date: `2026-10-10`
+- Last reviewed date: `2026-10-11`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
+
+## Coverage Audit (2026-10-11)
+
+Basis remains `rust-v0.162.1` at `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`;
+GitHub's latest stable release was checked again on 2026-10-11. This follow-up
+adds raw app-server experimental dynamic tools, not a new upstream basis.
+
+Generate the complete inventory with `python3 Scripts/audit_app_server_surface.py`.
+It currently enumerates 173 client methods and 11 server methods from stable JSON
+exports plus Rust wire declarations. Source matches indicate candidates for review,
+not implemented feature counts. Check the inventory on each sync and carry these
+unresolved gaps forward, even when upstream has not changed them.
+
+| Reviewed feature | Status and evidence |
+| --- | --- |
+| `thread/start.dynamicTools` | Implemented: function/namespace specs, deferred tool flag, public thread options, start-only serialization; resume/fork reject attempts to replace saved tools. |
+| `item/tool/call` | Implemented: generated params/results from standalone upstream exports, typed handler and generic handler dispatch, failure response without a handler, text/image/audio results, arbitrary JSON and unknown-field preservation. |
+| Server request IDs | Implemented: string/integer IDs accepted and echoed with their original JSON type; regression tests cover both. Outbound SDK requests still use string IDs. |
+| Async server handler scheduling | Deferred: handlers run on the input path and must not await another RPC on the same client. Independent handler dispatch/cancellation is not yet implemented. |
+| Approval request extensions | Deferred: existing command/file approval wrappers omit newer metadata and decision variants; the generic handler retains existing raw-JSON escape hatches. |
+| Other server methods | Deferred: `account/chatgptAuthTokens/refresh`, `attestation/generate`, `currentTime/read`, `item/permissions/requestApproval`, `item/tool/requestUserInput`, and `mcpServer/elicitation/request` have no dedicated Swift handlers. |
+| Legacy server approvals | Intentionally unsupported by specialized handlers: `applyPatchApproval` and `execCommandApproval` belong to legacy turn APIs; use the generic handler if required. |
+| Other client request surfaces | Deferred: broader account/auth/configuration, environment, plugin sharing, permission profiles, process/fs, realtime, thread-history/settings, MCP read/call and other unwrapped methods remain raw-RPC-only. Run the inventory for the full method/field list; do not infer convenience support from generated models. |
+| Other experimental request fields | Deferred: fields such as thread runtime workspace roots, permission profiles, history mode, environments, selected capability roots, and daybreak options remain outside the existing Swift convenience APIs. |
+| Python SDK orchestration | Deferred: prior notification coalescing, cancellation recovery, thread start locking, logical goal operations, independent turn streams and history cursor/anchor gaps remain. |
+
+Reviewed source files include `app-server-protocol/src/protocol/{common.rs,v2/thread.rs,v2/item.rs}`,
+`schema/json/{ServerRequest,DynamicToolCallParams,DynamicToolCallResponse}.json`,
+`protocol/src/dynamic_tools.rs`, and `app-server/src/{dynamic_tools,outgoing_message}.rs`.
+Stable `ThreadStartParams` omits `dynamicTools`, and the combined v2 schema omits
+server-call params/results, so stable-only schema regeneration cannot port this flow.
+Verification: local SDK tests cover registration, typed dispatch, original request IDs,
+responses and item lifecycle. The upstream `0.162.1` app-server accepted function and
+namespace registration with `experimentalApi: true` in an isolated ephemeral thread.
+That registration smoke test used direct JSON-RPC; live model-driven invocation and
+application UI rendering have not been verified.
 
 ## How To Keep This In Sync
 

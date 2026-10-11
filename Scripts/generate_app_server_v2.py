@@ -33,6 +33,9 @@ SWIFT_RESERVED = {
 }
 
 ROOT_TYPES = {
+    "DynamicToolSpec",
+    "DynamicToolCallParams",
+    "DynamicToolCallResponse",
     "ExternalAgentConfigImportHistoriesReadResponse",
     "ExternalAgentConfigImportHistory",
     "GetAccountRateLimitsParams",
@@ -871,6 +874,12 @@ def main() -> None:
     global REGISTRY
     schema = json.loads(SCHEMA_PATH.read_text())
     definitions = schema.get("definitions", {})
+    # Server-request types are exported separately, including experimental APIs
+    # omitted from the stable combined v2 schema. Use upstream files, not copies.
+    for name in ("DynamicToolCallParams", "DynamicToolCallResponse"):
+        standalone = json.loads((SCHEMA_PATH.parent / f"{name}.json").read_text())
+        definitions.update(standalone.pop("definitions", {}))
+        definitions[name] = standalone
     definitions.update(MANUAL_DEFINITIONS)
     REGISTRY = Registry(normalize_object_unions(definitions))
 

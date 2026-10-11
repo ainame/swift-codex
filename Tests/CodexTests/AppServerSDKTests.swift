@@ -1271,8 +1271,8 @@ struct AppServerSDKTests {
         await codex.close()
     }
 
-    @Test
-    func unknownServerRequestsPreserveNonObjectParamsAndResults() async throws {
+    @Test(arguments: [JSONValue.string("unknown-array"), .number(62)])
+    func unknownServerRequestsPreserveNonObjectParamsAndResults(requestID: JSONValue) async throws {
         actor RequestRecorder {
             var request: ServerRequest?
 
@@ -1288,7 +1288,7 @@ struct AppServerSDKTests {
             turnStartResponses: [appServerTurnStartResponse(id: "turn_unknown")],
             turnStartSequences: [[
                 .request(
-                    id: "unknown-array",
+                    id: requestID,
                     method: "host/customRequest",
                     params: .array([.string("first"), .number(2)])
                 ),
@@ -1317,6 +1317,7 @@ struct AppServerSDKTests {
 
         let responses = try stub.appServerResponses(forInvocation: 0)
         let result = try #require(responses.first?["result"])
+        #expect(responses.first?["id"] == requestID)
         #expect(result == .array([.string("ack"), .bool(true)]))
         await codex.close()
     }

@@ -24,6 +24,7 @@ Current implementation includes:
 - typed goal, model-verification, process, remote-control, moderation-metadata, and guardian-warning notifications from the latest upstream registry
 - typed guardian approval actions and collaboration/authentication enum values from the latest reviewed schema
 - typed approval handling for command and file-change requests
+- experimental client-defined dynamic tools, with function/namespace registration and typed async call handlers
 - structured input items with text, remote images, local images, skills, and mentions
 - transport launch overrides for explicit process `cwd` and full argv replacement
 - typed union fallback with `rawJSON`, `additionalFields`, and `.unknown(JSONValue)` support
@@ -67,7 +68,7 @@ Add the package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.137.0")
+    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.162.1")
 ]
 ```
 
@@ -282,6 +283,49 @@ Unknown request methods fall back to:
 
 - `ServerRequest.unknown(method:params:)`
 
+## Client-Defined Tools (Experimental)
+
+Register client tools on a new thread using `ThreadOptions.dynamicTools`, then handle
+`item/tool/call` through `CodexConfig.dynamicToolCallHandler`:
+
+```swift
+let codex = try await Codex(config: .init(dynamicToolCallHandler: { call in
+    guard call.tool == "show_card" else {
+        return DynamicToolCallResponse(contentItems: [], success: false)
+    }
+    // Render call.arguments in your application, on its UI actor if needed.
+    return DynamicToolCallResponse(
+        contentItems: [.inputText(.init(text: "Card displayed", type: .inputText))],
+        success: true
+    )
+}))
+let thread = try await codex.startThread(options: .init(dynamicTools: [
+    .function(.init(
+        description: "Display a card in the client application",
+        inputSchema: ["type": "object", "properties": ["title": ["type": "string"]], "required": ["title"]],
+        name: "show_card",
+        type: .function
+    ))
+]))
+_ = try await thread.run("Display a card titled Hello")
+await codex.close()
+```
+
+`show_card` is an application-defined name; the SDK does not render UI itself.
+Experimental API negotiation is enabled by default (`experimentalAPI: true`).
+Namespaces use `.namespace(...)` with function entries; `deferLoading` controls deferred
+exposure and follows upstream constraints. Tools are registered only by `thread/start`;
+resume and fork inherit saved definitions and reject a non-nil `dynamicTools` option.
+Handlers must be supplied again when connecting to an existing thread.
+
+A custom `serverRequestHandler` takes precedence over specialized handlers and receives
+`ServerRequest.dynamicToolCall`. Return `.dynamicToolCall(response)` or `.json(...)`.
+Without a handler, the SDK returns a tool failure (`success: false`). Requests preserve
+string and integer IDs, arbitrary JSON arguments, and unknown fields. Tool results can
+contain text and inline image/audio data URLs; upstream rejects remote image URLs and
+non-inline audio URLs. Handlers should complete without awaiting another RPC on the same
+client, because server requests currently execute on the transport's input path.
+
 ## Generated Models
 
 Generated protocol models live in:
@@ -296,6 +340,18 @@ Regenerate them with:
 ```bash
 python3 Scripts/generate_app_server_v2.py
 ```
+
+Audit the complete RPC and experimental-field surface with:
+
+```bash
+python3 Scripts/audit_app_server_surface.py > /tmp/swift-codex-surface.md
+```
+
+The combined stable schema omits experimental request fields and server requests.
+The generator imports the standalone upstream dynamic-tool request/response schemas.
+The inventory includes Rust wire declarations and flags source matches for manual
+review; generation and source matches do not establish end-to-end support.
+See `UPSTREAM.md` for the reviewed coverage and deferred gaps.
 
 Forward-compatibility hooks:
 
