@@ -28,16 +28,23 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - Treat `sdk/python/src/openai_codex` as the primary handwritten SDK surface for current releases. Use `sdk/python/src/codex_app_server` only for older releases before the Python package rename.
    - Treat the Python package's `generated/v2_all.py`, `generated/notification_registry.py`, and `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json` as the typed protocol/model basis.
    - Review upstream examples and tests when they clarify intended behavior.
-4. Decide the parity target explicitly.
+4. Audit the complete surface before choosing the delta.
+   - Run `python3 Scripts/audit_app_server_surface.py > /tmp/swift-codex-surface.md` and review the inventory against the previous basis and the unresolved gaps recorded in `UPSTREAM.md`.
+   - Inspect Rust wire declarations in `codex-rs/app-server-protocol/src/protocol/common.rs`, experimental request fields in `src/protocol/v2`, and standalone `schema/json/ServerRequest.json` and related exports. The combined stable v2 schema and Python SDK omit some experimental APIs; they cannot establish full coverage.
+   - Inventory all client requests, request parameters, and server requests, including previously unimplemented features unchanged by this release. Treat source matches and generated types as review candidates, not completed features.
+   - Record each reviewed gap as implemented, intentionally unsupported with a reason, or deferred in `UPSTREAM.md`; carry unresolved gaps forward until verified. Group broader unwrapped RPCs by category and link the reproducible inventory rather than silently dropping them.
+5. Decide the parity target explicitly.
    - Python SDK parity: match the public Python app-server client surface and behavior.
    - Raw app-server schema parity: match protocol features present in the v2 schema even if the Python SDK does not expose them yet.
    - Do not silently switch between these modes. State which one the change is targeting.
-5. Port the changes end to end.
+6. Port the changes end to end.
    - Update implementation files first.
    - Regenerate typed models when the vendored schema changed and this repo’s generator depends on it.
-   - Update or add tests for each behavior change.
+   - Trace each selected feature through public options, wire serialization, incoming dispatch, response encoding, and execution/notification handling. Adding generator roots alone does not complete a feature.
+   - Update or add tests for each behavior change. Use upstream-shaped fixtures, including integer and string JSON-RPC request IDs, experimental capability negotiation, handler precedence, and unavailable-handler behavior when relevant.
+   - Verify both high-level and raw RPC paths where the feature is exposed, and check that start-only fields are not sent on resume/fork. Preserve arbitrary JSON payloads and unknown fields.
    - Preserve intentional Swift-specific deviations unless the user asks to remove them.
-6. Refresh metadata and version references in the same pass.
+7. Refresh metadata and version references in the same pass.
    - If the repository vendors upstream as a submodule, keep the submodule pointer, `UPSTREAM.md`, and `CHANGELOG.md` aligned.
    - Update `UPSTREAM.md` with the exact upstream commit SHA, commit URL, review date, reviewed files or features, parity mode, and intentional deviations.
    - Update `CHANGELOG.md` with the vendored release or basis commit and the user-visible changes from the sync.
@@ -45,10 +52,10 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - Update package or release version references only when the repository’s version should move because of the sync.
    - Update `NOTICE` only when attribution requirements actually changed.
    - If this repository intentionally versions releases to match stable upstream `openai/codex` releases, update those visible version references to the matching upstream version during the sync.
-7. Verify before concluding.
+8. Verify before concluding.
    - Run `swift test` for behavior changes. Use `swift build` only when tests are unavailable or the change is documentation-only.
    - If there is an examples package, build it when the sync touches user-facing API.
-8. Handle the ship flow when requested.
+9. Handle the ship flow when requested.
    - If this process produces any repository changes, always create a PR for the sync branch before finishing. Do this for implementation changes, metadata-only changes, and workflow/skill fixes made during the sync.
    - Commit each meaningful change before opening the PR.
    - Push the branch and open the PR as part of the same run. Do not stop after a local commit when the network and credentials allow PR creation.
@@ -56,10 +63,10 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - If the requested automation should ship the sync immediately, create a PR for the sync branch first.
    - After the PR is merged, switch to the latest `main`, prepare the matching repository release version, tag it without a `v` prefix, and publish the GitHub release from `main`.
    - Do not create the release tag from the topic branch or from a pre-merge commit.
-9. Finish with a focused summary.
+10. Finish with a focused summary.
    - State the upstream commit and release tag used.
    - State whether the work targeted Python SDK parity or raw schema parity.
-   - State the main features or files synced.
+   - State the main features or files synced and distinguish generated model coverage, usable RPC support, local tests, and live integration verification.
    - State which metadata/version files were updated.
    - Call out any upstream areas still not ported.
 
