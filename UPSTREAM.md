@@ -6,27 +6,31 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
-- Reviewed JSON-RPC basis commit SHA: `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`
-- Last reviewed date: `2026-10-11`
+- Vendored upstream commit: `83086188ae0614bd882818ff1aa23f3194962012`
+- Reviewed JSON-RPC basis commit SHA: `83086188ae0614bd882818ff1aa23f3194962012`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/83086188ae0614bd882818ff1aa23f3194962012`
+- Last reviewed date: `2026-10-17`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
-## Coverage Audit (2026-10-11)
+## Coverage Audit (2026-10-17)
 
-Basis remains `rust-v0.162.1` at `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`;
-GitHub's latest stable release was checked again on 2026-10-11. This follow-up
-adds raw app-server experimental dynamic tools, not a new upstream basis.
+Basis: `rust-v0.163.0` at `83086188ae0614bd882818ff1aa23f3194962012`,
+verified against GitHub's latest stable release on 2026-10-17.
+Parity target remains focused raw app-server schema parity.
 
 Generate the complete inventory with `python3 Scripts/audit_app_server_surface.py`.
-It currently enumerates 173 client methods and 11 server methods from stable JSON
+It currently enumerates 175 client methods and 11 server methods from stable JSON
 exports plus Rust wire declarations. Source matches indicate candidates for review,
 not implemented feature counts. Check the inventory on each sync and carry these
 unresolved gaps forward, even when upstream has not changed them.
 
 | Reviewed feature | Status and evidence |
 | --- | --- |
+| `thread/list.excludedThreadIds` | Implemented through `ThreadListOptions.excludedThreadIDs` on raw and high-level list APIs. Nil is omitted; empty and populated arrays are forwarded unchanged. Server validation enforces the 100-ID bound. |
+| `thread/readState/changed` | Implemented typed notification dispatch, thread routing, read/unread position decoding, revision and unknown-field preservation. This does not add a read-state mutation convenience API. |
+| New experimental surfaces | Deferred: `thread/readState/update`, `thread/items/read`, fork prediction mode, and environment WebSocket request IDs. Experimental read-state fields on list/read responses remain in `additionalFields`. |
+| Tool output retention and raw history | Deferred: `TurnToolOutput.retain` is outside the existing turn input API; added encryption/status/annotation/logprob fields remain in raw JSON payloads. |
 | `thread/start.dynamicTools` | Implemented: function/namespace specs, deferred tool flag, public thread options, start-only serialization; resume/fork reject attempts to replace saved tools. |
 | `item/tool/call` | Implemented: generated params/results from standalone upstream exports, typed handler and generic handler dispatch, failure response without a handler, text/image/audio results, arbitrary JSON and unknown-field preservation. |
 | Server request IDs | Implemented: string/integer IDs accepted and echoed with their original JSON type; regression tests cover both. Outbound SDK requests still use string IDs. |
@@ -68,6 +72,15 @@ When porting new behavior from upstream or validating parity:
 ## Sync Notes
 
 ### Unreleased
+
+- Vendored checkout: `vendor/openai-codex` at `83086188ae0614bd882818ff1aa23f3194962012` (`rust-v0.163.0`, published 2026-10-15), verified live on 2026-10-17. The stable release branch diverges from the prior pin at `ac9b5b8380517ded445b09dd3196d8d9e2ba3c59`.
+- Reviewed `sdk/typescript`, Python handwritten runtime, examples/tests, generated `v2_all.py` and notification registry, combined and standalone JSON schemas, and Rust `common.rs`, `v2/thread.rs`, `v2/turn.rs`, and `v2/environment.rs`. TypeScript and handwritten Python runtime behavior are unchanged.
+- Parity target: focused raw app-server schema parity, adding thread-list exclusions and typed read-state notifications. Generated model presence is not full SDK or experimental RPC parity.
+- Read-state notification models cover read, thread-start unread, and turn unread positions. Stable combined schemas omit experimental `readStates`/`readState` response fields; those remain accessible through existing `additionalFields`.
+- New experimental read-state mutation/item-read requests, prediction-mode forks, environment WebSocket IDs, and tool-output retention are deferred. Existing deferred gaps in the audit above remain unchanged.
+- Intentional Swift deviations: async/await APIs and generated root scope are retained. Optional null fields encode as omitted, following existing ObjectModel behavior. No new attribution requirements were identified.
+
+### 0.162.1
 
 - Vendored checkout: `vendor/openai-codex` at `092d3acd6bec3e3a14bdc7e7a2810ab628ab759d` (`rust-v0.162.1`), verified as the latest stable GitHub release on 2026-10-10 the release branch diverges from the previous pin at `c248f6d48b97eb4a2aa56147a0b11b7d763278b9`. The reviewed delta retains prior generated features apart from the documented skill path wrapper change.
 - Reviewed upstream files:

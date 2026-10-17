@@ -574,6 +574,9 @@ public actor CodexRPCClient {
         if let cwd = options.cwd {
             params["cwd"] = cwd.rawJSON
         }
+        if let excludedThreadIDs = options.excludedThreadIDs {
+            params["excludedThreadIds"] = .array(excludedThreadIDs.map(JSONValue.string))
+        }
         if let limit = options.limit {
             params["limit"] = .number(Double(limit))
         }

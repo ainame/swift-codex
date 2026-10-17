@@ -827,6 +827,48 @@ struct AppServerSDKTests {
         #expect(decoded.additionalFields["extensions"] == .object(["futureField": .bool(true)]))
     }
 
+    @Test(arguments: ["read", "threadStart", "turn"])
+    func readStateNotificationsRoundTrip(position: String) throws {
+        let firstUnread: JSONValue = switch position {
+        case "threadStart": .object(["type": .string("threadStart")])
+        case "turn": .object(["type": .string("turn"), "turnId": .string("turn_163")])
+        default: .null
+        }
+        let params: JSONValue = .object([
+            "threadId": .string("thread_163"),
+            "readState": .object(["revision": .string("rev_163"), "firstUnread": firstUnread]),
+            "futureField": .bool(true),
+        ])
+        let notification = CodexNotification(method: "thread/readState/changed", params: params)
+        #expect(notification.threadID == "thread_163")
+        guard case .threadReadStateChanged(let payload) = notification.payload else {
+            Issue.record("Expected typed read-state notification")
+            return
+        }
+        #expect(payload.readState.revision == "rev_163")
+        switch position {
+        case "threadStart":
+            guard case .threadStart = payload.readState.firstUnread else {
+                Issue.record("Expected thread-start unread position")
+                return
+            }
+        case "turn":
+            guard case .turn(let unread) = payload.readState.firstUnread else {
+                Issue.record("Expected turn unread position")
+                return
+            }
+            #expect(unread.turnId == "turn_163")
+        default:
+            #expect(payload.readState.firstUnread == nil)
+        }
+        // ObjectModel omits explicit null optional fields on encoding.
+        var expected = try #require(params.objectValue)
+        if position == "read" {
+            expected["readState"] = .object(["revision": .string("rev_163")])
+        }
+        #expect(payload.rawJSON == .object(expected))
+    }
+
     @Test
     func generatedModelsDecodeRust0162Additions() throws {
         #expect(try decodeJSONValue(MessagePhase.self, from: .string("partial_answer")) == .partialAnswer)
