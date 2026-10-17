@@ -8,13 +8,15 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.163.0] - 2026-10-17
+
 ### Added
 
-- Added `ThreadListOptions.excludedThreadIDs` and typed `thread/readState/changed` notifications with revision tokens and read/unread positions.
+- Added `ThreadListOptions.excludedThreadIDs` and typed `thread/readState/changed` notifications with revision tokens and read/unread positions. [#31](https://github.com/ainame/swift-codex/pull/31)
 
 ### Changed
 
-- Updated the vendored upstream basis to `rust-v0.163.0` (`83086188ae0614bd882818ff1aa23f3194962012`). Experimental read-state mutation, item reads, fork prediction mode, and tool-output retention remain outside the Swift convenience APIs.
+- Updated the vendored upstream basis to `rust-v0.163.0` (`83086188ae0614bd882818ff1aa23f3194962012`). Experimental read-state mutation, item reads, fork prediction mode, and tool-output retention remain outside the Swift convenience APIs. [#31](https://github.com/ainame/swift-codex/pull/31)
 
 ## [0.162.1] - 2026-10-11
 
