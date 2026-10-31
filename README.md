@@ -42,12 +42,12 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `83086188ae0614bd882818ff1aa23f3194962012` (`rust-v0.163.0`)
+- Vendored upstream commit: `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856` (`rust-v0.166.0`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
-The `rust-v0.163.0` sync adds `ThreadListOptions.excludedThreadIDs` and typed thread read-state notifications, including unread positions and revision tokens. Experimental read-state mutation and item-history read endpoints remain raw-RPC-only; experimental read-state fields on list/read responses remain available through `additionalFields`.
+The `rust-v0.166.0` sync adds typed file-ID and inline image generation results, item lifecycle timestamps, native usage cost, and process output-drain status. Image result models now use enum branches (`.fileId(...)` / `.result(...)`), and hook source paths use `LegacyAppPathString`. New sampling, memory, account-session, and feedback requests remain raw-RPC-only; the coverage audit records the remaining gaps.
 
 See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files, the raw app-server schema parity target used for this sync, and the remaining schema-only request surfaces not wrapped by the Swift convenience API yet.
 

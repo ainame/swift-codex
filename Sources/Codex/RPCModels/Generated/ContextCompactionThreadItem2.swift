@@ -4,15 +4,21 @@
 import Foundation
 
 public struct ContextCompactionThreadItem2: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var id: String
     public var type: ContextCompactionThreadItemType2
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         id: String,
         type: ContextCompactionThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.id = id
         self.type = type
         self.additionalFields = additionalFields
@@ -25,6 +31,8 @@ public struct ContextCompactionThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ContextCompactionThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.id = payload.id
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -36,18 +44,24 @@ public struct ContextCompactionThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             id: id,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "id", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var id: String
         var type: ContextCompactionThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case id
             case type
         }

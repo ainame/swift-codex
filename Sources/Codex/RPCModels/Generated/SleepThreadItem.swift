@@ -4,17 +4,23 @@
 import Foundation
 
 public struct SleepThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var durationMs: Int
     public var id: String
     public var type: SleepThreadItemType
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         durationMs: Int,
         id: String,
         type: SleepThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.durationMs = durationMs
         self.id = id
         self.type = type
@@ -28,6 +34,8 @@ public struct SleepThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "SleepThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.durationMs = payload.durationMs
         self.id = payload.id
         self.type = payload.type
@@ -40,20 +48,26 @@ public struct SleepThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             durationMs: durationMs,
             id: id,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["durationMs", "id", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "durationMs", "id", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var durationMs: Int
         var id: String
         var type: SleepThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case durationMs
             case id
             case type

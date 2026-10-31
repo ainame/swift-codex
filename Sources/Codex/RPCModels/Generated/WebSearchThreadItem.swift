@@ -4,6 +4,8 @@
 import Foundation
 
 public struct WebSearchThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var action: WebSearchAction?
     public var id: String
     public var query: String
@@ -12,6 +14,8 @@ public struct WebSearchThreadItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         action: WebSearchAction? = nil,
         id: String,
         query: String,
@@ -19,6 +23,8 @@ public struct WebSearchThreadItem: ObjectModel {
         type: WebSearchThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.action = action
         self.id = id
         self.query = query
@@ -34,6 +40,8 @@ public struct WebSearchThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "WebSearchThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.action = payload.action
         self.id = payload.id
         self.query = payload.query
@@ -48,6 +56,8 @@ public struct WebSearchThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             action: action,
             id: id,
             query: query,
@@ -56,9 +66,11 @@ public struct WebSearchThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["action", "id", "query", "results", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "action", "id", "query", "results", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var action: WebSearchAction?
         var id: String
         var query: String
@@ -66,6 +78,8 @@ public struct WebSearchThreadItem: ObjectModel {
         var type: WebSearchThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case action
             case id
             case query

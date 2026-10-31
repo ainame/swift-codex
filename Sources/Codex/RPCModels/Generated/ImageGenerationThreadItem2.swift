@@ -3,95 +3,58 @@
 
 import Foundation
 
-public struct ImageGenerationThreadItem2: ObjectModel {
-    public var failure: ImageGenerationFailure?
-    public var id: String
-    public var result: String
-    public var revisedPrompt: String?
-    public var savedPath: AbsolutePathBuf?
-    public var status: String
-    public var transparentBackground: Bool?
-    public var type: ImageGenerationThreadItemType2
-    public var additionalFields: JSONObject
+public enum ImageGenerationThreadItem2: RawJSONRepresentable {
 
-    public init(
-        failure: ImageGenerationFailure? = nil,
-        id: String,
-        result: String,
-        revisedPrompt: String? = nil,
-        savedPath: AbsolutePathBuf? = nil,
-        status: String,
-        transparentBackground: Bool? = nil,
-        type: ImageGenerationThreadItemType2,
-        additionalFields: JSONObject = [:]
-    ) {
-        self.failure = failure
-        self.id = id
-        self.result = result
-        self.revisedPrompt = revisedPrompt
-        self.savedPath = savedPath
-        self.status = status
-        self.transparentBackground = transparentBackground
-        self.type = type
-        self.additionalFields = additionalFields
-    }
-
-    public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "ImageGenerationThreadItem2"))
-    }
+    case fileIdThreadItem3(FileIdThreadItem3)
+    case resultThreadItem3(ResultThreadItem3)
+    case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "ImageGenerationThreadItem2")
-        let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.failure = payload.failure
-        self.id = payload.id
-        self.result = payload.result
-        self.revisedPrompt = payload.revisedPrompt
-        self.savedPath = payload.savedPath
-        self.status = payload.status
-        self.transparentBackground = payload.transparentBackground
-        self.type = payload.type
-        self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
+        let raw = try JSONValue(from: decoder)
+        if case .string(let value) = raw {
+            switch value {
+
+            default:
+                break
+            }
+        }
+        if case .object(let object) = raw, let discriminator = object["type"]?.stringValue {
+            switch discriminator {
+            case "imageGeneration":
+                if let value = try? decodeJSONValue(FileIdThreadItem3.self, from: raw) {
+                    self = .fileIdThreadItem3(value)
+                    return
+                }
+                if let value = try? decodeJSONValue(ResultThreadItem3.self, from: raw) {
+                    self = .resultThreadItem3(value)
+                    return
+                }
+            default:
+                break
+            }
+        }
+        if let value = try? decodeJSONValue(FileIdThreadItem3.self, from: raw) { self = .fileIdThreadItem3(value); return }
+        if let value = try? decodeJSONValue(ResultThreadItem3.self, from: raw) { self = .resultThreadItem3(value); return }
+        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "ImageGenerationThreadItem2", to: encoder)
+        switch self {
+
+        case .fileIdThreadItem3(let value): try value.encode(to: encoder)
+        case .resultThreadItem3(let value): try value.encode(to: encoder)
+        case .unknown(let value):
+            try value.encode(to: encoder)
+        }
     }
 
-    private var payload: Payload {
-        Payload(
-            failure: failure,
-            id: id,
-            result: result,
-            revisedPrompt: revisedPrompt,
-            savedPath: savedPath,
-            status: status,
-            transparentBackground: transparentBackground,
-            type: type
-        )
-    }
+    public var rawJSON: JSONValue {
+        switch self {
 
-    private static let knownKeys: Set<String> = ["failure", "id", "result", "revisedPrompt", "savedPath", "status", "transparentBackground", "type"]
-
-    private struct Payload: Codable, Hashable, Sendable {
-        var failure: ImageGenerationFailure?
-        var id: String
-        var result: String
-        var revisedPrompt: String?
-        var savedPath: AbsolutePathBuf?
-        var status: String
-        var transparentBackground: Bool?
-        var type: ImageGenerationThreadItemType2
-
-        enum CodingKeys: String, CodingKey {
-            case failure
-            case id
-            case result
-            case revisedPrompt
-            case savedPath
-            case status
-            case transparentBackground
-            case type
+        case .fileIdThreadItem3(let value): return losslessEncodeJSONValue(value, context: "ImageGenerationThreadItem2.fileIdThreadItem3")
+        case .resultThreadItem3(let value): return losslessEncodeJSONValue(value, context: "ImageGenerationThreadItem2.resultThreadItem3")
+        case .unknown(let value):
+            return value
         }
     }
 }

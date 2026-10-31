@@ -213,14 +213,16 @@ def normalize_object_unions(value):
         return [normalize_object_unions(item) for item in value]
     if not isinstance(value, dict):
         return value
-    result = {key: normalize_object_unions(item) for key, item in value.items()}
+    result = deepcopy(value)
     if result.get("type") == "object" and result.get("properties"):
         for key in ("anyOf", "oneOf"):
             for variant in result.get(key, []):
                 if variant.get("type") == "object" and "$ref" not in variant:
                     variant["properties"] = {**result["properties"], **variant.get("properties", {})}
                     variant["required"] = sorted(set(result.get("required", [])) | set(variant.get("required", [])))
-    return result
+    # Normalize children after merging, so constraints added by an outer union
+    # reach nested unions too (e.g. ThreadItem image-result lifecycle times).
+    return {key: normalize_object_unions(item) for key, item in result.items()}
 
 
 class Registry:
@@ -606,9 +608,18 @@ def render_union(name: str, schema: dict, registry: Registry) -> str:
         discriminant = discriminator_info(variant, name, registry, index)
         if discriminant is not None:
             object_dispatch.append((discriminant[0], discriminant[1], case_name))
-        decode_attempts.append(
-            f"        if let value = try? decodeJSONValue({type_name}.self, from: raw) {{ self = .{case_name}(value); return }}"
-        )
+        if schema_kind(registry.definitions.get(type_name, {})) == "union":
+            # A nested union always decodes via its unknown fallback. Only a
+            # recognized branch is evidence for an untagged outer match.
+            decode_attempts.append(
+                f"        if let value = try? decodeJSONValue({type_name}.self, from: raw) {{\n"
+                f"            if case .unknown = value {{ }} else {{ self = .{case_name}(value); return }}\n"
+                f"        }}"
+            )
+        else:
+            decode_attempts.append(
+                f"        if let value = try? decodeJSONValue({type_name}.self, from: raw) {{ self = .{case_name}(value); return }}"
+            )
 
     string_cases = "\n".join(f"    case {union_string_case(value)}" for value in string_literals)
     string_init_cases = "\n".join(

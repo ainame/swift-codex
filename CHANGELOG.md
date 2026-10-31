@@ -8,6 +8,16 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Changed
+
+- Updated the vendored upstream basis to `rust-v0.166.0` (`6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`). New sampling, memory, account-session, GCP setup, feedback, and experimental request fields remain outside the Swift convenience APIs.
+- Regenerated item lifecycle timestamps, native usage cost, process output-drain status, and new plan/error/hook enum cases. Fixed shared schema fields propagating through nested unions and preserved outer unknown fallbacks when a nested union does not recognize the payload.
+- Breaking generated API changes: image generation items now use file-ID/inline-result enum branches; construct `ResultThreadItem` for inline results. Hook source paths now use `LegacyAppPathString` instead of `AbsolutePathBuf`.
+
+### Added
+
+- Typed image generation file references, generation IDs and input images, with existing notification and history decoding and unknown-field preservation.
+
 ## [0.163.0] - 2026-10-17
 
 ### Added

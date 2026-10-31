@@ -4,6 +4,8 @@
 import Foundation
 
 public struct FunctionCallOutputThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var id: String
     public var name: String
     public var namespace: String?
@@ -12,6 +14,8 @@ public struct FunctionCallOutputThreadItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         id: String,
         name: String,
         namespace: String? = nil,
@@ -19,6 +23,8 @@ public struct FunctionCallOutputThreadItem: ObjectModel {
         type: FunctionCallOutputThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.id = id
         self.name = name
         self.namespace = namespace
@@ -34,6 +40,8 @@ public struct FunctionCallOutputThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "FunctionCallOutputThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.id = payload.id
         self.name = payload.name
         self.namespace = payload.namespace
@@ -48,6 +56,8 @@ public struct FunctionCallOutputThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             id: id,
             name: name,
             namespace: namespace,
@@ -56,9 +66,11 @@ public struct FunctionCallOutputThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "name", "namespace", "output", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "id", "name", "namespace", "output", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var id: String
         var name: String
         var namespace: String?
@@ -66,6 +78,8 @@ public struct FunctionCallOutputThreadItem: ObjectModel {
         var type: FunctionCallOutputThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case id
             case name
             case namespace

@@ -4,6 +4,8 @@
 import Foundation
 
 public struct ReasoningThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var content: [String]?
     public var id: String
     public var summary: [String]?
@@ -11,12 +13,16 @@ public struct ReasoningThreadItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         content: [String]? = nil,
         id: String,
         summary: [String]? = nil,
         type: ReasoningThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.content = content
         self.id = id
         self.summary = summary
@@ -31,6 +37,8 @@ public struct ReasoningThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ReasoningThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.content = payload.content
         self.id = payload.id
         self.summary = payload.summary
@@ -44,6 +52,8 @@ public struct ReasoningThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             content: content,
             id: id,
             summary: summary,
@@ -51,15 +61,19 @@ public struct ReasoningThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["content", "id", "summary", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "content", "id", "summary", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var content: [String]?
         var id: String
         var summary: [String]?
         var type: ReasoningThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case content
             case id
             case summary

@@ -4,6 +4,8 @@
 import Foundation
 
 public struct McpToolCallThreadItem2: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var appContext: McpToolCallAppContext?
     public var arguments: JSONValue
     public var durationMs: Int?
@@ -21,6 +23,8 @@ public struct McpToolCallThreadItem2: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         appContext: McpToolCallAppContext? = nil,
         arguments: JSONValue,
         durationMs: Int? = nil,
@@ -37,6 +41,8 @@ public struct McpToolCallThreadItem2: ObjectModel {
         type: McpToolCallThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.appContext = appContext
         self.arguments = arguments
         self.durationMs = durationMs
@@ -61,6 +67,8 @@ public struct McpToolCallThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "McpToolCallThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.appContext = payload.appContext
         self.arguments = payload.arguments
         self.durationMs = payload.durationMs
@@ -84,6 +92,8 @@ public struct McpToolCallThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             appContext: appContext,
             arguments: arguments,
             durationMs: durationMs,
@@ -101,9 +111,11 @@ public struct McpToolCallThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["appContext", "arguments", "durationMs", "error", "id", "mcpAppResourceUri", "mcpAppUi", "pluginId", "readOnlyHint", "result", "server", "status", "tool", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "appContext", "arguments", "durationMs", "error", "id", "mcpAppResourceUri", "mcpAppUi", "pluginId", "readOnlyHint", "result", "server", "status", "tool", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var appContext: McpToolCallAppContext?
         var arguments: JSONValue
         var durationMs: Int?
@@ -120,6 +132,8 @@ public struct McpToolCallThreadItem2: ObjectModel {
         var type: McpToolCallThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case appContext
             case arguments
             case durationMs

@@ -4,17 +4,23 @@
 import Foundation
 
 public struct ImageViewThreadItem2: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var id: String
     public var path: LegacyAppPathString
     public var type: ImageViewThreadItemType2
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         id: String,
         path: LegacyAppPathString,
         type: ImageViewThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.id = id
         self.path = path
         self.type = type
@@ -28,6 +34,8 @@ public struct ImageViewThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ImageViewThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.id = payload.id
         self.path = payload.path
         self.type = payload.type
@@ -40,20 +48,26 @@ public struct ImageViewThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             id: id,
             path: path,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "path", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "id", "path", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var id: String
         var path: LegacyAppPathString
         var type: ImageViewThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case id
             case path
             case type

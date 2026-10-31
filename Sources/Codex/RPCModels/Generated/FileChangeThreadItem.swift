@@ -4,6 +4,8 @@
 import Foundation
 
 public struct FileChangeThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var changes: [FileUpdateChange]
     public var id: String
     public var status: PatchApplyStatus
@@ -11,12 +13,16 @@ public struct FileChangeThreadItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         changes: [FileUpdateChange],
         id: String,
         status: PatchApplyStatus,
         type: FileChangeThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.changes = changes
         self.id = id
         self.status = status
@@ -31,6 +37,8 @@ public struct FileChangeThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "FileChangeThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.changes = payload.changes
         self.id = payload.id
         self.status = payload.status
@@ -44,6 +52,8 @@ public struct FileChangeThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             changes: changes,
             id: id,
             status: status,
@@ -51,15 +61,19 @@ public struct FileChangeThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["changes", "id", "status", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "changes", "id", "status", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var changes: [FileUpdateChange]
         var id: String
         var status: PatchApplyStatus
         var type: FileChangeThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case changes
             case id
             case status

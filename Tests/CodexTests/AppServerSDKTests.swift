@@ -655,18 +655,18 @@ struct AppServerSDKTests {
         let decodedAgentMessage = try decodeJSONValue(AgentMessageThreadItem.self, from: agentMessage.rawJSON)
         #expect(decodedAgentMessage.delivery == .async)
 
-        let image = ImageGenerationThreadItem(
+        let image = ResultThreadItem(
             failure: .usageLimitExceeded(UsageLimitExceededImageGenerationFailure(
                 limitId: "image_daily",
                 resetsAt: 1_780_000_500,
                 type: .usageLimitExceeded
             )),
             id: "image_149",
-            result: "",
             status: "failed",
-            type: .imageGeneration
+            type: .imageGeneration,
+            result: ""
         )
-        let decodedImage = try decodeJSONValue(ImageGenerationThreadItem.self, from: image.rawJSON)
+        let decodedImage = try decodeJSONValue(ResultThreadItem.self, from: image.rawJSON)
         if case .usageLimitExceeded(let failure) = try #require(decodedImage.failure) {
             #expect(failure.limitId == "image_daily")
         } else {

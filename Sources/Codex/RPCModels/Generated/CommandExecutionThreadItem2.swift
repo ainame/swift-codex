@@ -4,6 +4,8 @@
 import Foundation
 
 public struct CommandExecutionThreadItem2: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var aggregatedOutput: String?
     public var command: String
     public var commandActions: [CommandAction]
@@ -20,6 +22,8 @@ public struct CommandExecutionThreadItem2: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         aggregatedOutput: String? = nil,
         command: String,
         commandActions: [CommandAction],
@@ -35,6 +39,8 @@ public struct CommandExecutionThreadItem2: ObjectModel {
         type: CommandExecutionThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.aggregatedOutput = aggregatedOutput
         self.command = command
         self.commandActions = commandActions
@@ -58,6 +64,8 @@ public struct CommandExecutionThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "CommandExecutionThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.aggregatedOutput = payload.aggregatedOutput
         self.command = payload.command
         self.commandActions = payload.commandActions
@@ -80,6 +88,8 @@ public struct CommandExecutionThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             aggregatedOutput: aggregatedOutput,
             command: command,
             commandActions: commandActions,
@@ -96,9 +106,11 @@ public struct CommandExecutionThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["aggregatedOutput", "command", "commandActions", "cwd", "durationMs", "exitCode", "id", "pluginId", "processId", "scriptPath", "source", "status", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "aggregatedOutput", "command", "commandActions", "cwd", "durationMs", "exitCode", "id", "pluginId", "processId", "scriptPath", "source", "status", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var aggregatedOutput: String?
         var command: String
         var commandActions: [CommandAction]
@@ -114,6 +126,8 @@ public struct CommandExecutionThreadItem2: ObjectModel {
         var type: CommandExecutionThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case aggregatedOutput
             case command
             case commandActions

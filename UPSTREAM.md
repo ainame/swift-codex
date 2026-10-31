@@ -6,27 +6,32 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `83086188ae0614bd882818ff1aa23f3194962012`
-- Reviewed JSON-RPC basis commit SHA: `83086188ae0614bd882818ff1aa23f3194962012`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/83086188ae0614bd882818ff1aa23f3194962012`
-- Last reviewed date: `2026-10-17`
+- Vendored upstream commit: `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`
+- Reviewed JSON-RPC basis commit SHA: `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`
+- Last reviewed date: `2026-10-31`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
-## Coverage Audit (2026-10-17)
+## Coverage Audit (2026-10-31)
 
-Basis: `rust-v0.163.0` at `83086188ae0614bd882818ff1aa23f3194962012`,
-verified against GitHub's latest stable release on 2026-10-17.
+Basis: `rust-v0.166.0` at `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`,
+verified against GitHub's latest stable release on 2026-10-31.
 Parity target remains focused raw app-server schema parity.
 
 Generate the complete inventory with `python3 Scripts/audit_app_server_surface.py`.
-It currently enumerates 175 client methods and 11 server methods from stable JSON
+It currently enumerates 182 client methods and 11 server methods from stable JSON
 exports plus Rust wire declarations. Source matches indicate candidates for review,
 not implemented feature counts. Check the inventory on each sync and carry these
 unresolved gaps forward, even when upstream has not changed them.
 
 | Reviewed feature | Status and evidence |
 | --- | --- |
+| Image generation results | Implemented typed `fileId` and inline `result` variants through existing item notifications and turn history, preserving input images, generation IDs and unknown fields. File references take precedence when both formats are present. |
+| Item lifecycle timestamps | Implemented optional `startedAtMs`/`completedAtMs`, including nested image-result branches; generator propagates shared constraints recursively. |
+| Usage, process and hook models | Implemented native usage cost, process output-drain status, new plan/error/hook enum cases, and legacy hook source paths. These models do not add process or hook management convenience APIs. |
+| New 0.166.0 request surfaces | Deferred: `thread/sample`, `thread/sample/cancel`, `thread/memory/read`, `account/gcp/setup`, `accountSession/list`, `accountSession/switch`, and `feedback/save`; use raw RPC. |
+| New experimental fields | Deferred: fork attachment/prediction MCP controls, attached-thread list filters, ResponsesAPI metadata patching, and realtime voice session IDs. Review delivery is now inline-only upstream; review RPC remains unwrapped. New provider/account/config/plugin/MCP fields outside generator roots remain raw JSON or `additionalFields`. |
 | `thread/list.excludedThreadIds` | Implemented through `ThreadListOptions.excludedThreadIDs` on raw and high-level list APIs. Nil is omitted; empty and populated arrays are forwarded unchanged. Server validation enforces the 100-ID bound. |
 | `thread/readState/changed` | Implemented typed notification dispatch, thread routing, read/unread position decoding, revision and unknown-field preservation. This does not add a read-state mutation convenience API. |
 | New experimental surfaces | Deferred: `thread/readState/update`, `thread/items/read`, fork prediction mode, and environment WebSocket request IDs. Experimental read-state fields on list/read responses remain in `additionalFields`. |
@@ -72,6 +77,14 @@ When porting new behavior from upstream or validating parity:
 ## Sync Notes
 
 ### Unreleased
+
+- Vendored checkout: `vendor/openai-codex` at `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856` (`rust-v0.166.0`, published 2026-10-29), verified live on 2026-10-31. The stable release branch diverges from the prior pin at `703d253ed676c26e4b9708a374b7344b5c1bcc53`; this is an intentional release-to-release update rather than a fast-forward.
+- Reviewed `sdk/typescript`, Python handwritten client, generated `v2_all.py` and notification registry, SDK tests/examples, combined and standalone JSON exports (including `ClientRequest`/`ServerRequest`), and Rust `common.rs` and `v2/{item,thread,turn,review,account,config,hook,process,thread_usage}.rs`. TypeScript, handwritten Python client, notification registry, and server request exports are unchanged.
+- Parity target: focused raw app-server schema parity. Regenerated existing model roots and fixed nested shared-constraint propagation and untagged union fallback selection; no additional RPC convenience APIs are claimed. The complete inventory is 182 client and 11 server methods; prior deferred gaps remain in the coverage audit above.
+- Breaking generated API changes: `ImageGenerationThreadItem` (and its second generated form) is now an enum with file-ID and inline-result branches. Construct `ResultThreadItem` and wrap it in `.result(...)` for inline results; match `.fileId(...)` for file references. `HookRunSummary.sourcePath` now uses `LegacyAppPathString` instead of `AbsolutePathBuf`.
+- Intentional Swift deviations: async/await APIs and existing generated root scope are retained. Optional null fields encode as omitted. No new attribution requirements were identified. Local fixtures validate model/notification/history paths; live model-driven image generation is not verified.
+
+### 0.163.0
 
 - Vendored checkout: `vendor/openai-codex` at `83086188ae0614bd882818ff1aa23f3194962012` (`rust-v0.163.0`, published 2026-10-15), verified live on 2026-10-17. The stable release branch diverges from the prior pin at `ac9b5b8380517ded445b09dd3196d8d9e2ba3c59`.
 - Reviewed `sdk/typescript`, Python handwritten runtime, examples/tests, generated `v2_all.py` and notification registry, combined and standalone JSON schemas, and Rust `common.rs`, `v2/thread.rs`, `v2/turn.rs`, and `v2/environment.rs`. TypeScript and handwritten Python runtime behavior are unchanged.
