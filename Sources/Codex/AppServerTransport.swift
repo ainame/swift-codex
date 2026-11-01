@@ -308,7 +308,7 @@ actor CodexRPCTransport {
         do { try send(
             .object([
                 "id": requestID,
-                "result": result.jsonValue,
+                result.isError ? "error" : "result": result.jsonValue,
             ])
         ) } catch { finishTransport(error: error) }
     }
@@ -318,6 +318,17 @@ actor CodexRPCTransport {
             let request = makeServerRequest(method: method, params: params)
             logger.info("Dispatching custom server request handler", metadata: ["method": .string(method)])
             return await serverRequestHandler(request)
+        }
+
+        let typedRequest: ServerRequest?
+        do {
+            typedRequest = try decodeAdditionalServerRequest(method: method, params: params)
+        } catch {
+            return .error(code: -32602, message: "Invalid params for \(method)")
+        }
+        if let typedRequest {
+            do { return try await dispatchAdditionalServerRequest(typedRequest, method: method) }
+            catch { return .error(code: -32603, message: "Server request handler failed") }
         }
 
         if method == "item/tool/call" {
@@ -435,7 +446,43 @@ actor CodexRPCTransport {
         return ["stderr_tail": .string(stderrTail)]
     }
 
+    private func decodeAdditionalServerRequest(method: String, params: JSONValue?) throws -> ServerRequest? {
+        let value = params ?? .null
+        switch method {
+        case "item/tool/requestUserInput": return .userInput(try decode(ToolRequestUserInputParams.self, from: value))
+        case "mcpServer/elicitation/request":
+            let request = try decode(McpServerElicitationRequestParams.self, from: value)
+            if case .unknown = request { throw CodexError.invalidResponse("Unsupported elicitation params") }
+            return .mcpElicitation(request)
+        case "item/permissions/requestApproval": return .permissionsApproval(try decode(PermissionsRequestApprovalParams.self, from: value))
+        case "account/chatgptAuthTokens/refresh": return .authTokensRefresh(try decode(ChatgptAuthTokensRefreshParams.self, from: value))
+        case "attestation/generate": return .attestation(try decode(AttestationGenerateParams.self, from: value))
+        case "currentTime/read": return .currentTime(try decode(CurrentTimeReadParams.self, from: value))
+        default: return nil
+        }
+    }
+
+    private func dispatchAdditionalServerRequest(_ request: ServerRequest, method: String) async throws -> ServerRequestResult {
+        switch request {
+        case .userInput(let params):
+            if let handler = config.userInputHandler { return .userInput(try await handler(params)) }
+        case .mcpElicitation(let params):
+            if let handler = config.mcpElicitationHandler { return .mcpElicitation(try await handler(params)) }
+        case .permissionsApproval(let params):
+            if let handler = config.permissionsApprovalHandler { return .permissionsApproval(try await handler(params)) }
+        case .authTokensRefresh(let params):
+            if let handler = config.authTokensRefreshHandler { return .authTokensRefresh(try await handler(params)) }
+        case .attestation(let params):
+            if let handler = config.attestationHandler { return .attestation(try await handler(params)) }
+        case .currentTime(let params):
+            if let handler = config.currentTimeHandler { return .currentTime(try await handler(params)) }
+        default: break
+        }
+        return .error(code: -32601, message: "No handler registered for \(method)")
+    }
+
     private func makeServerRequest(method: String, params: JSONValue?) -> ServerRequest {
+        if let request = try? decodeAdditionalServerRequest(method: method, params: params) { return request }
         let objectParams = params?.objectValue
         switch method {
         case "item/commandExecution/requestApproval":

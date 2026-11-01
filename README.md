@@ -327,6 +327,54 @@ non-inline audio URLs. Handlers may await another RPC on the same client. They r
 application state with actors and make handlers cancellation-aware. Close, process termination,
 and `serverRequest/resolved` cancel outstanding handlers and discard late replies.
 
+## Sampling and Account Requests
+
+`CodexRPCClient` exposes `threadSample`, `threadSampleCancel`, `threadMemoryRead`,
+`gcpSetup`, `accountSessionList`, `accountSessionSwitch`, and `feedbackSave` with
+upstream-shaped parameter and response models. Experimental methods require
+`experimentalAPI: true` (the default). Generation requires Python 3.14 or the `zstd` CLI.
+
+High-level equivalents are `CodexThread.sample`/`memory` and
+`Codex.cancelSample`/`gcpSetup`/`accountSessions`/`switchAccountSession`/`saveFeedback`.
+For cancellable sampling, pass a unique `requestID` to `sample`, run it in a task,
+and call `cancelSample(requestID:)` concurrently. The ID identifies the RPC, not its
+source turn. Cancelling the local Swift task alone stops waiting; it does not send
+`thread/sample/cancel`. Account switching returns either `.switched(...)` or
+`.browserLogin(...)`; the latter requires opening the supplied auth URL and awaiting
+`account/login/completed` through the notification APIs.
+
+## Dedicated Server Handlers
+
+`CodexConfig` accepts optional `userInputHandler`, `mcpElicitationHandler`,
+`permissionsApprovalHandler`, `authTokensRefreshHandler`, `attestationHandler` and
+`currentTimeHandler` closures. Each receives upstream-shaped typed parameters and
+returns its typed response asynchronously; these closures may throw. For example:
+
+```swift
+var config = CodexConfig()
+config.userInputHandler = { request in
+    // Ask through your application's UI and return answers keyed by question ID.
+    ToolRequestUserInputResponse(answers: [:])
+}
+config.permissionsApprovalHandler = { _ in
+    // Empty granted permissions deny the requested access.
+    PermissionsRequestApprovalResponse(permissions: GrantedPermissionProfile())
+}
+```
+
+A generic `serverRequestHandler` takes precedence and now receives the corresponding
+typed `ServerRequest` cases. It can return typed `ServerRequestResult` cases, raw
+`.json(...)`, or `.error(code:message:data:)`. Existing exhaustive switches must
+handle the new cases. Missing dedicated handlers return JSON-RPC `-32601`, malformed
+parameters `-32602`, and thrown failures `-32603`; exception text is omitted.
+
+Registering an attestation handler advertises `requestAttestation` automatically.
+For a generic handler, set `requestAttestation: true` explicitly. Set
+`mcpExtensions`, for example `["openai/form": .object([:])]`, to opt into MCP
+extensions your application supports. MCP `requestedSchema`, `content` and `_meta`
+remain arbitrary JSON. The SDK does not provide a form UI, refresh credentials,
+generate attestation tokens or choose a clock on your application's behalf.
+
 ## Generated Models
 
 Generated protocol models live in:
@@ -389,19 +437,3 @@ The suite uses `swift-testing` and a stub `codex` binary that simulates the JSON
 - [`Scripts/generate_app_server_v2.py`](Scripts/generate_app_server_v2.py): typed model generator
 - [`Examples`](Examples): executable example package
 - [`AGENTS.md`](AGENTS.md): repository instructions for coding agents
-
-### Sampling and account requests
-
-`CodexRPCClient` exposes `threadSample`, `threadSampleCancel`, `threadMemoryRead`,
-`gcpSetup`, `accountSessionList`, `accountSessionSwitch`, and `feedbackSave` with
-upstream-shaped parameter and response models. Experimental methods require
-`experimentalAPI: true` (the default). Generation requires Python 3.14 or the `zstd` CLI.
-
-High-level equivalents are `CodexThread.sample`/`memory` and
-`Codex.cancelSample`/`gcpSetup`/`accountSessions`/`switchAccountSession`/`saveFeedback`.
-For cancellable sampling, pass a unique `requestID` to `sample`, run it in a task,
-and call `cancelSample(requestID:)` concurrently. The ID identifies the RPC, not its
-source turn. Cancelling the local Swift task alone stops waiting; it does not send
-`thread/sample/cancel`. Account switching returns either `.switched(...)` or
-`.browserLogin(...)`; the latter requires opening the supplied auth URL and awaiting
-`account/login/completed` through the notification APIs.

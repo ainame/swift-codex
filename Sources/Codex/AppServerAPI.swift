@@ -60,6 +60,12 @@ public enum ServerRequest: Sendable, Hashable, Codable {
     case commandApproval(CommandApprovalRequest)
     case fileChangeApproval(FileChangeApprovalRequest)
     case dynamicToolCall(DynamicToolCallParams)
+    case userInput(ToolRequestUserInputParams)
+    case mcpElicitation(McpServerElicitationRequestParams)
+    case permissionsApproval(PermissionsRequestApprovalParams)
+    case authTokensRefresh(ChatgptAuthTokensRefreshParams)
+    case attestation(AttestationGenerateParams)
+    case currentTime(CurrentTimeReadParams)
     case unknown(method: String, params: JSONValue?)
 }
 
@@ -67,6 +73,18 @@ public enum ServerRequestResult: Sendable, Hashable, Codable {
     case approval(ApprovalDecision)
     case json(JSONValue)
     case dynamicToolCall(DynamicToolCallResponse)
+    case userInput(ToolRequestUserInputResponse)
+    case mcpElicitation(McpServerElicitationRequestResponse)
+    case permissionsApproval(PermissionsRequestApprovalResponse)
+    case authTokensRefresh(ChatgptAuthTokensRefreshResponse)
+    case attestation(AttestationGenerateResponse)
+    case currentTime(CurrentTimeReadResponse)
+    case error(code: Int, message: String, data: JSONValue? = nil)
+
+    var isError: Bool {
+        if case .error = self { return true }
+        return false
+    }
 
     var jsonValue: JSONValue {
         switch self {
@@ -74,6 +92,16 @@ public enum ServerRequestResult: Sendable, Hashable, Codable {
             return .object(["decision": .string(decision == .approve ? "accept" : "decline")])
         case .dynamicToolCall(let response):
             return response.rawJSON
+        case .userInput(let response): return response.rawJSON
+        case .mcpElicitation(let response): return response.rawJSON
+        case .permissionsApproval(let response): return response.rawJSON
+        case .authTokensRefresh(let response): return response.rawJSON
+        case .attestation(let response): return response.rawJSON
+        case .currentTime(let response): return response.rawJSON
+        case .error(let code, let message, let data):
+            var payload: JSONObject = ["code": .number(Double(code)), "message": .string(message)]
+            if let data { payload["data"] = data }
+            return .object(payload)
         case .json(let value):
             return value
         }
@@ -97,6 +125,12 @@ public struct RunResult: Sendable, Hashable, Codable {
 }
 
 public struct CodexConfig: Sendable {
+    public typealias UserInputHandler = @Sendable (ToolRequestUserInputParams) async throws -> ToolRequestUserInputResponse
+    public typealias McpElicitationHandler = @Sendable (McpServerElicitationRequestParams) async throws -> McpServerElicitationRequestResponse
+    public typealias PermissionsApprovalHandler = @Sendable (PermissionsRequestApprovalParams) async throws -> PermissionsRequestApprovalResponse
+    public typealias AuthTokensRefreshHandler = @Sendable (ChatgptAuthTokensRefreshParams) async throws -> ChatgptAuthTokensRefreshResponse
+    public typealias AttestationHandler = @Sendable (AttestationGenerateParams) async throws -> AttestationGenerateResponse
+    public typealias CurrentTimeHandler = @Sendable (CurrentTimeReadParams) async throws -> CurrentTimeReadResponse
     public typealias ServerRequestHandler = @Sendable (ServerRequest) async -> ServerRequestResult
     public typealias DynamicToolCallHandler = @Sendable (DynamicToolCallParams) async -> DynamicToolCallResponse
     public typealias CommandApprovalHandler = @Sendable (CommandApprovalRequest) async -> ApprovalDecision
@@ -113,9 +147,20 @@ public struct CodexConfig: Sendable {
     public var clientTitle: String
     public var clientVersion: String
     public var experimentalAPI: Bool
+    /// Opt into attestation for a generic handler. Dedicated handlers opt in automatically.
+    public var requestAttestation: Bool
+    /// Explicit MCP extension declarations, for example ["openai/form": .object([:])].
+    public var mcpExtensions: JSONObject?
     /// A custom server request handler takes precedence over specialized handlers.
     public var serverRequestHandler: ServerRequestHandler?
     public var dynamicToolCallHandler: DynamicToolCallHandler?
+    public var userInputHandler: UserInputHandler?
+    public var mcpElicitationHandler: McpElicitationHandler?
+    public var permissionsApprovalHandler: PermissionsApprovalHandler?
+    public var authTokensRefreshHandler: AuthTokensRefreshHandler?
+    public var attestationHandler: AttestationHandler?
+    public var currentTimeHandler: CurrentTimeHandler?
+
     public var commandApprovalHandler: CommandApprovalHandler
     public var fileChangeApprovalHandler: FileChangeApprovalHandler
 
@@ -131,8 +176,17 @@ public struct CodexConfig: Sendable {
         clientTitle: String = "swift-codex",
         clientVersion: String = "dev",
         experimentalAPI: Bool = true,
+        requestAttestation: Bool = false,
+        mcpExtensions: JSONObject? = nil,
         serverRequestHandler: ServerRequestHandler? = nil,
         dynamicToolCallHandler: DynamicToolCallHandler? = nil,
+        userInputHandler: UserInputHandler? = nil,
+        mcpElicitationHandler: McpElicitationHandler? = nil,
+        permissionsApprovalHandler: PermissionsApprovalHandler? = nil,
+        authTokensRefreshHandler: AuthTokensRefreshHandler? = nil,
+        attestationHandler: AttestationHandler? = nil,
+        currentTimeHandler: CurrentTimeHandler? = nil,
+
         commandApprovalHandler: @escaping CommandApprovalHandler = { _ in .approve },
         fileChangeApprovalHandler: @escaping FileChangeApprovalHandler = { _ in .approve }
     ) {
@@ -147,8 +201,17 @@ public struct CodexConfig: Sendable {
         self.clientTitle = clientTitle
         self.clientVersion = clientVersion
         self.experimentalAPI = experimentalAPI
+        self.requestAttestation = requestAttestation
+        self.mcpExtensions = mcpExtensions
         self.serverRequestHandler = serverRequestHandler
         self.dynamicToolCallHandler = dynamicToolCallHandler
+        self.userInputHandler = userInputHandler
+        self.mcpElicitationHandler = mcpElicitationHandler
+        self.permissionsApprovalHandler = permissionsApprovalHandler
+        self.authTokensRefreshHandler = authTokensRefreshHandler
+        self.attestationHandler = attestationHandler
+        self.currentTimeHandler = currentTimeHandler
+
         self.commandApprovalHandler = commandApprovalHandler
         self.fileChangeApprovalHandler = fileChangeApprovalHandler
     }
@@ -211,6 +274,11 @@ public actor CodexRPCClient {
 
         logger.info("Initializing Codex RPC client")
         try await start()
+        var capabilities: JSONObject = ["experimentalApi": .bool(config.experimentalAPI)]
+        if config.requestAttestation || config.attestationHandler != nil {
+            capabilities["requestAttestation"] = true
+        }
+        if let extensions = config.mcpExtensions { capabilities["extensions"] = .object(extensions) }
         let payload = try await request(
             "initialize",
             params: [
@@ -219,9 +287,7 @@ public actor CodexRPCClient {
                     "title": .string(config.clientTitle),
                     "version": .string(config.clientVersion),
                 ]),
-                "capabilities": .object([
-                    "experimentalApi": .bool(config.experimentalAPI),
-                ]),
+                "capabilities": .object(capabilities),
             ],
             responseType: InitializeResponse.self
         )

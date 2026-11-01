@@ -115,6 +115,15 @@ EXPERIMENTAL_ROOT_TYPES = {
     "AccountSessionsSwitchParams", "AccountSessionsSwitchResponse",
 }
 
+SERVER_HANDLER_ROOT_TYPES = {
+    "ToolRequestUserInputParams", "ToolRequestUserInputResponse",
+    "McpServerElicitationRequestParams", "McpServerElicitationRequestResponse",
+    "PermissionsRequestApprovalParams", "PermissionsRequestApprovalResponse",
+    "ChatgptAuthTokensRefreshParams", "ChatgptAuthTokensRefreshResponse",
+    "AttestationGenerateParams", "AttestationGenerateResponse",
+    "CurrentTimeReadParams", "CurrentTimeReadResponse",
+}
+
 
 def read_experimental_exports() -> dict[str, str]:
     path = SCHEMA_PATH.parent.parent / "precomputed" / "app-server-exports-experimental.json.zst"
@@ -647,6 +656,11 @@ def render_union(name: str, schema: dict, registry: Registry) -> str:
                 f"        if let value = try? decodeJSONValue({type_name}.self, from: raw) {{ self = .{case_name}(value); return }}"
             )
 
+    if name == "McpServerElicitationRequestParams":
+        # Elicitation modes select distinct consent flows. Never reinterpret an
+        # unsupported/malformed mode as another branch via open enum fallbacks.
+        decode_attempts = []
+
     string_cases = "\n".join(f"    case {union_string_case(value)}" for value in string_literals)
     string_init_cases = "\n".join(
         f"            case {json_string(value)}: self = .{union_string_case(value)}; return"
@@ -917,6 +931,17 @@ def main() -> None:
         for dependency, definition in standalone.pop("definitions", {}).items():
             definitions.setdefault(dependency, definition)
         definitions[name] = standalone
+    for name in sorted(SERVER_HANDLER_ROOT_TYPES):
+        standalone = json.loads(exports[f"{name}.json"])
+        for dependency, definition in standalone.pop("definitions", {}).items():
+            definitions.setdefault(dependency, definition)
+        definitions[name] = standalone
+    elicitation_variants = definitions["McpServerElicitationRequestParams"]["oneOf"]
+    for variant, label in zip(elicitation_variants, ("UserVerification", "Form", "OpenaiForm", "LegacyOpenaiForm", "Url"), strict=True):
+        variant["title"] = f"{label}McpServerElicitationRequestParams"
+        # MCP payload schemas are application-owned JSON, including future types.
+        if "requestedSchema" in variant["properties"]:
+            variant["properties"]["requestedSchema"] = {}
     # Server-request types are exported separately, including experimental APIs
     # omitted from the stable combined v2 schema. Use upstream files, not copies.
     for name in ("DynamicToolCallParams", "DynamicToolCallResponse"):
@@ -938,7 +963,7 @@ def main() -> None:
     REGISTRY = Registry(normalize_object_unions(definitions))
 
     mapping = read_notification_registry()
-    for root in sorted(ROOT_TYPES | EXPERIMENTAL_ROOT_TYPES):
+    for root in sorted(ROOT_TYPES | EXPERIMENTAL_ROOT_TYPES | SERVER_HANDLER_ROOT_TYPES):
         REGISTRY.include(root)
     for _, type_name in mapping:
         REGISTRY.include(type_name)

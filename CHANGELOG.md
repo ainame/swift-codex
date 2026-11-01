@@ -11,15 +11,15 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 ### Changed
 
 - Dispatch server handlers concurrently so nested RPCs can complete; cancel outstanding handlers on close, process termination or server resolution, and suppress late replies.
-
 - Updated the vendored upstream basis to `rust-v0.166.0` (`6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`). Other experimental request fields remain outside the Swift convenience APIs.
 - Regenerated item lifecycle timestamps, native usage cost, process output-drain status, and new plan/error/hook enum cases. Fixed shared schema fields propagating through nested unions and preserved outer unknown fallbacks when a nested union does not recognize the payload.
+- Breaking handler API changes: recognized requests now arrive as typed `ServerRequest` cases instead of `.unknown`. New request/result cases require updating exhaustive switches.
 - Breaking generated API changes: image generation items now use file-ID/inline-result enum branches; construct `ResultThreadItem` for inline results. Hook source paths now use `LegacyAppPathString` instead of `AbsolutePathBuf`.
 
 ### Added
 
+- Dedicated typed user-input, MCP elicitation, permission, auth-refresh, attestation and client-time handlers, with capability negotiation and JSON-RPC errors for missing, malformed or failed handlers. Generic handlers retain precedence.
 - Typed sampling/cancellation, memory, GCP setup, account-session list/switch, and feedback APIs, including high-level conveniences and caller-selected sampling request IDs.
-
 - Typed image generation file references, generation IDs and input images, with existing notification and history decoding and unknown-field preservation.
 
 ## [0.163.0] - 2026-10-17

@@ -201,7 +201,7 @@ struct AppServerSDKTests {
                 ),
                 .request(
                     id: "unknown-1",
-                    method: "item/tool/requestUserInput",
+                    method: "future/serverRequest",
                     params: .object([
                         "threadId": .string("thread_cmd"),
                         "turnId": .string("turn_cmd"),
@@ -231,7 +231,7 @@ struct AppServerSDKTests {
         #expect(entries.contains {
             $0.level == .warning
                 && $0.message == "Returning default empty response for unknown server request"
-                && $0.metadata["method"] == "item/tool/requestUserInput"
+                && $0.metadata["method"] == "future/serverRequest"
         })
         #expect(!entries.contains { $0.message.contains("git push") })
         await codex.close()
