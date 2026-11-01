@@ -133,6 +133,10 @@ struct CodexStub {
             sys.stdout.write("\\n")
             sys.stdout.flush()
 
+        def record_raw_input(line):
+            with open(os.path.join(state_dir, f"{invocation}.appserver.raw-input.jsonl"), "a", encoding="utf-8") as handle:
+                handle.write(line)
+
         def response_at(entries, index, default):
             if index < len(entries):
                 return entries[index]
@@ -144,6 +148,7 @@ struct CodexStub {
             if not raw_line:
                 break
             message = json.loads(raw_line)
+            record_raw_input(raw_line)
             append_jsonl("appserver.in", message)
 
             method = message.get("method")
@@ -303,6 +308,7 @@ struct CodexStub {
                     response_line = sys.stdin.readline()
                     if not response_line:
                         sys.exit(0)
+                    record_raw_input(response_line)
                     append_jsonl("appserver.responses", json.loads(response_line))
                 continue
 
@@ -444,6 +450,10 @@ struct CodexStub {
 
     func appServerResponses(forInvocation index: Int) throws -> [JSONObject] {
         try decodeJSONLines(at: rootURL.appendingPathComponent("\(index).appserver.responses.jsonl"))
+    }
+
+    func appServerRawInput(forInvocation index: Int) throws -> String {
+        String(decoding: try Data(contentsOf: rootURL.appendingPathComponent("\(index).appserver.raw-input.jsonl")), as: UTF8.self)
     }
 
     func appServerOutboundMessages(forInvocation index: Int) throws -> [JSONObject] {

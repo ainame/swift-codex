@@ -1206,8 +1206,10 @@ private extension InputItem {
 extension CodexRPCClient {
     /// Experimental. Supply a unique requestID to cancel the sample from another task.
     public func threadSample(_ params: ThreadSampleParams, requestID: String? = nil) async throws -> ThreadSampleResponse {
-        try await request("thread/sample", params: params.rawJSON.objectValue ?? [:],
-                          responseType: ThreadSampleResponse.self, requestID: requestID)
+        try await start()
+        let value = try await transport.request(method: "thread/sample", params: params.rawJSON.objectValue ?? [:],
+                                                requestID: requestID, cancelOnCancellation: "thread/sample/cancel")
+        return try decodeResponse(ThreadSampleResponse.self, from: value)
     }
 
     /// Cancels the sample RPC identified by its JSON-RPC request ID, not a turn ID.

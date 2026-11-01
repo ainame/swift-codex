@@ -7,13 +7,19 @@ actor CodexRPCTransport {
     private let exec: CodexRPCExec
     private var outboundContinuation: AsyncStream<String>.Continuation?
     private var runTask: Task<Void, Never>?
+    private var processGeneration = UUID()
     private var requestCounter = 0
-    private var pendingRequests: [String: CheckedContinuation<JSONValue, Error>] = [:]
+    private var callerRequestIDs: Set<String> = []
+    private struct PendingRequest {
+        let token: UUID
+        let continuation: CheckedContinuation<JSONValue, Error>
+    }
+    private var pendingRequests: [String: PendingRequest] = [:]
     // Handlers outlive the input callback, so the transport owns and cancels
     // these tasks explicitly. All registry access remains actor-isolated.
     private var serverRequestTasks: [JSONValue: (token: UUID, task: Task<Void, Never>)] = [:]
     private var pendingNotifications: [CodexNotification] = []
-    private var pendingNotificationContinuations: [CheckedContinuation<CodexNotification, Error>] = []
+    private var pendingNotificationContinuations: [(token: UUID, continuation: CheckedContinuation<CodexNotification, Error>)] = []
     private var terminalError: Error?
     private var stderrTail: [String] = []
     private var isClosing = false
@@ -35,38 +41,46 @@ actor CodexRPCTransport {
 
     func startProcess() async throws {
         if runTask != nil {
+            if let terminalError { throw terminalError }
             logger.debug("RPC transport already running")
             return
         }
         isClosing = false
+        processGeneration = UUID()
+        terminalError = nil
+        stderrTail.removeAll()
+        pendingNotifications.removeAll()
+        callerRequestIDs.removeAll()
         logger.info("Starting RPC transport")
 
         let streamPair = AsyncStream.makeStream(of: String.self)
         outboundContinuation = streamPair.continuation
 
         let exec = self.exec
+        let generation = processGeneration
         runTask = Task {
             do {
                 try await exec.runRPCServer(
                     outgoingMessages: streamPair.stream,
                     onStdoutLine: { [weak self] line in
                         guard let self else { return }
-                        await self.handleIncomingLine(line)
+                        await self.handleIncomingLine(line, generation: generation)
                     },
                     onStderrLine: { [weak self] line in
                         guard let self else { return }
-                        await self.recordStderr(line)
+                        await self.recordStderr(line, generation: generation)
                     }
                 )
-                finishTransport(error: nil)
+                finishTransport(error: nil, generation: generation)
             } catch {
-                finishTransport(error: error)
+                finishTransport(error: error, generation: generation)
             }
         }
     }
 
     func close() {
         isClosing = true
+        processGeneration = UUID()
         cancelServerRequests()
         logger.info("Closing RPC transport")
         outboundContinuation?.finish()
@@ -75,18 +89,19 @@ actor CodexRPCTransport {
         runTask = nil
 
         let failure = terminalError ?? makeTransportClosedError()
-        for (_, continuation) in pendingRequests {
-            continuation.resume(throwing: failure)
+        terminalError = failure
+        for entry in pendingRequests.values {
+            entry.continuation.resume(throwing: failure)
         }
         pendingRequests.removeAll()
 
-        for continuation in pendingNotificationContinuations {
-            continuation.resume(throwing: failure)
+        for entry in pendingNotificationContinuations {
+            entry.continuation.resume(throwing: failure)
         }
         pendingNotificationContinuations.removeAll()
     }
 
-    func request(method: String, params: JSONObject, requestID: String? = nil) async throws -> JSONValue {
+    func request(method: String, params: JSONObject, requestID: String? = nil, cancelOnCancellation: String? = nil) async throws -> JSONValue {
         if let terminalError {
             throw terminalError
         }
@@ -95,6 +110,8 @@ actor CodexRPCTransport {
         guard pendingRequests[id] == nil else {
             throw CodexError.invalidResponse("Duplicate active client request ID: \(id)")
         }
+        if let requestID, requestID.hasPrefix("swift-codex-") { callerRequestIDs.insert(requestID) }
+        let token = UUID()
         logger.debug(
             "Sending RPC request",
             metadata: [
@@ -105,7 +122,7 @@ actor CodexRPCTransport {
         return try await withTaskCancellationHandler {
             try Task.checkCancellation()
             return try await withCheckedThrowingContinuation { continuation in
-                pendingRequests[id] = continuation
+                pendingRequests[id] = PendingRequest(token: token, continuation: continuation)
                 do {
                     try send(
                         .object([
@@ -120,12 +137,18 @@ actor CodexRPCTransport {
                 }
             }
         } onCancel: {
-            Task { await self.cancelRequest(id) }
+            Task { await self.cancelRequest(id, token: token, cancelMethod: cancelOnCancellation) }
         }
     }
 
-    private func cancelRequest(_ id: String) {
-        pendingRequests.removeValue(forKey: id)?.resume(throwing: CancellationError())
+    private func cancelRequest(_ id: String, token: UUID, cancelMethod: String?) {
+        guard pendingRequests[id]?.token == token else { return }
+        pendingRequests.removeValue(forKey: id)?.continuation.resume(throwing: CancellationError())
+        if let cancelMethod {
+            // Best effort control RPC, on this same process only. Its reply needs
+            // no waiter; closing/reopening cannot resurrect the cancelled work.
+            try? send(["id": .string(nextRequestID()), "method": .string(cancelMethod), "params": ["requestId": .string(id)]])
+        }
     }
 
     private func cancelServerRequests() {
@@ -144,6 +167,7 @@ actor CodexRPCTransport {
     }
 
     func nextNotification() async throws -> CodexNotification {
+        try Task.checkCancellation()
         if !pendingNotifications.isEmpty {
             return pendingNotifications.removeFirst()
         }
@@ -151,9 +175,20 @@ actor CodexRPCTransport {
             throw terminalError
         }
 
-        return try await withCheckedThrowingContinuation { continuation in
-            pendingNotificationContinuations.append(continuation)
+        let token = UUID()
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { continuation in
+                pendingNotificationContinuations.append((token, continuation))
+            }
+        } onCancel: {
+            Task { await self.cancelNotificationWait(token) }
         }
+    }
+
+    private func cancelNotificationWait(_ token: UUID) {
+        guard let index = pendingNotificationContinuations.firstIndex(where: { $0.token == token }) else { return }
+        pendingNotificationContinuations.remove(at: index).continuation.resume(throwing: CancellationError())
     }
 
     private func send(_ payload: JSONValue) throws {
@@ -168,11 +203,12 @@ actor CodexRPCTransport {
     }
 
     private func nextRequestID() -> String {
-        requestCounter += 1
+        repeat { requestCounter += 1 } while callerRequestIDs.contains("swift-codex-\(requestCounter)") || pendingRequests["swift-codex-\(requestCounter)"] != nil
         return "swift-codex-\(requestCounter)"
     }
 
-    private func recordStderr(_ line: String) {
+    private func recordStderr(_ line: String, generation: UUID) {
+        guard processGeneration == generation else { return }
         logger.debug("RPC stderr", metadata: ["stderr_line": .string(line)])
         stderrTail.append(line)
         if stderrTail.count > 400 {
@@ -192,7 +228,9 @@ actor CodexRPCTransport {
         stderrTail.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func finishTransport(error: Error?) {
+    private func finishTransport(error: Error?, generation: UUID? = nil) {
+        if let generation, processGeneration != generation { return }
+        if generation == nil { runTask?.cancel() }
         cancelServerRequests()
         outboundContinuation?.finish()
         outboundContinuation = nil
@@ -208,19 +246,19 @@ actor CodexRPCTransport {
 
         let failure = terminalError ?? makeTransportClosedError()
 
-        for (_, continuation) in pendingRequests {
-            continuation.resume(throwing: failure)
+        for entry in pendingRequests.values {
+            entry.continuation.resume(throwing: failure)
         }
         pendingRequests.removeAll()
 
-        for continuation in pendingNotificationContinuations {
-            continuation.resume(throwing: failure)
+        for entry in pendingNotificationContinuations {
+            entry.continuation.resume(throwing: failure)
         }
         pendingNotificationContinuations.removeAll()
     }
 
-    private func handleIncomingLine(_ line: String) async {
-        guard terminalError == nil, !isClosing else { return }
+    private func handleIncomingLine(_ line: String, generation: UUID) async {
+        guard processGeneration == generation, terminalError == nil, !isClosing else { return }
         do {
             let data = Data(line.utf8)
             let message = try JSONDecoder().decode(JSONObject.self, from: data)
@@ -258,14 +296,14 @@ actor CodexRPCTransport {
                         "error_message": .string(error.message),
                     ]
                 )
-                pendingRequests.removeValue(forKey: requestID)?.resume(
+                pendingRequests.removeValue(forKey: requestID)?.continuation.resume(
                     throwing: CodexRPCErrorMapper.map(code: error.code, message: error.message, data: error.data)
                 )
                 return
             }
 
             logger.debug("Received RPC response", metadata: ["request_id": .string(requestID)])
-            pendingRequests.removeValue(forKey: requestID)?.resume(returning: message["result"] ?? .null)
+            pendingRequests.removeValue(forKey: requestID)?.continuation.resume(returning: message["result"] ?? .null)
         } catch {
             finishTransport(error: error)
         }
@@ -303,14 +341,23 @@ actor CodexRPCTransport {
         let result = await makeServerRequestResult(method: method, params: params)
         // A handler may ignore cancellation. Never let it reply after close,
         // resolution by another client, or replacement of its registry entry.
-        guard !Task.isCancelled, serverRequestTasks[requestID]?.token == token else { return }
+        guard !Task.isCancelled, serverRequestTasks[requestID]?.token == token else {
+            logger.debug("Discarding cancelled server request response", metadata: ["method": .string(method)])
+            return
+        }
         serverRequestTasks.removeValue(forKey: requestID)
         do { try send(
             .object([
                 "id": requestID,
                 result.isError ? "error" : "result": result.jsonValue,
             ])
-        ) } catch { finishTransport(error: error) }
+        ) } catch {
+            // An invalid handler payload (for example NaN) must fail only this
+            // request. A failure to send even the error closes the transport.
+            do {
+                try send(["id": requestID, "error": ["code": -32603, "message": "Server request handler failed"]])
+            } catch { finishTransport(error: error) }
+        }
     }
 
     private func makeServerRequestResult(method: String, params: JSONValue?) async -> ServerRequestResult {
@@ -401,7 +448,7 @@ actor CodexRPCTransport {
         logNotification(notification)
         if !pendingNotificationContinuations.isEmpty {
             let continuation = pendingNotificationContinuations.removeFirst()
-            continuation.resume(returning: notification)
+            continuation.continuation.resume(returning: notification)
             return
         }
         pendingNotifications.append(notification)

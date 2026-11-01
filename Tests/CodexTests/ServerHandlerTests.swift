@@ -35,6 +35,27 @@ private struct TestHandlerFailure: Error, CustomStringConvertible {
 
 struct ServerHandlerTests {
     @Test
+    func nonFiniteHandlerResultDoesNotCloseTransport() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: .init(
+            threadStartResponses: [appServerThreadStartResponse(id: "thread")],
+            turnStartResponses: [appServerTurnStartResponse(id: "turn")],
+            turnStartSequences: [[
+                .request(id: 100, method: "test/nonfinite", params: [:]),
+                .notification(method: "turn/completed", params: appServerTurnCompleted(threadID: "thread", turnID: "turn")),
+            ]]
+        ))
+        let config = stub.makeConfig(serverRequestHandler: { _ in .json(.number(.nan)) })
+        let codex = try await Codex(config: config)
+        let thread = try await codex.startThread()
+        _ = try await thread.run("test")
+        _ = try await codex.models()
+        #expect(try stub.appServerResponses(forInvocation: 0).first?["error"] == ["code": -32603, "message": "Server request handler failed"])
+        await codex.close()
+    }
+
+    @Test
     func genericHandlerCanAdvertiseCapabilitiesAndReturnAnError() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
@@ -129,6 +150,8 @@ struct ServerHandlerTests {
             let replies = try stub.appServerResponses(forInvocation: 0)
             #expect(replies.count == 2)
             #expect(replies.map { $0["id"] } == ["request-string", 77])
+            let rawInput = try stub.appServerRawInput(forInvocation: 0)
+            #expect(rawInput.contains("\"id\":77,") || rawInput.contains("\"id\":77}"), "Integer request IDs must serialize as integer JSON tokens")
             for reply in replies {
                 switch mode {
                 case "specialized", "generic":

@@ -2,6 +2,31 @@ import Testing
 @testable import Codex
 
 struct TypedRequestTests {
+    @Test(arguments: [nil, "swift-codex-1"] as [String?])
+    func cancellingSwiftTaskAlsoCancelsServerSample(requestID: String?) async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: .init(holdSampleForCancellation: true))
+        let client = CodexRPCClient(config: stub.makeConfig())
+        let watchdog = Task { try await Task.sleep(for: .seconds(5)); await client.close() }
+        defer { watchdog.cancel() }
+        let sample = Task {
+            try await client.threadSample(.init(expectedTurnId: "turn", prompt: "sample", threadId: "thread"), requestID: requestID)
+        }
+        let started = try await client.nextNotification()
+        let actualID = try #require(started.rawParams.objectValue?["requestId"])
+        // An automatically generated ID must not collide with the explicit ID.
+        _ = try await client.modelList()
+        sample.cancel()
+        await #expect(throws: CancellationError.self) { try await sample.value }
+        _ = try await client.modelList()
+        let messages = try stub.appServerMessages(forInvocation: 0)
+        #expect(messages.first { $0["method"] == "thread/sample/cancel" }?["params"] == ["requestId": actualID])
+        let ids = messages.compactMap { $0["id"] }
+        #expect(Set(ids).count == ids.count)
+        await client.close()
+    }
+
     @Test
     func cancelsAnInFlightSampleByRequestID() async throws {
         let stub = try CodexStub()

@@ -937,11 +937,23 @@ def main() -> None:
             definitions.setdefault(dependency, definition)
         definitions[name] = standalone
     elicitation_variants = definitions["McpServerElicitationRequestParams"]["oneOf"]
-    for variant, label in zip(elicitation_variants, ("UserVerification", "Form", "OpenaiForm", "LegacyOpenaiForm", "Url"), strict=True):
+    elicitation_labels = {
+        "openai/userVerification": "UserVerification", "form": "Form",
+        "openai/form": "OpenaiForm", "openaiForm": "LegacyOpenaiForm", "url": "Url",
+    }
+    seen_modes = set()
+    for variant in elicitation_variants:
+        mode = variant["properties"]["mode"]["enum"][0]
+        if mode not in elicitation_labels or mode in seen_modes:
+            raise ValueError(f"Unexpected MCP elicitation mode: {mode}")
+        seen_modes.add(mode)
+        label = elicitation_labels[mode]
         variant["title"] = f"{label}McpServerElicitationRequestParams"
         # MCP payload schemas are application-owned JSON, including future types.
         if "requestedSchema" in variant["properties"]:
             variant["properties"]["requestedSchema"] = {}
+    if seen_modes != elicitation_labels.keys():
+        raise ValueError("MCP elicitation export is missing supported modes")
     # Server-request types are exported separately, including experimental APIs
     # omitted from the stable combined v2 schema. Use upstream files, not copies.
     for name in ("DynamicToolCallParams", "DynamicToolCallResponse"):

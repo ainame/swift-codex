@@ -338,8 +338,9 @@ High-level equivalents are `CodexThread.sample`/`memory` and
 `Codex.cancelSample`/`gcpSetup`/`accountSessions`/`switchAccountSession`/`saveFeedback`.
 For cancellable sampling, pass a unique `requestID` to `sample`, run it in a task,
 and call `cancelSample(requestID:)` concurrently. The ID identifies the RPC, not its
-source turn. Cancelling the local Swift task alone stops waiting; it does not send
-`thread/sample/cancel`. Account switching returns either `.switched(...)` or
+source turn. Cancelling the Swift task stops waiting and sends a best-effort
+`thread/sample/cancel`, including when the request ID was generated automatically.
+Use the explicit cancellation API when you need confirmation from the server. Account switching returns either `.switched(...)` or
 `.browserLogin(...)`; the latter requires opening the supplied auth URL and awaiting
 `account/login/completed` through the notification APIs.
 
