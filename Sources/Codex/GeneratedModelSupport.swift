@@ -76,5 +76,10 @@ func mergedJSONObject<T: Encodable>(_ payload: T, additionalFields: JSONObject, 
 }
 
 func encodeJSONObject<T: Encodable>(_ payload: T, additionalFields: JSONObject, context: String, to encoder: any Encoder) throws {
-    try JSONValue.object(mergedJSONObject(payload, additionalFields: additionalFields, context: context)).encode(to: encoder)
+    let value = try encodeJSONValue(payload)
+    guard var object = value.objectValue else {
+        throw EncodingError.invalidValue(payload, .init(codingPath: encoder.codingPath, debugDescription: "Expected \(context) to encode as an object"))
+    }
+    for (key, value) in additionalFields { object[key] = value }
+    try JSONValue.object(object).encode(to: encoder)
 }

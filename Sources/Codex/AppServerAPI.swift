@@ -6,6 +6,12 @@ public enum ApprovalDecision: String, Sendable, Hashable, Codable {
     case deny
 }
 
+/// A command execution approval request (`item/commandExecution/requestApproval`).
+///
+/// The flat properties are a convenience subset. `params` carries the full
+/// upstream metadata, such as `kind`, `commandActions`,
+/// `networkApprovalContext` and proposed policy amendments, and `rawParams`
+/// carries the original JSON including unknown fields.
 public struct CommandApprovalRequest: Sendable, Hashable, Codable {
     public var threadID: String
     public var turnID: String
@@ -14,6 +20,11 @@ public struct CommandApprovalRequest: Sendable, Hashable, Codable {
     public var command: String?
     public var workingDirectory: String?
     public var reason: String?
+    /// Full upstream params. `nil` only for older servers that omit
+    /// `startedAtMs`; the SDK does not invent a timestamp for them.
+    public var params: CommandExecutionRequestApprovalParams?
+    /// The original request params, including unknown fields.
+    public var rawParams: JSONValue?
 
     public init(
         threadID: String,
@@ -22,7 +33,9 @@ public struct CommandApprovalRequest: Sendable, Hashable, Codable {
         approvalID: String? = nil,
         command: String? = nil,
         workingDirectory: String? = nil,
-        reason: String? = nil
+        reason: String? = nil,
+        params: CommandExecutionRequestApprovalParams? = nil,
+        rawParams: JSONValue? = nil
     ) {
         self.threadID = threadID
         self.turnID = turnID
@@ -31,28 +44,40 @@ public struct CommandApprovalRequest: Sendable, Hashable, Codable {
         self.command = command
         self.workingDirectory = workingDirectory
         self.reason = reason
+        self.params = params
+        self.rawParams = rawParams
     }
 }
 
+/// A file change approval request (`item/fileChange/requestApproval`).
+/// See `CommandApprovalRequest` for the meaning of `params` and `rawParams`.
 public struct FileChangeApprovalRequest: Sendable, Hashable, Codable {
     public var threadID: String
     public var turnID: String
     public var itemID: String
     public var reason: String?
     public var grantRoot: String?
+    /// Full upstream params. `nil` only for older servers that omit `startedAtMs`.
+    public var params: FileChangeRequestApprovalParams?
+    /// The original request params, including unknown fields.
+    public var rawParams: JSONValue?
 
     public init(
         threadID: String,
         turnID: String,
         itemID: String,
         reason: String? = nil,
-        grantRoot: String? = nil
+        grantRoot: String? = nil,
+        params: FileChangeRequestApprovalParams? = nil,
+        rawParams: JSONValue? = nil
     ) {
         self.threadID = threadID
         self.turnID = turnID
         self.itemID = itemID
         self.reason = reason
         self.grantRoot = grantRoot
+        self.params = params
+        self.rawParams = rawParams
     }
 }
 
@@ -70,7 +95,12 @@ public enum ServerRequest: Sendable, Hashable, Codable {
 }
 
 public enum ServerRequestResult: Sendable, Hashable, Codable {
+    /// Simplified approval: `approve` is sent as `accept`, `deny` as `decline`.
     case approval(ApprovalDecision)
+    /// Any upstream command decision, including session, cancel and amendments.
+    case commandExecutionApproval(CommandExecutionRequestApprovalResponse)
+    /// Any upstream file change decision, including session and cancel.
+    case fileChangeApproval(FileChangeRequestApprovalResponse)
     case json(JSONValue)
     case dynamicToolCall(DynamicToolCallResponse)
     case userInput(ToolRequestUserInputResponse)
@@ -86,18 +116,25 @@ public enum ServerRequestResult: Sendable, Hashable, Codable {
         return false
     }
 
-    var jsonValue: JSONValue {
+    func wireJSON() throws -> JSONValue {
         switch self {
         case .approval(let decision):
             return .object(["decision": .string(decision == .approve ? "accept" : "decline")])
-        case .dynamicToolCall(let response):
-            return response.rawJSON
-        case .userInput(let response): return response.rawJSON
-        case .mcpElicitation(let response): return response.rawJSON
-        case .permissionsApproval(let response): return response.rawJSON
-        case .authTokensRefresh(let response): return response.rawJSON
-        case .attestation(let response): return response.rawJSON
-        case .currentTime(let response): return response.rawJSON
+        case .commandExecutionApproval(let response):
+            var object = response.additionalFields
+            object["decision"] = try encodeJSONValue(response.decision)
+            return .object(object)
+        case .fileChangeApproval(let response):
+            var object = response.additionalFields
+            object["decision"] = try encodeJSONValue(response.decision)
+            return .object(object)
+        case .dynamicToolCall(let response): return try encodeJSONValue(response)
+        case .userInput(let response): return try encodeJSONValue(response)
+        case .mcpElicitation(let response): return try encodeJSONValue(response)
+        case .permissionsApproval(let response): return try encodeJSONValue(response)
+        case .authTokensRefresh(let response): return try encodeJSONValue(response)
+        case .attestation(let response): return try encodeJSONValue(response)
+        case .currentTime(let response): return try encodeJSONValue(response)
         case .error(let code, let message, let data):
             var payload: JSONObject = ["code": .number(Double(code)), "message": .string(message)]
             if let data { payload["data"] = data }
@@ -135,6 +172,8 @@ public struct CodexConfig: Sendable {
     public typealias DynamicToolCallHandler = @Sendable (DynamicToolCallParams) async -> DynamicToolCallResponse
     public typealias CommandApprovalHandler = @Sendable (CommandApprovalRequest) async -> ApprovalDecision
     public typealias FileChangeApprovalHandler = @Sendable (FileChangeApprovalRequest) async -> ApprovalDecision
+    public typealias CommandExecutionRequestApprovalHandler = @Sendable (CommandExecutionRequestApprovalParams) async throws -> CommandExecutionRequestApprovalResponse
+    public typealias FileChangeRequestApprovalHandler = @Sendable (FileChangeRequestApprovalParams) async throws -> FileChangeRequestApprovalResponse
 
     public var codexPathOverride: String?
     public var launchArgsOverride: [String]?
@@ -160,7 +199,15 @@ public struct CodexConfig: Sendable {
     public var authTokensRefreshHandler: AuthTokensRefreshHandler?
     public var attestationHandler: AttestationHandler?
     public var currentTimeHandler: CurrentTimeHandler?
+    /// Typed command approval with every upstream decision. When set, it is
+    /// used instead of `commandApprovalHandler`. Requests from older servers
+    /// that omit `startedAtMs` are rejected with -32602 rather than approved
+    /// through the simplified handler.
+    public var commandExecutionRequestApprovalHandler: CommandExecutionRequestApprovalHandler?
+    /// Typed file change approval; see `commandExecutionRequestApprovalHandler`.
+    public var fileChangeRequestApprovalHandler: FileChangeRequestApprovalHandler?
 
+    /// Simplified approval handlers, used when no typed or generic handler is set.
     public var commandApprovalHandler: CommandApprovalHandler
     public var fileChangeApprovalHandler: FileChangeApprovalHandler
 
@@ -189,6 +236,8 @@ public struct CodexConfig: Sendable {
         authTokensRefreshHandler: AuthTokensRefreshHandler? = nil,
         attestationHandler: AttestationHandler? = nil,
         currentTimeHandler: CurrentTimeHandler? = nil,
+        commandExecutionRequestApprovalHandler: CommandExecutionRequestApprovalHandler? = nil,
+        fileChangeRequestApprovalHandler: FileChangeRequestApprovalHandler? = nil,
 
         commandApprovalHandler: @escaping CommandApprovalHandler = { _ in .approve },
         fileChangeApprovalHandler: @escaping FileChangeApprovalHandler = { _ in .approve }
@@ -214,6 +263,8 @@ public struct CodexConfig: Sendable {
         self.authTokensRefreshHandler = authTokensRefreshHandler
         self.attestationHandler = attestationHandler
         self.currentTimeHandler = currentTimeHandler
+        self.commandExecutionRequestApprovalHandler = commandExecutionRequestApprovalHandler
+        self.fileChangeRequestApprovalHandler = fileChangeRequestApprovalHandler
 
         self.commandApprovalHandler = commandApprovalHandler
         self.fileChangeApprovalHandler = fileChangeApprovalHandler

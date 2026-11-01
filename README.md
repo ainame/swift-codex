@@ -289,6 +289,22 @@ Known inbound approval requests are modeled as:
 - `ServerRequest.commandApproval`
 - `ServerRequest.fileChangeApproval`
 
+Both wrappers keep the simple properties (`command`, `workingDirectory`, `grantRoot`, ...) and add `params`, the full upstream model, and `rawParams`, the original JSON. `params` includes `kind`, `commandActions`, `networkApprovalContext`, the proposed amendments and unknown fields. For every upstream decision, use the typed handlers:
+
+```swift
+let config = CodexConfig(
+    commandExecutionRequestApprovalHandler: { params in
+        if let amendment = params.proposedExecpolicyAmendment {
+            return .init(decision: .acceptWithExecpolicyAmendment(execpolicyAmendment: amendment))
+        }
+        return .init(decision: params.kind == .writeStdin ? .decline : .acceptForSession)
+    },
+    fileChangeRequestApprovalHandler: { _ in .init(decision: .cancel) }
+)
+```
+
+Handler precedence is: `serverRequestHandler`, then the typed handler, then the simplified `commandApprovalHandler`/`fileChangeApprovalHandler`, which default to approve. A generic handler can return `.commandExecutionApproval(...)`, `.fileChangeApproval(...)` or `.approval(...)`. Invalid params return `-32602`, and a thrown typed handler returns `-32603` without the error text. Older servers that omit `startedAtMs` still reach the simplified and generic handlers, with `params == nil`. Typed handlers reject them with `-32602` rather than inventing a timestamp or approving through the default handler.
+
 Unknown request methods fall back to:
 
 - `ServerRequest.unknown(method:params:)`

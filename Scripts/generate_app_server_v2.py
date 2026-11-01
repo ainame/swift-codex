@@ -122,6 +122,8 @@ SERVER_HANDLER_ROOT_TYPES = {
     "ChatgptAuthTokensRefreshParams", "ChatgptAuthTokensRefreshResponse",
     "AttestationGenerateParams", "AttestationGenerateResponse",
     "CurrentTimeReadParams", "CurrentTimeReadResponse",
+    "CommandExecutionRequestApprovalParams", "CommandExecutionRequestApprovalResponse",
+    "FileChangeRequestApprovalParams", "FileChangeRequestApprovalResponse",
 }
 
 
@@ -656,9 +658,9 @@ def render_union(name: str, schema: dict, registry: Registry) -> str:
                 f"        if let value = try? decodeJSONValue({type_name}.self, from: raw) {{ self = .{case_name}(value); return }}"
             )
 
-    if name == "McpServerElicitationRequestParams":
-        # Elicitation modes select distinct consent flows. Never reinterpret an
-        # unsupported/malformed mode as another branch via open enum fallbacks.
+    if name in {"McpServerElicitationRequestParams", "CommandAction"}:
+        # Approval action types and elicitation modes select distinct UI flows.
+        # Never reinterpret an unsupported tag via open enum fallbacks.
         decode_attempts = []
 
     string_cases = "\n".join(f"    case {union_string_case(value)}" for value in string_literals)

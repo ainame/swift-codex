@@ -404,7 +404,7 @@ actor CodexRPCTransport {
         do { try send(
             .object([
                 "id": requestID,
-                result.isError ? "error" : "result": result.jsonValue,
+                result.isError ? "error" : "result": try result.wireJSON(),
             ])
         ) } catch {
             // An invalid handler payload (for example NaN) must fail only this
@@ -446,49 +446,11 @@ actor CodexRPCTransport {
                 ))], success: false
             ))
         }
-        let objectParams = params?.objectValue
         switch method {
-        case "item/commandExecution/requestApproval":
-            let request = CommandApprovalRequest(
-                threadID: objectParams?.stringValue(forKey: "threadId") ?? "",
-                turnID: objectParams?.stringValue(forKey: "turnId") ?? "",
-                itemID: objectParams?.stringValue(forKey: "itemId") ?? "",
-                approvalID: objectParams?.stringValue(forKey: "approvalId"),
-                command: objectParams?.stringValue(forKey: "command"),
-                workingDirectory: objectParams?.stringValue(forKey: "cwd"),
-                reason: objectParams?.stringValue(forKey: "reason")
-            )
-            let decision = await config.commandApprovalHandler(request)
-            logger.info(
-                "Resolved command approval request",
-                metadata: [
-                    "thread_id": .string(request.threadID),
-                    "turn_id": .string(request.turnID),
-                    "item_id": .string(request.itemID),
-                    "approval_id": request.approvalID.map(Logger.MetadataValue.string),
-                    "decision": .string(decision.rawValue),
-                ].compactMapValues { $0 }
-            )
-            return .approval(decision)
-        case "item/fileChange/requestApproval":
-            let request = FileChangeApprovalRequest(
-                threadID: objectParams?.stringValue(forKey: "threadId") ?? "",
-                turnID: objectParams?.stringValue(forKey: "turnId") ?? "",
-                itemID: objectParams?.stringValue(forKey: "itemId") ?? "",
-                reason: objectParams?.stringValue(forKey: "reason"),
-                grantRoot: objectParams?.stringValue(forKey: "grantRoot")
-            )
-            let decision = await config.fileChangeApprovalHandler(request)
-            logger.info(
-                "Resolved file change approval request",
-                metadata: [
-                    "thread_id": .string(request.threadID),
-                    "turn_id": .string(request.turnID),
-                    "item_id": .string(request.itemID),
-                    "decision": .string(decision.rawValue),
-                ]
-            )
-            return .approval(decision)
+        case ApprovalRequests.commandMethod:
+            return await ApprovalRequests.resolveCommand(params: params, config: config, logger: logger)
+        case ApprovalRequests.fileChangeMethod:
+            return await ApprovalRequests.resolveFileChange(params: params, config: config, logger: logger)
         default:
             logger.warning("Returning default empty response for unknown server request", metadata: ["method": .string(method)])
             return .json(.object([:]))
@@ -594,35 +556,19 @@ actor CodexRPCTransport {
 
     private func makeServerRequest(method: String, params: JSONValue?) -> ServerRequest {
         if let request = try? decodeAdditionalServerRequest(method: method, params: params) { return request }
-        let objectParams = params?.objectValue
         switch method {
-        case "item/commandExecution/requestApproval":
-            return .commandApproval(
-                CommandApprovalRequest(
-                    threadID: objectParams?.stringValue(forKey: "threadId") ?? "",
-                    turnID: objectParams?.stringValue(forKey: "turnId") ?? "",
-                    itemID: objectParams?.stringValue(forKey: "itemId") ?? "",
-                    approvalID: objectParams?.stringValue(forKey: "approvalId"),
-                    command: objectParams?.stringValue(forKey: "command"),
-                    workingDirectory: objectParams?.stringValue(forKey: "cwd"),
-                    reason: objectParams?.stringValue(forKey: "reason")
-                )
-            )
+        case ApprovalRequests.commandMethod:
+            // Invalid params stay available, unmodified, as an unknown request.
+            if let request = ApprovalRequests.commandRequest(from: params) { return .commandApproval(request) }
+            return .unknown(method: method, params: params)
         case "item/tool/call":
             if let params, let request = try? decode(DynamicToolCallParams.self, from: params) {
                 return .dynamicToolCall(request)
             }
             return .unknown(method: method, params: params)
-        case "item/fileChange/requestApproval":
-            return .fileChangeApproval(
-                FileChangeApprovalRequest(
-                    threadID: objectParams?.stringValue(forKey: "threadId") ?? "",
-                    turnID: objectParams?.stringValue(forKey: "turnId") ?? "",
-                    itemID: objectParams?.stringValue(forKey: "itemId") ?? "",
-                    reason: objectParams?.stringValue(forKey: "reason"),
-                    grantRoot: objectParams?.stringValue(forKey: "grantRoot")
-                )
-            )
+        case ApprovalRequests.fileChangeMethod:
+            if let request = ApprovalRequests.fileChangeRequest(from: params) { return .fileChangeApproval(request) }
+            return .unknown(method: method, params: params)
         default:
             return .unknown(method: method, params: params)
         }

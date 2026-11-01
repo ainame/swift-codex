@@ -46,10 +46,6 @@ public enum CommandAction: RawJSONRepresentable {
                 break
             }
         }
-        if let value = try? decodeJSONValue(ReadCommandAction.self, from: raw) { self = .read(value); return }
-        if let value = try? decodeJSONValue(ListFilesCommandAction.self, from: raw) { self = .listFiles(value); return }
-        if let value = try? decodeJSONValue(SearchCommandAction.self, from: raw) { self = .search(value); return }
-        if let value = try? decodeJSONValue(UnknownCommandAction.self, from: raw) { self = .unknownValue(value); return }
         self = .unknown(raw)
     }
 
