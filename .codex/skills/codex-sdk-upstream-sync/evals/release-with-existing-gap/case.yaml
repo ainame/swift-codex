@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: release-with-existing-gap
+expected_outcome: |
+  Revisit the unchanged cancellation gap, select a bounded implementation slice, plan actual bounded Claude Code support and independent verification, and draft an honest PR summary with gap outcomes and remaining work.

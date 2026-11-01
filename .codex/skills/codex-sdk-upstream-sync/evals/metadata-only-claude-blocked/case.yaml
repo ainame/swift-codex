@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: metadata-only-claude-blocked
+expected_outcome: |
+  Record the gap attempt and specific upstream blocker, actual failed Claude invocation and independent fallback, truthful metadata-only validation and remaining next steps; do not retry unchanged auth or block the PR indefinitely.
