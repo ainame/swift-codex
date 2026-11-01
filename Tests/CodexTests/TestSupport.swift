@@ -147,6 +147,20 @@ struct CodexStub {
             method = message.get("method")
             request_id = message.get("id")
 
+            if method is None:
+                append_jsonl("appserver.responses", message)
+                if scenario.get("concurrentServerRequests", False):
+                    write_message({"method": "test/serverResponse", "params": message})
+                continue
+            if method == "test/resolve":
+                write_message({"method": "serverRequest/resolved", "params": message["params"]})
+                continue
+            if method == "test/exit":
+                sys.exit(0)
+            if method in scenario.get("rpcResponses", {}):
+                write_message({"id": request_id, "result": scenario["rpcResponses"][method]})
+                continue
+
             if method == "initialize":
                 if initialize_close_stderr:
                     for entry in initialize_close_stderr:
@@ -271,6 +285,8 @@ struct CodexStub {
                         "method": step["method"],
                         "params": step["params"],
                     })
+                    if scenario.get("concurrentServerRequests", False):
+                        continue
                     response_line = sys.stdin.readline()
                     if not response_line:
                         sys.exit(0)
@@ -423,6 +439,8 @@ struct CodexStub {
 }
 
 struct AppServerScenario: Encodable {
+    var concurrentServerRequests: Bool
+    var rpcResponses: [String: JSONValue]
     var initializeResult: JSONObject
     var initializeCloseStderr: [String]
     var threadStartResponses: [JSONObject]
@@ -454,6 +472,8 @@ struct AppServerScenario: Encodable {
     var pluginListResponses: [JSONObject]
 
     init(
+        concurrentServerRequests: Bool = false,
+        rpcResponses: [String: JSONValue] = [:],
         initializeResult: JSONObject = appServerInitializeResult(),
         initializeCloseStderr: [String] = [],
         threadStartResponses: [JSONObject] = [],
@@ -484,6 +504,8 @@ struct AppServerScenario: Encodable {
         skillsExtraRootsSetResponses: [JSONObject] = [],
         pluginListResponses: [JSONObject] = []
     ) {
+        self.concurrentServerRequests = concurrentServerRequests
+        self.rpcResponses = rpcResponses
         self.initializeResult = initializeResult
         self.initializeCloseStderr = initializeCloseStderr
         self.threadStartResponses = threadStartResponses

@@ -323,8 +323,9 @@ A custom `serverRequestHandler` takes precedence over specialized handlers and r
 Without a handler, the SDK returns a tool failure (`success: false`). Requests preserve
 string and integer IDs, arbitrary JSON arguments, and unknown fields. Tool results can
 contain text and inline image/audio data URLs; upstream rejects remote image URLs and
-non-inline audio URLs. Handlers should complete without awaiting another RPC on the same
-client, because server requests currently execute on the transport's input path.
+non-inline audio URLs. Handlers may await another RPC on the same client. They run concurrently; protect shared
+application state with actors and make handlers cancellation-aware. Close, process termination,
+and `serverRequest/resolved` cancel outstanding handlers and discard late replies.
 
 ## Generated Models
 

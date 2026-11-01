@@ -9,6 +9,9 @@ actor CodexRPCTransport {
     private var runTask: Task<Void, Never>?
     private var requestCounter = 0
     private var pendingRequests: [String: CheckedContinuation<JSONValue, Error>] = [:]
+    // Handlers outlive the input callback, so the transport owns and cancels
+    // these tasks explicitly. All registry access remains actor-isolated.
+    private var serverRequestTasks: [JSONValue: (token: UUID, task: Task<Void, Never>)] = [:]
     private var pendingNotifications: [CodexNotification] = []
     private var pendingNotificationContinuations: [CheckedContinuation<CodexNotification, Error>] = []
     private var terminalError: Error?
@@ -64,6 +67,7 @@ actor CodexRPCTransport {
 
     func close() {
         isClosing = true
+        cancelServerRequests()
         logger.info("Closing RPC transport")
         outboundContinuation?.finish()
         outboundContinuation = nil
@@ -95,21 +99,35 @@ actor CodexRPCTransport {
                 "request_id": .string(id),
             ]
         )
-        return try await withCheckedThrowingContinuation { continuation in
-            pendingRequests[id] = continuation
-            do {
-                try send(
-                    .object([
-                        "id": .string(id),
-                        "method": .string(method),
-                        "params": .object(params),
-                    ])
-                )
-            } catch {
-                pendingRequests.removeValue(forKey: id)
-                continuation.resume(throwing: error)
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { continuation in
+                pendingRequests[id] = continuation
+                do {
+                    try send(
+                        .object([
+                            "id": .string(id),
+                            "method": .string(method),
+                            "params": .object(params),
+                        ])
+                    )
+                } catch {
+                    pendingRequests.removeValue(forKey: id)
+                    continuation.resume(throwing: error)
+                }
             }
+        } onCancel: {
+            Task { await self.cancelRequest(id) }
         }
+    }
+
+    private func cancelRequest(_ id: String) {
+        pendingRequests.removeValue(forKey: id)?.resume(throwing: CancellationError())
+    }
+
+    private func cancelServerRequests() {
+        for entry in serverRequestTasks.values { entry.task.cancel() }
+        serverRequestTasks.removeAll()
     }
 
     func notify(method: String, params: JSONObject) throws {
@@ -172,6 +190,9 @@ actor CodexRPCTransport {
     }
 
     private func finishTransport(error: Error?) {
+        cancelServerRequests()
+        outboundContinuation?.finish()
+        outboundContinuation = nil
         if isClosing {
             terminalError = terminalError ?? makeTransportClosedError()
         } else if let error {
@@ -196,6 +217,7 @@ actor CodexRPCTransport {
     }
 
     private func handleIncomingLine(_ line: String) async {
+        guard terminalError == nil, !isClosing else { return }
         do {
             let data = Data(line.utf8)
             let message = try JSONDecoder().decode(JSONObject.self, from: data)
@@ -205,7 +227,7 @@ actor CodexRPCTransport {
                     guard isValidServerRequestID(requestID) else {
                         throw CodexError.invalidRequestID
                     }
-                    try await handleServerRequest(
+                    scheduleServerRequest(
                         method: method,
                         requestID: requestID,
                         params: message["params"]
@@ -255,7 +277,19 @@ actor CodexRPCTransport {
         }
     }
 
-    private func handleServerRequest(method: String, requestID: JSONValue, params: JSONValue?) async throws {
+    private func scheduleServerRequest(method: String, requestID: JSONValue, params: JSONValue?) {
+        guard serverRequestTasks[requestID] == nil else {
+            finishTransport(error: CodexError.invalidResponse("Duplicate active server request ID"))
+            return
+        }
+        let token = UUID()
+        let task = Task {
+            await handleServerRequest(method: method, requestID: requestID, params: params, token: token)
+        }
+        serverRequestTasks[requestID] = (token, task)
+    }
+
+    private func handleServerRequest(method: String, requestID: JSONValue, params: JSONValue?, token: UUID) async {
         logger.debug(
             "Handling server request",
             metadata: [
@@ -264,12 +298,16 @@ actor CodexRPCTransport {
             ]
         )
         let result = await makeServerRequestResult(method: method, params: params)
-        try send(
+        // A handler may ignore cancellation. Never let it reply after close,
+        // resolution by another client, or replacement of its registry entry.
+        guard !Task.isCancelled, serverRequestTasks[requestID]?.token == token else { return }
+        serverRequestTasks.removeValue(forKey: requestID)
+        do { try send(
             .object([
                 "id": requestID,
                 "result": result.jsonValue,
             ])
-        )
+        ) } catch { finishTransport(error: error) }
     }
 
     private func makeServerRequestResult(method: String, params: JSONValue?) async -> ServerRequestResult {
@@ -342,6 +380,9 @@ actor CodexRPCTransport {
     }
 
     private func handleNotification(method: String, params: JSONValue) {
+        if method == "serverRequest/resolved", let id = params.objectValue?["requestId"] {
+            serverRequestTasks.removeValue(forKey: id)?.task.cancel()
+        }
         let notification = CodexNotification(method: method, params: params)
         logNotification(notification)
         if !pendingNotificationContinuations.isEmpty {
