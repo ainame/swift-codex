@@ -143,6 +143,15 @@ struct CodexStub {
             return default
 
         pending_sample_id = None
+        emit_sequences = scenario.get("emitSequences", {})
+        emit_counts = {}
+        turn_start_preludes = scenario.get("turnStartPreludes", [])
+
+        def write_steps(messages):
+            for entry in messages:
+                if entry.get("exit"):
+                    sys.exit(0)
+                write_message(entry)
 
         for raw_line in sys.stdin:
             if not raw_line:
@@ -164,6 +173,15 @@ struct CodexStub {
                 continue
             if method == "test/exit":
                 sys.exit(0)
+            if method == "test/emit":
+                write_steps(message["params"]["messages"])
+                continue
+            if method in emit_sequences:
+                emit_index = emit_counts.get(method, 0)
+                emit_counts[method] = emit_index + 1
+                write_message({"id": request_id, "result": scenario.get("rpcResponses", {}).get(method, {})})
+                write_steps(response_at(emit_sequences[method], emit_index, []))
+                continue
             if scenario.get("holdSampleForCancellation", False):
                 if method == "thread/sample":
                     pending_sample_id = request_id
@@ -291,6 +309,7 @@ struct CodexStub {
             if method == "turn/start":
                 response = response_at(turn_start_responses, turn_start_index, {})
                 sequence = response_at(turn_start_sequences, turn_start_index, [])
+                write_steps(response_at(turn_start_preludes, turn_start_index, []))
                 turn_start_index += 1
                 write_message({"id": request_id, "result": response})
                 for step in sequence:
@@ -465,6 +484,11 @@ struct AppServerScenario: Encodable {
     var holdSampleForCancellation: Bool
     var concurrentServerRequests: Bool
     var rpcResponses: [String: JSONValue]
+    /// Raw messages written after the Nth response to a method. A message
+    /// `{"exit": true}` makes the server exit (EOF) at that point.
+    var emitSequences: [String: [[JSONObject]]] = [:]
+    /// Raw messages written before the Nth `turn/start` response.
+    var turnStartPreludes: [[JSONObject]] = []
     var initializeResult: JSONObject
     var initializeCloseStderr: [String]
     var threadStartResponses: [JSONObject]

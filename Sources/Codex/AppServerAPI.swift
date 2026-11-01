@@ -164,6 +164,9 @@ public struct CodexConfig: Sendable {
     public var commandApprovalHandler: CommandApprovalHandler
     public var fileChangeApprovalHandler: FileChangeApprovalHandler
 
+    /// Buffer bounds for turn streams and the raw notification queue.
+    var notificationBufferLimits = NotificationBufferLimits()
+
     public init(
         codexPathOverride: String? = nil,
         launchArgsOverride: [String]? = nil,
@@ -331,10 +334,37 @@ public actor CodexRPCClient {
         try await transport.notify(method: method, params: params)
     }
 
+    /// Returns the next notification from the raw queue.
+    ///
+    /// The raw queue receives a copy of every notification, independently of
+    /// turn streams. Unread notifications are bounded; if older ones were
+    /// dropped, this throws `CodexError.notificationBacklogOverflow` once.
     public func nextNotification() async throws -> CodexNotification {
         try await transport.nextNotification()
     }
 
+    /// Streams the notifications of one turn, identified by thread and turn ID.
+    ///
+    /// Notifications received since this client processed the turn's
+    /// `turn/start` response are replayed first, so a turn that already
+    /// completed still yields its full history. Turn streams for different
+    /// turns run independently on the same client, and do not consume the raw
+    /// `nextNotification()` queue. Thread-scoped notifications without a turn
+    /// ID are delivered to every open turn of that thread; notifications
+    /// without a thread ID are only available from `nextNotification()`.
+    ///
+    /// Only one stream per turn may be active at a time. A stream that ends
+    /// before `turn/completed` releases the turn, and a later stream replays
+    /// the turn from its start. The stream finishes after `turn/completed`
+    /// and throws if the transport closes first.
+    public func turnStream(threadID: String, turnID: String) async throws -> AsyncThrowingStream<CodexNotification, Error> {
+        try Task.checkCancellation()
+        let (stream, continuation) = AsyncThrowingStream.makeStream(of: CodexNotification.self)
+        try await transport.attachTurnStream(TurnKey(threadID: threadID, turnID: turnID), continuation: continuation)
+        return stream
+    }
+
+    @available(*, deprecated, message: "Turn streams are routed per thread and turn; CodexTurnHandle.stream() no longer uses this guard.")
     public func acquireTurnConsumer(turnID: String) throws {
         if let activeTurnConsumer {
             logger.warning(
@@ -352,6 +382,7 @@ public actor CodexRPCClient {
         activeTurnConsumer = turnID
     }
 
+    @available(*, deprecated, message: "Turn streams are routed per thread and turn; CodexTurnHandle.stream() no longer uses this guard.")
     public func releaseTurnConsumer(turnID: String) {
         guard activeTurnConsumer == turnID else {
             return
@@ -865,15 +896,15 @@ public struct CodexThread: Sendable {
         for try await notification in stream {
             switch notification.payload {
             case .itemCompleted(let payload):
-                if payload.turnId == handle.id {
+                if payload.threadId == id, payload.turnId == handle.id {
                     items.append(payload.item)
                 }
             case .threadTokenUsageUpdated(let payload):
-                if payload.turnId == handle.id {
+                if payload.threadId == id, payload.turnId == handle.id {
                     usage = payload.tokenUsage
                 }
             case .turnCompleted(let payload):
-                if payload.turn.id == handle.id {
+                if payload.threadId == id, payload.turn.id == handle.id {
                     completedTurn = payload.turn
                 }
             default:
@@ -881,6 +912,7 @@ public struct CodexThread: Sendable {
             }
         }
 
+        try Task.checkCancellation()
         guard let completedTurn else {
             logger.error("Turn run did not receive completion event", metadata: ["thread_id": .string(id)])
             throw CodexError.invalidResponse("turn completed event not received")
@@ -1009,46 +1041,21 @@ public struct CodexTurnHandle: Sendable {
         return response
     }
 
+    /// Streams this turn's notifications. See `CodexRPCClient.turnStream(threadID:turnID:)`.
     public func stream() async throws -> AsyncThrowingStream<CodexNotification, Error> {
-        try await client.acquireTurnConsumer(turnID: id)
         logger.debug("Starting turn stream")
-        return AsyncThrowingStream { continuation in
-            let task = Task {
-                do {
-                    while true {
-                        let notification = try await client.nextNotification()
-                        continuation.yield(notification)
-                        if notification.method == "turn/completed",
-                           case .turnCompleted(let payload) = notification.payload,
-                           payload.turn.id == id {
-                            logger.info("Turn stream completed")
-                            continuation.finish()
-                            break
-                        }
-                    }
-                } catch {
-                    logger.error("Turn stream failed")
-                    continuation.finish(throwing: error)
-                }
-                await client.releaseTurnConsumer(turnID: id)
-            }
-            continuation.onTermination = { @Sendable _ in
-                task.cancel()
-                Task {
-                    await client.releaseTurnConsumer(turnID: id)
-                }
-            }
-        }
+        return try await client.turnStream(threadID: threadID, turnID: id)
     }
 
     public func run() async throws -> Turn {
         let stream = try await stream()
         var completedTurn: Turn?
         for try await notification in stream {
-            if case .turnCompleted(let payload) = notification.payload, payload.turn.id == id {
+            if case .turnCompleted(let payload) = notification.payload, payload.threadId == threadID, payload.turn.id == id {
                 completedTurn = payload.turn
             }
         }
+        try Task.checkCancellation()
         guard let completedTurn else {
             logger.error("Turn completion event not received")
             throw CodexError.invalidResponse("turn completed event not received")

@@ -13,13 +13,19 @@ actor CodexRPCTransport {
     private struct PendingRequest {
         let token: UUID
         let continuation: CheckedContinuation<JSONValue, Error>
+        /// Set for `turn/start`, whose response opens a turn stream route.
+        var turnStartThreadID: String?
     }
     private var pendingRequests: [String: PendingRequest] = [:]
     // Handlers outlive the input callback, so the transport owns and cancels
     // these tasks explicitly. All registry access remains actor-isolated.
     private var serverRequestTasks: [JSONValue: (token: UUID, task: Task<Void, Never>)] = [:]
+    // Raw notification queue. Every notification is copied here and, when
+    // thread scoped, into the turn router; neither consumer drains the other.
     private var pendingNotifications: [CodexNotification] = []
+    private var droppedRawNotifications = 0
     private var pendingNotificationContinuations: [(token: UUID, continuation: CheckedContinuation<CodexNotification, Error>)] = []
+    private var turnRouter: TurnStreamRouter
     private var terminalError: Error?
     private var stderrTail: [String] = []
     private var isClosing = false
@@ -27,6 +33,7 @@ actor CodexRPCTransport {
     init(config: CodexConfig, logger: Logger) {
         self.config = config
         self.logger = logger
+        self.turnRouter = TurnStreamRouter(limits: config.notificationBufferLimits)
         self.exec = CodexRPCExec(
             executablePathOverride: config.codexPathOverride,
             launchArgsOverride: config.launchArgsOverride,
@@ -50,6 +57,7 @@ actor CodexRPCTransport {
         terminalError = nil
         stderrTail.removeAll()
         pendingNotifications.removeAll()
+        droppedRawNotifications = 0
         callerRequestIDs.removeAll()
         logger.info("Starting RPC transport")
 
@@ -99,6 +107,7 @@ actor CodexRPCTransport {
             entry.continuation.resume(throwing: failure)
         }
         pendingNotificationContinuations.removeAll()
+        turnRouter.failAll(failure)
     }
 
     func request(method: String, params: JSONObject, requestID: String? = nil, cancelOnCancellation: String? = nil) async throws -> JSONValue {
@@ -122,7 +131,11 @@ actor CodexRPCTransport {
         return try await withTaskCancellationHandler {
             try Task.checkCancellation()
             return try await withCheckedThrowingContinuation { continuation in
-                pendingRequests[id] = PendingRequest(token: token, continuation: continuation)
+                let turnStartThreadID = method == "turn/start" ? params.stringValue(forKey: "threadId") : nil
+                pendingRequests[id] = PendingRequest(token: token, continuation: continuation, turnStartThreadID: turnStartThreadID)
+                if let turnStartThreadID {
+                    turnRouter.beginTurnStart(requestID: id, threadID: turnStartThreadID)
+                }
                 do {
                     try send(
                         .object([
@@ -133,6 +146,7 @@ actor CodexRPCTransport {
                     )
                 } catch {
                     pendingRequests.removeValue(forKey: id)
+                    turnRouter.cancelTurnStart(requestID: id)
                     continuation.resume(throwing: error)
                 }
             }
@@ -143,6 +157,7 @@ actor CodexRPCTransport {
 
     private func cancelRequest(_ id: String, token: UUID, cancelMethod: String?) {
         guard pendingRequests[id]?.token == token else { return }
+        turnRouter.cancelTurnStart(requestID: id)
         pendingRequests.removeValue(forKey: id)?.continuation.resume(throwing: CancellationError())
         if let cancelMethod {
             // Best effort control RPC, on this same process only. Its reply needs
@@ -168,6 +183,11 @@ actor CodexRPCTransport {
 
     func nextNotification() async throws -> CodexNotification {
         try Task.checkCancellation()
+        if droppedRawNotifications > 0 {
+            let dropped = droppedRawNotifications
+            droppedRawNotifications = 0
+            throw CodexError.notificationBacklogOverflow(droppedCount: dropped)
+        }
         if !pendingNotifications.isEmpty {
             return pendingNotifications.removeFirst()
         }
@@ -184,6 +204,28 @@ actor CodexRPCTransport {
         } onCancel: {
             Task { await self.cancelNotificationWait(token) }
         }
+    }
+
+    /// Attaches `continuation` as the only consumer of a turn's notifications,
+    /// replaying anything buffered since the `turn/start` response.
+    func attachTurnStream(_ key: TurnKey, continuation: TurnStreamRouter.Continuation) throws {
+        let token = UUID()
+        continuation.onTermination = { [weak self] _ in
+            guard let self else { return }
+            Task { await self.detachTurnStream(key, token: token) }
+        }
+        do {
+            try turnRouter.attach(key, token: token, continuation: continuation)
+        } catch CodexError.turnStreamUnavailable(_, _, let reason)
+            where (reason == .unknownTurn || reason == .transportClosed) && terminalError != nil {
+            // A closed transport explains an unknown or interrupted turn better.
+            throw terminalError ?? CodexError.transportClosed
+        }
+        logger.debug("Attached turn stream", metadata: ["thread_id": .string(key.threadID), "turn_id": .string(key.turnID)])
+    }
+
+    private func detachTurnStream(_ key: TurnKey, token: UUID) {
+        turnRouter.detach(key, token: token)
     }
 
     private func cancelNotificationWait(_ token: UUID) {
@@ -255,6 +297,7 @@ actor CodexRPCTransport {
             entry.continuation.resume(throwing: failure)
         }
         pendingNotificationContinuations.removeAll()
+        turnRouter.failAll(failure)
     }
 
     private func handleIncomingLine(_ line: String, generation: UUID) async {
@@ -296,6 +339,7 @@ actor CodexRPCTransport {
                         "error_message": .string(error.message),
                     ]
                 )
+                turnRouter.cancelTurnStart(requestID: requestID)
                 pendingRequests.removeValue(forKey: requestID)?.continuation.resume(
                     throwing: CodexRPCErrorMapper.map(code: error.code, message: error.message, data: error.data)
                 )
@@ -303,7 +347,18 @@ actor CodexRPCTransport {
             }
 
             logger.debug("Received RPC response", metadata: ["request_id": .string(requestID)])
-            pendingRequests.removeValue(forKey: requestID)?.continuation.resume(returning: message["result"] ?? .null)
+            let result = message["result"] ?? .null
+            guard let pending = pendingRequests.removeValue(forKey: requestID) else { return }
+            if let threadID = pending.turnStartThreadID {
+                // Open the route before any later input line is processed, so
+                // early turn events are replayed to a stream attached later.
+                if let turnID = result.objectValue?["turn"]?.objectValue?.stringValue(forKey: "id") {
+                    turnRouter.completeTurnStart(requestID: requestID, key: TurnKey(threadID: threadID, turnID: turnID))
+                } else {
+                    turnRouter.cancelTurnStart(requestID: requestID)
+                }
+            }
+            pending.continuation.resume(returning: result)
         } catch {
             finishTransport(error: error)
         }
@@ -446,12 +501,21 @@ actor CodexRPCTransport {
         }
         let notification = CodexNotification(method: method, params: params)
         logNotification(notification)
+        turnRouter.route(notification)
         if !pendingNotificationContinuations.isEmpty {
             let continuation = pendingNotificationContinuations.removeFirst()
             continuation.continuation.resume(returning: notification)
             return
         }
         pendingNotifications.append(notification)
+        let overflow = pendingNotifications.count - turnRouter.limits.maxRawBacklog
+        if overflow > 0 {
+            if droppedRawNotifications == 0 {
+                logger.debug("Raw notification backlog is full; dropping oldest unread notifications")
+            }
+            pendingNotifications.removeFirst(overflow)
+            droppedRawNotifications += overflow
+        }
     }
 
     private func logNotification(_ notification: CodexNotification) {

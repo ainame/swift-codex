@@ -162,7 +162,17 @@ for try await notification in try await handle.stream() {
 }
 ```
 
-Only one active turn consumer is supported per `CodexRPCClient`/`Codex` instance at a time.
+Turns on different threads, or different turns on the same client, can be streamed or run concurrently. Notifications are routed by both thread ID and turn ID. Events that arrive after `turn/start` returns but before `stream()` is called are replayed, including a turn that has already completed. Rules:
+
+- Thread-scoped notifications without a turn ID (for example `thread/status/changed`) go to every open turn of that thread.
+- Notifications without a thread ID are only available from `CodexRPCClient.nextNotification()`.
+- The raw queue receives its own copy of every notification, so it never takes events from a turn stream, or the reverse.
+- Each turn allows one active stream; a second concurrent `stream()` throws `CodexError.concurrentTurnConsumer`.
+- A stream that is cancelled or released before `turn/completed` frees the turn, and a later `stream()` replays it from the start. Release is asynchronous after the stream is deallocated or its task is cancelled.
+- After `turn/completed` has been delivered, the turn cannot be streamed again.
+- Closing the client or losing the process fails in-progress streams. Completed turns that were never streamed remain available.
+
+Buffers are bounded: 10,000 notifications of replay history per turn, 64 completed but unstreamed turns, and 10,000 unread raw notifications. An attached live stream continues if its replay history exceeds the limit, but a later replacement cannot replay it. An unavailable or incomplete replay throws `CodexError.turnStreamUnavailable` instead of yielding a truncated history. The raw queue drops its oldest entries and throws `CodexError.notificationBacklogOverflow` once.
 
 ## Structured Input
 

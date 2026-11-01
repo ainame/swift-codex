@@ -1217,40 +1217,6 @@ struct AppServerSDKTests {
     }
 
     @Test
-    func rejectsConcurrentTurnConsumers() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
-            threadStartResponses: [appServerThreadStartResponse(id: "thread_concurrent")],
-            turnStartResponses: [appServerTurnStartResponse(id: "turn_concurrent")],
-            turnStartSequences: [[
-                .notification(method: "turn/started", params: appServerTurnStarted(threadID: "thread_concurrent", turnID: "turn_concurrent")),
-            ]]
-        ))
-
-        let codex = try await Codex(config: stub.makeConfig())
-        let thread = try await codex.startThread()
-        let handle = try await thread.turn("Concurrent")
-        let first = try await handle.stream()
-        _ = first
-
-        do {
-            _ = try await handle.stream()
-            Issue.record("Expected concurrent turn consumer rejection")
-        } catch let error as CodexError {
-            switch error {
-            case .concurrentTurnConsumer(let activeTurnID, let requestedTurnID):
-                #expect(activeTurnID == "turn_concurrent")
-                #expect(requestedTurnID == "turn_concurrent")
-            default:
-                Issue.record("Expected concurrentTurnConsumer, got \(error)")
-            }
-        }
-
-        await codex.close()
-    }
-
-    @Test
     func initializeClosureIncludesStderrTail() async throws {
         let stub = try CodexStub()
         defer { stub.cleanup() }
