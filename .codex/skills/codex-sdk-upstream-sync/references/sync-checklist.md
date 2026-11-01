@@ -107,4 +107,4 @@ Include:
 - docs/version files updated
 - remaining gaps, especially schema features intentionally not exposed because Python does not expose them yet
 
-Every PR body also records gap selection/outcomes, actual Claude Code assistance or its blocker, independent validation, and remaining gaps with next steps. See the [report template](gap-closure-and-pr-report.md#pr-body-summary).
+Keep each PR body concise: Changes (including gap outcomes), optional Compatibility, Validation (including one Claude Code outcome/blocker bullet), and Remaining (link the full audit). Omit workflow narratives and exhaustive test/model lists. See the [report template](gap-closure-and-pr-report.md#pr-body-summary).

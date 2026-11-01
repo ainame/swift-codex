@@ -28,24 +28,34 @@ Separate local SDK tests, independent Examples builds, deterministic generation,
 
 ## PR body summary
 
-Include a concise, concrete summary in every PR body. Integrate it with the repository's PR template if present; omit conversational history, local transcript paths, credentials and memory citations. Use the final diff, not an abandoned plan:
+Write for a reviewer assessing the final diff. Use a linked upstream release and short commit label (link to the exact commit) plus the recorded parity target on one line. Then use this compact format, adapting an existing repository template when present:
 
 ```markdown
-Upstream basis: <release and exact commit>. Parity target: <Python SDK or focused raw schema>.
+Upstream: <release link> (<exact commit link, short label>) · <recorded parity target>.
 
-### Gap closure
-- Selected: <gap, impact, bounded scope and why it was prioritized>.
-- Outcome: <implemented or partially implemented, with behavioral evidence; otherwise concrete deferral/no-gap reason>.
+## Changes
+- <User-visible outcome, including the gap closed or the concrete reason it remains deferred.>
+- <Other meaningful outcomes; usually 3–5 bullets total.>
 
-### Claude Code support
-- <Actual role and useful findings; how they were addressed and independently reviewed.>
-- <If blocked: attempted action, actual failure and independent fallback. Never imply a review happened.>
+## Compatibility
+- <Actual migration or behavior change; omit this section when none applies.>
 
-### Validation
-- <Checks actually run and their results. Distinguish pending CI and unverified live integration.>
+## Validation
+- <Checks actually run and their results, grouped into 1–2 bullets.>
+- Claude Code: <actual role and outcome, or the real blocker and independent fallback; one short bullet.>
+- <Material pending or unverified gate, such as live integration.>
 
-### Remaining gaps
-- <Residual scope, compatibility limits and next useful steps; link the coverage audit.>
+## Remaining
+- <Top 1–2 residual gaps and next step; link UPSTREAM.md for the full audit.>
 ```
 
-Keep this short for simple PRs. A metadata-only PR still explains the gap attempt or justified deferral and the Claude attempt/outcome. No successful gap closure is guaranteed, but the attempt and its evidence must be visible.
+Keep simple PRs around 60–120 words and larger syncs around 150–250 words, excluding link URLs. These are editing targets, not reasons to hide material compatibility changes or blockers. Omit empty sections. If the audit finds no remaining gap, a short explicit statement is enough; do not invent one.
+
+- Put gap outcomes under Changes; avoid a second section repeating the same gap selection, impact and implementation story. Keep detailed prioritization and evidence in `UPSTREAM.md`.
+- Keep Claude support to one validation bullet. State whether help actually ran; a failure is not a successful review. Omit delegate-session history, internal role choreography and transcript paths.
+- Summarize tests by meaningful gates and result. Include a toolchain or command only when it helps reproduce the result or explains a limitation. Omit long fixture inventories, generated-file counts and routine command transcripts.
+- Link the full audit and changelog instead of enumerating every RPC, model or unresolved gap. Do not repeat the complete SHA when its commit link and `UPSTREAM.md` identify the exact basis.
+- Describe workflow or skill changes only if they are part of this PR's diff, in one Changes bullet. Do not append the workflow policy itself to the PR body.
+- Rewrite the body as scope changes; do not keep appending progress updates, abandoned plans or validation history. Omit credentials, memory citations and local filesystem paths.
+
+A metadata-only PR still uses a short Changes bullet for the gap attempt or justified deferral and a Validation bullet for the actual Claude attempt/outcome. Preserve separate local, hosted-CI and live-integration claims, but do not list irrelevant gates merely to fill the template. No successful gap closure is guaranteed; a concise, evidence-backed outcome is required.

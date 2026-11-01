@@ -63,7 +63,7 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - If there is an examples package, build it when the sync touches user-facing API.
 10. Handle the ship flow when requested.
    - If this process produces any repository changes, always create a PR for the sync branch before finishing. Do this for implementation changes, metadata-only changes, and workflow/skill fixes made during the sync.
-   - Include the required gap-closure, Claude Code, validation and remaining-gap summary from [gap closure and PR reporting](references/gap-closure-and-pr-report.md) in every PR body. Rewrite it around the final implementation when scope changes.
+   - Use the compact Changes / optional Compatibility / Validation / Remaining format from [gap closure and PR reporting](references/gap-closure-and-pr-report.md) in every PR body. Include gap outcomes in Changes and actual Claude support in one Validation bullet; link the full audit instead of repeating it. Rewrite the body around the final implementation when scope changes.
    - Commit each meaningful change before opening the PR.
    - Push the branch and open the PR as part of the same run. Do not stop after a local commit when the network and credentials allow PR creation.
    - If push or PR creation is blocked by authentication, permissions, or network state, keep the local commit, report the exact blocker, and record that the only incomplete step is PR creation.
