@@ -201,7 +201,7 @@ struct AppServerSDKTests {
                 ),
                 .request(
                     id: "unknown-1",
-                    method: "item/tool/requestUserInput",
+                    method: "future/serverRequest",
                     params: .object([
                         "threadId": .string("thread_cmd"),
                         "turnId": .string("turn_cmd"),
@@ -231,7 +231,7 @@ struct AppServerSDKTests {
         #expect(entries.contains {
             $0.level == .warning
                 && $0.message == "Returning default empty response for unknown server request"
-                && $0.metadata["method"] == "item/tool/requestUserInput"
+                && $0.metadata["method"] == "future/serverRequest"
         })
         #expect(!entries.contains { $0.message.contains("git push") })
         await codex.close()
@@ -655,18 +655,18 @@ struct AppServerSDKTests {
         let decodedAgentMessage = try decodeJSONValue(AgentMessageThreadItem.self, from: agentMessage.rawJSON)
         #expect(decodedAgentMessage.delivery == .async)
 
-        let image = ImageGenerationThreadItem(
+        let image = ResultThreadItem(
             failure: .usageLimitExceeded(UsageLimitExceededImageGenerationFailure(
                 limitId: "image_daily",
                 resetsAt: 1_780_000_500,
                 type: .usageLimitExceeded
             )),
             id: "image_149",
-            result: "",
             status: "failed",
-            type: .imageGeneration
+            type: .imageGeneration,
+            result: ""
         )
-        let decodedImage = try decodeJSONValue(ImageGenerationThreadItem.self, from: image.rawJSON)
+        let decodedImage = try decodeJSONValue(ResultThreadItem.self, from: image.rawJSON)
         if case .usageLimitExceeded(let failure) = try #require(decodedImage.failure) {
             #expect(failure.limitId == "image_daily")
         } else {
@@ -1211,40 +1211,6 @@ struct AppServerSDKTests {
             #expect(items.first?.objectValue?["type"] == .string("localImage"))
         } else {
             Issue.record("Expected turn/steer input array")
-        }
-
-        await codex.close()
-    }
-
-    @Test
-    func rejectsConcurrentTurnConsumers() async throws {
-        let stub = try CodexStub()
-        defer { stub.cleanup() }
-        try stub.configureAppServerInvocation(0, scenario: AppServerScenario(
-            threadStartResponses: [appServerThreadStartResponse(id: "thread_concurrent")],
-            turnStartResponses: [appServerTurnStartResponse(id: "turn_concurrent")],
-            turnStartSequences: [[
-                .notification(method: "turn/started", params: appServerTurnStarted(threadID: "thread_concurrent", turnID: "turn_concurrent")),
-            ]]
-        ))
-
-        let codex = try await Codex(config: stub.makeConfig())
-        let thread = try await codex.startThread()
-        let handle = try await thread.turn("Concurrent")
-        let first = try await handle.stream()
-        _ = first
-
-        do {
-            _ = try await handle.stream()
-            Issue.record("Expected concurrent turn consumer rejection")
-        } catch let error as CodexError {
-            switch error {
-            case .concurrentTurnConsumer(let activeTurnID, let requestedTurnID):
-                #expect(activeTurnID == "turn_concurrent")
-                #expect(requestedTurnID == "turn_concurrent")
-            default:
-                Issue.record("Expected concurrentTurnConsumer, got \(error)")
-            }
         }
 
         await codex.close()

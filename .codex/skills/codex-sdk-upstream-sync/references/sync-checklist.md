@@ -51,14 +51,21 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
 - Do not assume “latest release” means “newer than current pin”.
 - If moving the submodule pointer would drop already-vendored behavior, call that out explicitly.
 
-## 5. Port the implementation
+## 5. Attempt gap closure with Claude Code
+
+- For every PR, including metadata-only or workflow-only changes, revisit the full audit and unresolved `UPSTREAM.md` gaps; select a bounded, high-impact slice, including gaps unchanged upstream.
+- Attempt actual Claude Code exploration, implementation or review using the delegation skill when available. The orchestrator reviews the whole diff, runs the selected gates and makes commits.
+- If Claude cannot run, record its actual failure and continue independently. If a gap cannot safely be closed, record evidence, a reason and a next step rather than forcing a rewrite.
+- Follow [gap closure and PR reporting](gap-closure-and-pr-report.md) for the delegation contract and required PR summary. Respect no-op/release-only scope; no empty PR is required.
+
+## 6. Port the implementation
 
 - Update Swift sources for reviewed behavior changes.
 - Regenerate typed models when the vendored schema changed.
 - Add or revise tests for each ported change.
 - Keep intentional Swift-only differences explicit.
 
-## 6. Update metadata
+## 7. Update metadata
 
 - Update `UPSTREAM.md`:
   - vendored checkout path and pinned commit
@@ -78,19 +85,19 @@ Use this checklist when updating this Swift Codex SDK port from upstream `openai
 - Update `NOTICE` only if legal attribution changed.
 - If the repo versions releases to match upstream, update the visible release version references to that same upstream version.
 
-## 7. Verify
+## 8. Verify
 
 - Run `swift test` for behavior changes.
 - Run `swift build` if tests are not the right verification target.
 - Build examples if public API changed.
 
-## 8. Ship Flow
+## 9. Ship Flow
 
 - If the sync should ship immediately, open a PR for the sync branch first.
 - Merge the PR before creating the release tag.
 - Switch to the latest `main` and prepare the matching repository release there.
 
-## 9. Report
+## 10. Report
 
 Include:
 
@@ -99,3 +106,5 @@ Include:
 - main ported changes
 - docs/version files updated
 - remaining gaps, especially schema features intentionally not exposed because Python does not expose them yet
+
+Keep each PR body concise: Changes (including gap outcomes), optional Compatibility, Validation (including one Claude Code outcome/blocker bullet), and Remaining (link the full audit). Omit workflow narratives and exhaustive test/model lists. See the [report template](gap-closure-and-pr-report.md#pr-body-summary).

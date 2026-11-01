@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import keyword
 import re
+import subprocess
 from copy import deepcopy
 from pathlib import Path
 
@@ -33,6 +34,8 @@ SWIFT_RESERVED = {
 }
 
 ROOT_TYPES = {
+    "FeedbackSaveParams",
+    "FeedbackSaveResponse",
     "DynamicToolSpec",
     "DynamicToolCallParams",
     "DynamicToolCallResponse",
@@ -100,6 +103,40 @@ ROOT_TYPES = {
     "TokenUsageBreakdown",
     "SkillsExtraRootsSetResponse",
 }
+
+# These exports are intentionally absent from the stable combined schema.
+# Read the exact vendored experimental artifact, rather than maintaining copies.
+EXPERIMENTAL_ROOT_TYPES = {
+    "ThreadSampleParams", "ThreadSampleResponse",
+    "ThreadSampleCancelParams", "ThreadSampleCancelResponse",
+    "ThreadMemoryReadParams", "ThreadMemoryReadResponse",
+    "GcpSetupParams", "GcpSetupResponse",
+    "AccountSessionsListParams", "AccountSessionsResponse",
+    "AccountSessionsSwitchParams", "AccountSessionsSwitchResponse",
+}
+
+SERVER_HANDLER_ROOT_TYPES = {
+    "ToolRequestUserInputParams", "ToolRequestUserInputResponse",
+    "McpServerElicitationRequestParams", "McpServerElicitationRequestResponse",
+    "PermissionsRequestApprovalParams", "PermissionsRequestApprovalResponse",
+    "ChatgptAuthTokensRefreshParams", "ChatgptAuthTokensRefreshResponse",
+    "AttestationGenerateParams", "AttestationGenerateResponse",
+    "CurrentTimeReadParams", "CurrentTimeReadResponse",
+    "CommandExecutionRequestApprovalParams", "CommandExecutionRequestApprovalResponse",
+    "FileChangeRequestApprovalParams", "FileChangeRequestApprovalResponse",
+}
+
+
+def read_experimental_exports() -> dict[str, str]:
+    path = SCHEMA_PATH.parent.parent / "precomputed" / "app-server-exports-experimental.json.zst"
+    try:
+        from compression import zstd
+    except ImportError:
+        # Python <3.14 needs the zstd CLI; no third-party Python package required.
+        data = subprocess.run(["zstd", "-dc", str(path)], check=True, capture_output=True).stdout
+    else:
+        data = zstd.decompress(path.read_bytes())
+    return json.loads(data)["json_schema"]
 
 MANUAL_DEFINITIONS = {
     "ServerInfo": {
@@ -213,14 +250,16 @@ def normalize_object_unions(value):
         return [normalize_object_unions(item) for item in value]
     if not isinstance(value, dict):
         return value
-    result = {key: normalize_object_unions(item) for key, item in value.items()}
+    result = deepcopy(value)
     if result.get("type") == "object" and result.get("properties"):
         for key in ("anyOf", "oneOf"):
             for variant in result.get(key, []):
                 if variant.get("type") == "object" and "$ref" not in variant:
                     variant["properties"] = {**result["properties"], **variant.get("properties", {})}
                     variant["required"] = sorted(set(result.get("required", [])) | set(variant.get("required", [])))
-    return result
+    # Normalize children after merging, so constraints added by an outer union
+    # reach nested unions too (e.g. ThreadItem image-result lifecycle times).
+    return {key: normalize_object_unions(item) for key, item in result.items()}
 
 
 class Registry:
@@ -606,9 +645,23 @@ def render_union(name: str, schema: dict, registry: Registry) -> str:
         discriminant = discriminator_info(variant, name, registry, index)
         if discriminant is not None:
             object_dispatch.append((discriminant[0], discriminant[1], case_name))
-        decode_attempts.append(
-            f"        if let value = try? decodeJSONValue({type_name}.self, from: raw) {{ self = .{case_name}(value); return }}"
-        )
+        if schema_kind(registry.definitions.get(type_name, {})) == "union":
+            # A nested union always decodes via its unknown fallback. Only a
+            # recognized branch is evidence for an untagged outer match.
+            decode_attempts.append(
+                f"        if let value = try? decodeJSONValue({type_name}.self, from: raw) {{\n"
+                f"            if case .unknown = value {{ }} else {{ self = .{case_name}(value); return }}\n"
+                f"        }}"
+            )
+        else:
+            decode_attempts.append(
+                f"        if let value = try? decodeJSONValue({type_name}.self, from: raw) {{ self = .{case_name}(value); return }}"
+            )
+
+    if name in {"McpServerElicitationRequestParams", "CommandAction"}:
+        # Approval action types and elicitation modes select distinct UI flows.
+        # Never reinterpret an unsupported tag via open enum fallbacks.
+        decode_attempts = []
 
     string_cases = "\n".join(f"    case {union_string_case(value)}" for value in string_literals)
     string_init_cases = "\n".join(
@@ -874,17 +927,57 @@ def main() -> None:
     global REGISTRY
     schema = json.loads(SCHEMA_PATH.read_text())
     definitions = schema.get("definitions", {})
+    exports = read_experimental_exports()
+    for name in sorted(EXPERIMENTAL_ROOT_TYPES):
+        standalone = json.loads(exports[f"v2/{name}.json"])
+        for dependency, definition in standalone.pop("definitions", {}).items():
+            definitions.setdefault(dependency, definition)
+        definitions[name] = standalone
+    for name in sorted(SERVER_HANDLER_ROOT_TYPES):
+        standalone = json.loads(exports[f"{name}.json"])
+        for dependency, definition in standalone.pop("definitions", {}).items():
+            definitions.setdefault(dependency, definition)
+        definitions[name] = standalone
+    elicitation_variants = definitions["McpServerElicitationRequestParams"]["oneOf"]
+    elicitation_labels = {
+        "openai/userVerification": "UserVerification", "form": "Form",
+        "openai/form": "OpenaiForm", "openaiForm": "LegacyOpenaiForm", "url": "Url",
+    }
+    seen_modes = set()
+    for variant in elicitation_variants:
+        mode = variant["properties"]["mode"]["enum"][0]
+        if mode not in elicitation_labels or mode in seen_modes:
+            raise ValueError(f"Unexpected MCP elicitation mode: {mode}")
+        seen_modes.add(mode)
+        label = elicitation_labels[mode]
+        variant["title"] = f"{label}McpServerElicitationRequestParams"
+        # MCP payload schemas are application-owned JSON, including future types.
+        if "requestedSchema" in variant["properties"]:
+            variant["properties"]["requestedSchema"] = {}
+    if seen_modes != elicitation_labels.keys():
+        raise ValueError("MCP elicitation export is missing supported modes")
     # Server-request types are exported separately, including experimental APIs
     # omitted from the stable combined v2 schema. Use upstream files, not copies.
     for name in ("DynamicToolCallParams", "DynamicToolCallResponse"):
         standalone = json.loads((SCHEMA_PATH.parent / f"{name}.json").read_text())
         definitions.update(standalone.pop("definitions", {}))
         definitions[name] = standalone
+    # Rust uses serde(rename_all_fields = "camelCase") on this untagged
+    # response. Its schemars export misses that attribute on BrowserLogin.
+    switch_variants = definitions["AccountSessionsSwitchResponse"]["anyOf"]
+    switch_variants[0]["title"] = "SwitchedAccountSessionsSwitchResponse"
+    browser_login = switch_variants[1]
+    browser_login["title"] = "BrowserLoginAccountSessionsSwitchResponse"
+    browser_login["properties"] = {
+        "authUrl": browser_login["properties"]["auth_url"],
+        "loginId": browser_login["properties"]["login_id"],
+    }
+    browser_login["required"] = ["authUrl", "loginId"]
     definitions.update(MANUAL_DEFINITIONS)
     REGISTRY = Registry(normalize_object_unions(definitions))
 
     mapping = read_notification_registry()
-    for root in sorted(ROOT_TYPES):
+    for root in sorted(ROOT_TYPES | EXPERIMENTAL_ROOT_TYPES | SERVER_HANDLER_ROOT_TYPES):
         REGISTRY.include(root)
     for _, type_name in mapping:
         REGISTRY.include(type_name)

@@ -4,17 +4,23 @@
 import Foundation
 
 public struct PlanThreadItem2: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var id: String
     public var text: String
     public var type: PlanThreadItemType2
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         id: String,
         text: String,
         type: PlanThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.id = id
         self.text = text
         self.type = type
@@ -28,6 +34,8 @@ public struct PlanThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "PlanThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.id = payload.id
         self.text = payload.text
         self.type = payload.type
@@ -40,20 +48,26 @@ public struct PlanThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             id: id,
             text: text,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "text", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "id", "text", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var id: String
         var text: String
         var type: PlanThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case id
             case text
             case type

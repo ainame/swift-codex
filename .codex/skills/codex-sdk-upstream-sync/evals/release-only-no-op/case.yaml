@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: release-only-no-op
+expected_outcome: |
+  Finish a verified no-op without a PR or required Claude invocation; respect the user release gate and do not falsely report successful support.

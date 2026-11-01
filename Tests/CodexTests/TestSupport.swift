@@ -133,19 +133,69 @@ struct CodexStub {
             sys.stdout.write("\\n")
             sys.stdout.flush()
 
+        def record_raw_input(line):
+            with open(os.path.join(state_dir, f"{invocation}.appserver.raw-input.jsonl"), "a", encoding="utf-8") as handle:
+                handle.write(line)
+
         def response_at(entries, index, default):
             if index < len(entries):
                 return entries[index]
             return default
 
+        pending_sample_id = None
+        emit_sequences = scenario.get("emitSequences", {})
+        emit_counts = {}
+        turn_start_preludes = scenario.get("turnStartPreludes", [])
+
+        def write_steps(messages):
+            for entry in messages:
+                if entry.get("exit"):
+                    sys.exit(0)
+                write_message(entry)
+
         for raw_line in sys.stdin:
             if not raw_line:
                 break
             message = json.loads(raw_line)
+            record_raw_input(raw_line)
             append_jsonl("appserver.in", message)
 
             method = message.get("method")
             request_id = message.get("id")
+
+            if method is None:
+                append_jsonl("appserver.responses", message)
+                if scenario.get("concurrentServerRequests", False):
+                    write_message({"method": "test/serverResponse", "params": message})
+                continue
+            if method == "test/resolve":
+                write_message({"method": "serverRequest/resolved", "params": message["params"]})
+                continue
+            if method == "test/exit":
+                sys.exit(0)
+            if method == "test/emit":
+                write_steps(message["params"]["messages"])
+                continue
+            if method in emit_sequences:
+                emit_index = emit_counts.get(method, 0)
+                emit_counts[method] = emit_index + 1
+                write_message({"id": request_id, "result": scenario.get("rpcResponses", {}).get(method, {})})
+                write_steps(response_at(emit_sequences[method], emit_index, []))
+                continue
+            if scenario.get("holdSampleForCancellation", False):
+                if method == "thread/sample":
+                    pending_sample_id = request_id
+                    write_message({"method": "test/sampleStarted", "params": {"requestId": request_id}})
+                    continue
+                if method == "thread/sample/cancel":
+                    assert message["params"]["requestId"] == pending_sample_id
+                    write_message({"id": request_id, "result": {}})
+                    write_message({"id": pending_sample_id, "error": {"code": -32800, "message": "Sample cancelled"}})
+                    pending_sample_id = None
+                    continue
+            if method in scenario.get("rpcResponses", {}):
+                write_message({"id": request_id, "result": scenario["rpcResponses"][method]})
+                continue
 
             if method == "initialize":
                 if initialize_close_stderr:
@@ -259,6 +309,7 @@ struct CodexStub {
             if method == "turn/start":
                 response = response_at(turn_start_responses, turn_start_index, {})
                 sequence = response_at(turn_start_sequences, turn_start_index, [])
+                write_steps(response_at(turn_start_preludes, turn_start_index, []))
                 turn_start_index += 1
                 write_message({"id": request_id, "result": response})
                 for step in sequence:
@@ -271,9 +322,12 @@ struct CodexStub {
                         "method": step["method"],
                         "params": step["params"],
                     })
+                    if scenario.get("concurrentServerRequests", False):
+                        continue
                     response_line = sys.stdin.readline()
                     if not response_line:
                         sys.exit(0)
+                    record_raw_input(response_line)
                     append_jsonl("appserver.responses", json.loads(response_line))
                 continue
 
@@ -417,12 +471,24 @@ struct CodexStub {
         try decodeJSONLines(at: rootURL.appendingPathComponent("\(index).appserver.responses.jsonl"))
     }
 
+    func appServerRawInput(forInvocation index: Int) throws -> String {
+        String(decoding: try Data(contentsOf: rootURL.appendingPathComponent("\(index).appserver.raw-input.jsonl")), as: UTF8.self)
+    }
+
     func appServerOutboundMessages(forInvocation index: Int) throws -> [JSONObject] {
         try decodeJSONLines(at: rootURL.appendingPathComponent("\(index).appserver.out.jsonl"))
     }
 }
 
 struct AppServerScenario: Encodable {
+    var holdSampleForCancellation: Bool
+    var concurrentServerRequests: Bool
+    var rpcResponses: [String: JSONValue]
+    /// Raw messages written after the Nth response to a method. A message
+    /// `{"exit": true}` makes the server exit (EOF) at that point.
+    var emitSequences: [String: [[JSONObject]]] = [:]
+    /// Raw messages written before the Nth `turn/start` response.
+    var turnStartPreludes: [[JSONObject]] = []
     var initializeResult: JSONObject
     var initializeCloseStderr: [String]
     var threadStartResponses: [JSONObject]
@@ -454,6 +520,9 @@ struct AppServerScenario: Encodable {
     var pluginListResponses: [JSONObject]
 
     init(
+        holdSampleForCancellation: Bool = false,
+        concurrentServerRequests: Bool = false,
+        rpcResponses: [String: JSONValue] = [:],
         initializeResult: JSONObject = appServerInitializeResult(),
         initializeCloseStderr: [String] = [],
         threadStartResponses: [JSONObject] = [],
@@ -484,6 +553,9 @@ struct AppServerScenario: Encodable {
         skillsExtraRootsSetResponses: [JSONObject] = [],
         pluginListResponses: [JSONObject] = []
     ) {
+        self.holdSampleForCancellation = holdSampleForCancellation
+        self.concurrentServerRequests = concurrentServerRequests
+        self.rpcResponses = rpcResponses
         self.initializeResult = initializeResult
         self.initializeCloseStderr = initializeCloseStderr
         self.threadStartResponses = threadStartResponses

@@ -42,12 +42,12 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `83086188ae0614bd882818ff1aa23f3194962012` (`rust-v0.163.0`)
+- Vendored upstream commit: `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856` (`rust-v0.166.0`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
-The `rust-v0.163.0` sync adds `ThreadListOptions.excludedThreadIDs` and typed thread read-state notifications, including unread positions and revision tokens. Experimental read-state mutation and item-history read endpoints remain raw-RPC-only; experimental read-state fields on list/read responses remain available through `additionalFields`.
+The `rust-v0.166.0` sync adds typed file-ID and inline image generation results, item lifecycle timestamps, native usage cost, and process output-drain status. Image result models now use enum branches (`.fileId(...)` / `.result(...)`), and hook source paths use `LegacyAppPathString`. Sampling/cancellation, memory, GCP setup, account-session list/switch, and feedback now have typed RPC methods and high-level conveniences; the coverage audit records the remaining gaps.
 
 See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files, the raw app-server schema parity target used for this sync, and the remaining schema-only request surfaces not wrapped by the Swift convenience API yet.
 
@@ -162,7 +162,17 @@ for try await notification in try await handle.stream() {
 }
 ```
 
-Only one active turn consumer is supported per `CodexRPCClient`/`Codex` instance at a time.
+Turns on different threads, or different turns on the same client, can be streamed or run concurrently. Notifications are routed by both thread ID and turn ID. Events that arrive after `turn/start` returns but before `stream()` is called are replayed, including a turn that has already completed. Rules:
+
+- Thread-scoped notifications without a turn ID (for example `thread/status/changed`) go to every open turn of that thread.
+- Notifications without a thread ID are only available from `CodexRPCClient.nextNotification()`.
+- The raw queue receives its own copy of every notification, so it never takes events from a turn stream, or the reverse.
+- Each turn allows one active stream; a second concurrent `stream()` throws `CodexError.concurrentTurnConsumer`.
+- A stream that is cancelled or released before `turn/completed` frees the turn, and a later `stream()` replays it from the start. Release is asynchronous after the stream is deallocated or its task is cancelled.
+- After `turn/completed` has been delivered, the turn cannot be streamed again.
+- Closing the client or losing the process fails in-progress streams. Completed turns that were never streamed remain available.
+
+Buffers are bounded: 10,000 notifications of replay history per turn, 64 completed but unstreamed turns, and 10,000 unread raw notifications. An attached live stream continues if its replay history exceeds the limit, but a later replacement cannot replay it. An unavailable or incomplete replay throws `CodexError.turnStreamUnavailable` instead of yielding a truncated history. The raw queue drops its oldest entries and throws `CodexError.notificationBacklogOverflow` once.
 
 ## Structured Input
 
@@ -279,6 +289,22 @@ Known inbound approval requests are modeled as:
 - `ServerRequest.commandApproval`
 - `ServerRequest.fileChangeApproval`
 
+Both wrappers keep the simple properties (`command`, `workingDirectory`, `grantRoot`, ...) and add `params`, the full upstream model, and `rawParams`, the original JSON. `params` includes `kind`, `commandActions`, `networkApprovalContext`, the proposed amendments and unknown fields. For every upstream decision, use the typed handlers:
+
+```swift
+let config = CodexConfig(
+    commandExecutionRequestApprovalHandler: { params in
+        if let amendment = params.proposedExecpolicyAmendment {
+            return .init(decision: .acceptWithExecpolicyAmendment(execpolicyAmendment: amendment))
+        }
+        return .init(decision: params.kind == .writeStdin ? .decline : .acceptForSession)
+    },
+    fileChangeRequestApprovalHandler: { _ in .init(decision: .cancel) }
+)
+```
+
+Handler precedence is: `serverRequestHandler`, then the typed handler, then the simplified `commandApprovalHandler`/`fileChangeApprovalHandler`, which default to approve. A generic handler can return `.commandExecutionApproval(...)`, `.fileChangeApproval(...)` or `.approval(...)`. Invalid params return `-32602`, and a thrown typed handler returns `-32603` without the error text. Older servers that omit `startedAtMs` still reach the simplified and generic handlers, with `params == nil`. Typed handlers reject them with `-32602` rather than inventing a timestamp or approving through the default handler.
+
 Unknown request methods fall back to:
 
 - `ServerRequest.unknown(method:params:)`
@@ -323,8 +349,58 @@ A custom `serverRequestHandler` takes precedence over specialized handlers and r
 Without a handler, the SDK returns a tool failure (`success: false`). Requests preserve
 string and integer IDs, arbitrary JSON arguments, and unknown fields. Tool results can
 contain text and inline image/audio data URLs; upstream rejects remote image URLs and
-non-inline audio URLs. Handlers should complete without awaiting another RPC on the same
-client, because server requests currently execute on the transport's input path.
+non-inline audio URLs. Handlers may await another RPC on the same client. They run concurrently; protect shared
+application state with actors and make handlers cancellation-aware. Close, process termination,
+and `serverRequest/resolved` cancel outstanding handlers and discard late replies.
+
+## Sampling and Account Requests
+
+`CodexRPCClient` exposes `threadSample`, `threadSampleCancel`, `threadMemoryRead`,
+`gcpSetup`, `accountSessionList`, `accountSessionSwitch`, and `feedbackSave` with
+upstream-shaped parameter and response models. Experimental methods require
+`experimentalAPI: true` (the default). Generation requires Python 3.14 or the `zstd` CLI.
+
+High-level equivalents are `CodexThread.sample`/`memory` and
+`Codex.cancelSample`/`gcpSetup`/`accountSessions`/`switchAccountSession`/`saveFeedback`.
+For cancellable sampling, pass a unique `requestID` to `sample`, run it in a task,
+and call `cancelSample(requestID:)` concurrently. The ID identifies the RPC, not its
+source turn. Cancelling the Swift task stops waiting and sends a best-effort
+`thread/sample/cancel`, including when the request ID was generated automatically.
+Use the explicit cancellation API when you need confirmation from the server. Account switching returns either `.switched(...)` or
+`.browserLogin(...)`; the latter requires opening the supplied auth URL and awaiting
+`account/login/completed` through the notification APIs.
+
+## Dedicated Server Handlers
+
+`CodexConfig` accepts optional `userInputHandler`, `mcpElicitationHandler`,
+`permissionsApprovalHandler`, `authTokensRefreshHandler`, `attestationHandler` and
+`currentTimeHandler` closures. Each receives upstream-shaped typed parameters and
+returns its typed response asynchronously; these closures may throw. For example:
+
+```swift
+var config = CodexConfig()
+config.userInputHandler = { request in
+    // Ask through your application's UI and return answers keyed by question ID.
+    ToolRequestUserInputResponse(answers: [:])
+}
+config.permissionsApprovalHandler = { _ in
+    // Empty granted permissions deny the requested access.
+    PermissionsRequestApprovalResponse(permissions: GrantedPermissionProfile())
+}
+```
+
+A generic `serverRequestHandler` takes precedence and now receives the corresponding
+typed `ServerRequest` cases. It can return typed `ServerRequestResult` cases, raw
+`.json(...)`, or `.error(code:message:data:)`. Existing exhaustive switches must
+handle the new cases. Missing dedicated handlers return JSON-RPC `-32601`, malformed
+parameters `-32602`, and thrown failures `-32603`; exception text is omitted.
+
+Registering an attestation handler advertises `requestAttestation` automatically.
+For a generic handler, set `requestAttestation: true` explicitly. Set
+`mcpExtensions`, for example `["openai/form": .object([:])]`, to opt into MCP
+extensions your application supports. MCP `requestedSchema`, `content` and `_meta`
+remain arbitrary JSON. The SDK does not provide a form UI, refresh credentials,
+generate attestation tokens or choose a clock on your application's behalf.
 
 ## Generated Models
 

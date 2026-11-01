@@ -5,6 +5,7 @@ import Foundation
 
 public struct ProcessExitedNotification: ObjectModel {
     public var exitCode: Int
+    public var outputDrainTimedOut: Bool?
     public var processHandle: String
     public var stderr: String
     public var stderrCapReached: Bool
@@ -14,6 +15,7 @@ public struct ProcessExitedNotification: ObjectModel {
 
     public init(
         exitCode: Int,
+        outputDrainTimedOut: Bool? = nil,
         processHandle: String,
         stderr: String,
         stderrCapReached: Bool,
@@ -22,6 +24,7 @@ public struct ProcessExitedNotification: ObjectModel {
         additionalFields: JSONObject = [:]
     ) {
         self.exitCode = exitCode
+        self.outputDrainTimedOut = outputDrainTimedOut
         self.processHandle = processHandle
         self.stderr = stderr
         self.stderrCapReached = stderrCapReached
@@ -38,6 +41,7 @@ public struct ProcessExitedNotification: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "ProcessExitedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.exitCode = payload.exitCode
+        self.outputDrainTimedOut = payload.outputDrainTimedOut
         self.processHandle = payload.processHandle
         self.stderr = payload.stderr
         self.stderrCapReached = payload.stderrCapReached
@@ -53,6 +57,7 @@ public struct ProcessExitedNotification: ObjectModel {
     private var payload: Payload {
         Payload(
             exitCode: exitCode,
+            outputDrainTimedOut: outputDrainTimedOut,
             processHandle: processHandle,
             stderr: stderr,
             stderrCapReached: stderrCapReached,
@@ -61,10 +66,11 @@ public struct ProcessExitedNotification: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["exitCode", "processHandle", "stderr", "stderrCapReached", "stdout", "stdoutCapReached"]
+    private static let knownKeys: Set<String> = ["exitCode", "outputDrainTimedOut", "processHandle", "stderr", "stderrCapReached", "stdout", "stdoutCapReached"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var exitCode: Int
+        var outputDrainTimedOut: Bool?
         var processHandle: String
         var stderr: String
         var stderrCapReached: Bool
@@ -73,6 +79,7 @@ public struct ProcessExitedNotification: ObjectModel {
 
         enum CodingKeys: String, CodingKey {
             case exitCode
+            case outputDrainTimedOut
             case processHandle
             case stderr
             case stderrCapReached

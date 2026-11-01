@@ -14,7 +14,7 @@ public struct HookRunSummary: ObjectModel {
     public var id: String
     public var scope: HookScope
     public var source: HookSource?
-    public var sourcePath: AbsolutePathBuf
+    public var sourcePath: LegacyAppPathString
     public var startedAt: Int
     public var status: HookRunStatus
     public var statusMessage: String?
@@ -31,7 +31,7 @@ public struct HookRunSummary: ObjectModel {
         id: String,
         scope: HookScope,
         source: HookSource? = nil,
-        sourcePath: AbsolutePathBuf,
+        sourcePath: LegacyAppPathString,
         startedAt: Int,
         status: HookRunStatus,
         statusMessage: String? = nil,
@@ -114,7 +114,7 @@ public struct HookRunSummary: ObjectModel {
         var id: String
         var scope: HookScope
         var source: HookSource?
-        var sourcePath: AbsolutePathBuf
+        var sourcePath: LegacyAppPathString
         var startedAt: Int
         var status: HookRunStatus
         var statusMessage: String?

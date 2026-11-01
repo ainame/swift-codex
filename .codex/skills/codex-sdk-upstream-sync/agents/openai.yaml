@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex App-Server Sync"
-  short_description: "Sync Swift port with upstream Python app-server SDK"
-  default_prompt: "Use $codex-sdk-upstream-sync to update this Swift Codex SDK port from the latest relevant openai/codex Python app-server upstream, then refresh vendored upstream and recorded metadata."
+  short_description: "Sync upstream and close parity gaps with Claude Code"
+  default_prompt: "Use $codex-sdk-upstream-sync to update this Swift Codex SDK port from the latest relevant openai/codex Python app-server upstream, then refresh vendored upstream and recorded metadata. For each PR, attempt a focused existing gap with Claude Code support, independently review and verify the result, and use a concise PR body with Changes, optional Compatibility, Validation (one Claude Code outcome/blocker bullet), and Remaining (link the audit)."

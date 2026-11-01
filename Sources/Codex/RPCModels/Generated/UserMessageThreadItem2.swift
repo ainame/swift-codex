@@ -4,6 +4,8 @@
 import Foundation
 
 public struct UserMessageThreadItem2: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var clientId: String?
     public var content: [UserInput]
     public var id: String
@@ -11,12 +13,16 @@ public struct UserMessageThreadItem2: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         clientId: String? = nil,
         content: [UserInput],
         id: String,
         type: UserMessageThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.clientId = clientId
         self.content = content
         self.id = id
@@ -31,6 +37,8 @@ public struct UserMessageThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "UserMessageThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.clientId = payload.clientId
         self.content = payload.content
         self.id = payload.id
@@ -44,6 +52,8 @@ public struct UserMessageThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             clientId: clientId,
             content: content,
             id: id,
@@ -51,15 +61,19 @@ public struct UserMessageThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["clientId", "content", "id", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "clientId", "content", "id", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var clientId: String?
         var content: [UserInput]
         var id: String
         var type: UserMessageThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case clientId
             case content
             case id

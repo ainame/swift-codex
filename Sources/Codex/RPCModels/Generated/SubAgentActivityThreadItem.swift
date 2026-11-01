@@ -4,6 +4,8 @@
 import Foundation
 
 public struct SubAgentActivityThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var agentPath: String
     public var agentThreadId: String
     public var id: String
@@ -14,6 +16,8 @@ public struct SubAgentActivityThreadItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         agentPath: String,
         agentThreadId: String,
         id: String,
@@ -23,6 +27,8 @@ public struct SubAgentActivityThreadItem: ObjectModel {
         type: SubAgentActivityThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.agentPath = agentPath
         self.agentThreadId = agentThreadId
         self.id = id
@@ -40,6 +46,8 @@ public struct SubAgentActivityThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "SubAgentActivityThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.agentPath = payload.agentPath
         self.agentThreadId = payload.agentThreadId
         self.id = payload.id
@@ -56,6 +64,8 @@ public struct SubAgentActivityThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             agentPath: agentPath,
             agentThreadId: agentThreadId,
             id: id,
@@ -66,9 +76,11 @@ public struct SubAgentActivityThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentPath", "agentThreadId", "id", "kind", "model", "reasoningEffort", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "agentPath", "agentThreadId", "id", "kind", "model", "reasoningEffort", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var agentPath: String
         var agentThreadId: String
         var id: String
@@ -78,6 +90,8 @@ public struct SubAgentActivityThreadItem: ObjectModel {
         var type: SubAgentActivityThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case agentPath
             case agentThreadId
             case id

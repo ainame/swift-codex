@@ -4,6 +4,8 @@
 import Foundation
 
 public struct DynamicToolCallThreadItem2: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var arguments: JSONValue
     public var contentItems: [DynamicToolCallOutputContentItem]?
     public var durationMs: Int?
@@ -16,6 +18,8 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         arguments: JSONValue,
         contentItems: [DynamicToolCallOutputContentItem]? = nil,
         durationMs: Int? = nil,
@@ -27,6 +31,8 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
         type: DynamicToolCallThreadItemType2,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.arguments = arguments
         self.contentItems = contentItems
         self.durationMs = durationMs
@@ -46,6 +52,8 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "DynamicToolCallThreadItem2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.arguments = payload.arguments
         self.contentItems = payload.contentItems
         self.durationMs = payload.durationMs
@@ -64,6 +72,8 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             arguments: arguments,
             contentItems: contentItems,
             durationMs: durationMs,
@@ -76,9 +86,11 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["arguments", "contentItems", "durationMs", "id", "namespace", "status", "success", "tool", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "arguments", "contentItems", "durationMs", "id", "namespace", "status", "success", "tool", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var arguments: JSONValue
         var contentItems: [DynamicToolCallOutputContentItem]?
         var durationMs: Int?
@@ -90,6 +102,8 @@ public struct DynamicToolCallThreadItem2: ObjectModel {
         var type: DynamicToolCallThreadItemType2
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case arguments
             case contentItems
             case durationMs

@@ -7,6 +7,7 @@ public struct ThreadUsage: ObjectModel {
     public var estimatedUsageCreditsMicros: Int
     public var estimatedUsageUsdMicros: Int?
     public var groups: [ThreadUsageBreakdownGroup]
+    public var nativeUsageUsdMicros: Int?
     public var threadId: String
     public var additionalFields: JSONObject
 
@@ -14,12 +15,14 @@ public struct ThreadUsage: ObjectModel {
         estimatedUsageCreditsMicros: Int,
         estimatedUsageUsdMicros: Int? = nil,
         groups: [ThreadUsageBreakdownGroup],
+        nativeUsageUsdMicros: Int? = nil,
         threadId: String,
         additionalFields: JSONObject = [:]
     ) {
         self.estimatedUsageCreditsMicros = estimatedUsageCreditsMicros
         self.estimatedUsageUsdMicros = estimatedUsageUsdMicros
         self.groups = groups
+        self.nativeUsageUsdMicros = nativeUsageUsdMicros
         self.threadId = threadId
         self.additionalFields = additionalFields
     }
@@ -34,6 +37,7 @@ public struct ThreadUsage: ObjectModel {
         self.estimatedUsageCreditsMicros = payload.estimatedUsageCreditsMicros
         self.estimatedUsageUsdMicros = payload.estimatedUsageUsdMicros
         self.groups = payload.groups
+        self.nativeUsageUsdMicros = payload.nativeUsageUsdMicros
         self.threadId = payload.threadId
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
@@ -47,22 +51,25 @@ public struct ThreadUsage: ObjectModel {
             estimatedUsageCreditsMicros: estimatedUsageCreditsMicros,
             estimatedUsageUsdMicros: estimatedUsageUsdMicros,
             groups: groups,
+            nativeUsageUsdMicros: nativeUsageUsdMicros,
             threadId: threadId
         )
     }
 
-    private static let knownKeys: Set<String> = ["estimatedUsageCreditsMicros", "estimatedUsageUsdMicros", "groups", "threadId"]
+    private static let knownKeys: Set<String> = ["estimatedUsageCreditsMicros", "estimatedUsageUsdMicros", "groups", "nativeUsageUsdMicros", "threadId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var estimatedUsageCreditsMicros: Int
         var estimatedUsageUsdMicros: Int?
         var groups: [ThreadUsageBreakdownGroup]
+        var nativeUsageUsdMicros: Int?
         var threadId: String
 
         enum CodingKeys: String, CodingKey {
             case estimatedUsageCreditsMicros
             case estimatedUsageUsdMicros
             case groups
+            case nativeUsageUsdMicros
             case threadId
         }
     }

@@ -4,6 +4,8 @@
 import Foundation
 
 public struct CollabAgentToolCallThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var agentsStates: [String: CollabAgentState]
     public var id: String
     public var model: String?
@@ -17,6 +19,8 @@ public struct CollabAgentToolCallThreadItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         agentsStates: [String: CollabAgentState],
         id: String,
         model: String? = nil,
@@ -29,6 +33,8 @@ public struct CollabAgentToolCallThreadItem: ObjectModel {
         type: CollabAgentToolCallThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.agentsStates = agentsStates
         self.id = id
         self.model = model
@@ -49,6 +55,8 @@ public struct CollabAgentToolCallThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "CollabAgentToolCallThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.agentsStates = payload.agentsStates
         self.id = payload.id
         self.model = payload.model
@@ -68,6 +76,8 @@ public struct CollabAgentToolCallThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             agentsStates: agentsStates,
             id: id,
             model: model,
@@ -81,9 +91,11 @@ public struct CollabAgentToolCallThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["agentsStates", "id", "model", "prompt", "reasoningEffort", "receiverThreadIds", "senderThreadId", "status", "tool", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "agentsStates", "id", "model", "prompt", "reasoningEffort", "receiverThreadIds", "senderThreadId", "status", "tool", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var agentsStates: [String: CollabAgentState]
         var id: String
         var model: String?
@@ -96,6 +108,8 @@ public struct CollabAgentToolCallThreadItem: ObjectModel {
         var type: CollabAgentToolCallThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case agentsStates
             case id
             case model

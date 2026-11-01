@@ -1,11 +1,11 @@
 ---
 name: codex-sdk-upstream-sync
-description: Update this Swift Codex SDK port to match the latest relevant upstream `openai/codex` Python app-server SDK under `sdk/python/src/openai_codex` or the legacy `sdk/python/src/codex_app_server`, then refresh vendored upstream, typed model generation, and recorded metadata. Use when the user asks to sync upstream, bump `vendor/openai-codex`, catch up Python app-server behavior, compare against the v2 app-server schema, or update files like `UPSTREAM.md`, `README.md`, and `CHANGELOG.md` after parity work.
+description: Update this Swift Codex SDK port to match the latest relevant upstream `openai/codex` Python app-server SDK under `sdk/python/src/openai_codex` or the legacy `sdk/python/src/codex_app_server`, then refresh vendored upstream, typed model generation, and recorded metadata. Attempt focused parity-gap closure with Claude Code support and summarize the results in every sync PR. Use when the user asks to sync upstream, bump `vendor/openai-codex`, catch up Python app-server behavior, compare against the v2 app-server schema, or update files like `UPSTREAM.md`, `README.md`, and `CHANGELOG.md` after parity work.
 ---
 
 # Codex SDK Upstream Sync
 
-Sync this Swift port against the relevant upstream `openai/codex` Python app-server SDK and the vendored v2 app-server schema, then update code, tests, and metadata together.
+Sync this Swift port against the relevant upstream `openai/codex` Python app-server SDK and the vendored v2 app-server schema, then update code, tests, and metadata together. Each PR created or updated by this workflow also includes a focused attempt to close an existing coverage gap with Claude Code support; unchanged upstream features still count as gap candidates.
 
 ## Workflow
 
@@ -36,15 +36,21 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
 5. Decide the parity target explicitly.
    - Python SDK parity: match the public Python app-server client surface and behavior.
    - Raw app-server schema parity: match protocol features present in the v2 schema even if the Python SDK does not expose them yet.
-   - Do not silently switch between these modes. State which one the change is targeting.
-6. Port the changes end to end.
+   - Do not silently switch between these modes. Preserve the recorded target for metadata-only changes. If the supplied evidence does not identify a target, look it up in `UPSTREAM.md` or mark it unresolved rather than infer Python parity from unchanged files.
+6. Attempt focused gap closure with Claude Code support.
+   - Apply this to every PR created or updated through the skill, including metadata-only and workflow-only PRs. Respect release-only/no-op constraints; do not create an empty PR to satisfy the policy.
+   - Revisit the complete audit and `UPSTREAM.md`, rank relevant unresolved gaps by user impact and effort, and select a cohesive, reviewable slice. Prioritize runtime correctness and lifecycle gaps; do not skip existing gaps merely because this release leaves them unchanged.
+   - Attempt real Claude Code assistance for exploration, implementation or independent review, following [gap closure and PR reporting](references/gap-closure-and-pr-report.md). Use bounded delegation and retain ownership of review, verification and commits.
+   - Implement the selected slice end to end where feasible. If no safe gap fits, report the concrete reason and next step; do not invent work, overstate generated coverage or expand into an unrelated rewrite.
+   - If Claude Code cannot run, record the actual failure and continue authorized work independently. Do not claim that a login status or an unexecuted brief constitutes consultation.
+7. Port the changes end to end.
    - Update implementation files first.
    - Regenerate typed models when the vendored schema changed and this repo’s generator depends on it.
    - Trace each selected feature through public options, wire serialization, incoming dispatch, response encoding, and execution/notification handling. Adding generator roots alone does not complete a feature.
    - Update or add tests for each behavior change. Use upstream-shaped fixtures, including integer and string JSON-RPC request IDs, experimental capability negotiation, handler precedence, and unavailable-handler behavior when relevant.
    - Verify both high-level and raw RPC paths where the feature is exposed, and check that start-only fields are not sent on resume/fork. Preserve arbitrary JSON payloads and unknown fields.
    - Preserve intentional Swift-specific deviations unless the user asks to remove them.
-7. Refresh metadata and version references in the same pass.
+8. Refresh metadata and version references in the same pass.
    - If the repository vendors upstream as a submodule, keep the submodule pointer, `UPSTREAM.md`, and `CHANGELOG.md` aligned.
    - Update `UPSTREAM.md` with the exact upstream commit SHA, commit URL, review date, reviewed files or features, parity mode, and intentional deviations.
    - Update `CHANGELOG.md` with the vendored release or basis commit and the user-visible changes from the sync.
@@ -52,23 +58,24 @@ Sync this Swift port against the relevant upstream `openai/codex` Python app-ser
    - Update package or release version references only when the repository’s version should move because of the sync.
    - Update `NOTICE` only when attribution requirements actually changed.
    - If this repository intentionally versions releases to match stable upstream `openai/codex` releases, update those visible version references to the matching upstream version during the sync.
-8. Verify before concluding.
+9. Verify before concluding.
    - Run `swift test` for behavior changes. Use `swift build` only when tests are unavailable or the change is documentation-only.
    - If there is an examples package, build it when the sync touches user-facing API.
-9. Handle the ship flow when requested.
+10. Handle the ship flow when requested.
    - If this process produces any repository changes, always create a PR for the sync branch before finishing. Do this for implementation changes, metadata-only changes, and workflow/skill fixes made during the sync.
+   - Use the compact Changes / optional Compatibility / Validation / Remaining format from [gap closure and PR reporting](references/gap-closure-and-pr-report.md) in every PR body. Include gap outcomes in Changes and actual Claude support in one Validation bullet; link the full audit instead of repeating it. Rewrite the body around the final implementation when scope changes.
    - Commit each meaningful change before opening the PR.
    - Push the branch and open the PR as part of the same run. Do not stop after a local commit when the network and credentials allow PR creation.
    - If push or PR creation is blocked by authentication, permissions, or network state, keep the local commit, report the exact blocker, and record that the only incomplete step is PR creation.
    - If the requested automation should ship the sync immediately, create a PR for the sync branch first.
    - After the PR is merged, switch to the latest `main`, prepare the matching repository release version, tag it without a `v` prefix, and publish the GitHub release from `main`.
    - Do not create the release tag from the topic branch or from a pre-merge commit.
-10. Finish with a focused summary.
+11. Finish with a focused summary.
    - State the upstream commit and release tag used.
    - State whether the work targeted Python SDK parity or raw schema parity.
    - State the main features or files synced and distinguish generated model coverage, usable RPC support, local tests, and live integration verification.
    - State which metadata/version files were updated.
-   - Call out any upstream areas still not ported.
+   - Call out any upstream areas still not ported, the selected gap outcomes, and whether Claude Code assistance actually ran or was blocked.
 
 ## Comparison Rules
 

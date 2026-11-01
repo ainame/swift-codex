@@ -65,7 +65,9 @@ public enum UserInput: RawJSONRepresentable {
             }
         }
         if let value = try? decodeJSONValue(TextUserInput.self, from: raw) { self = .text(value); return }
-        if let value = try? decodeJSONValue(ImageUserInput.self, from: raw) { self = .image(value); return }
+        if let value = try? decodeJSONValue(ImageUserInput.self, from: raw) {
+            if case .unknown = value { } else { self = .image(value); return }
+        }
         if let value = try? decodeJSONValue(LocalImageUserInput.self, from: raw) { self = .localImage(value); return }
         if let value = try? decodeJSONValue(AudioUserInput.self, from: raw) { self = .audio(value); return }
         if let value = try? decodeJSONValue(LocalAudioUserInput.self, from: raw) { self = .localAudio(value); return }

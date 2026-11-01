@@ -151,7 +151,9 @@ public enum ThreadItem: RawJSONRepresentable {
         if let value = try? decodeJSONValue(WebSearchThreadItem.self, from: raw) { self = .webSearch(value); return }
         if let value = try? decodeJSONValue(ImageViewThreadItem.self, from: raw) { self = .imageView(value); return }
         if let value = try? decodeJSONValue(SleepThreadItem.self, from: raw) { self = .sleep(value); return }
-        if let value = try? decodeJSONValue(ImageGenerationThreadItem.self, from: raw) { self = .imageGeneration(value); return }
+        if let value = try? decodeJSONValue(ImageGenerationThreadItem.self, from: raw) {
+            if case .unknown = value { } else { self = .imageGeneration(value); return }
+        }
         if let value = try? decodeJSONValue(EnteredReviewModeThreadItem.self, from: raw) { self = .enteredReviewMode(value); return }
         if let value = try? decodeJSONValue(ExitedReviewModeThreadItem.self, from: raw) { self = .exitedReviewMode(value); return }
         if let value = try? decodeJSONValue(ContextCompactionThreadItem.self, from: raw) { self = .contextCompaction(value); return }

@@ -21,6 +21,8 @@ public enum PlanType: RawJSONRepresentable {
     case edu
     case eduPlus
     case eduPro
+    case sci
+    case sciPlus
     case unknown
     case unrecognized(String)
 
@@ -44,6 +46,8 @@ public enum PlanType: RawJSONRepresentable {
         case "edu": self = .edu
         case "edu_plus": self = .eduPlus
         case "edu_pro": self = .eduPro
+        case "sci": self = .sci
+        case "sci_plus": self = .sciPlus
         case "unknown": self = .unknown
         default:
             self = .unrecognized(value)
@@ -73,6 +77,8 @@ public enum PlanType: RawJSONRepresentable {
         case .edu: return "edu"
         case .eduPlus: return "edu_plus"
         case .eduPro: return "edu_pro"
+        case .sci: return "sci"
+        case .sciPlus: return "sci_plus"
         case .unknown: return "unknown"
         case .unrecognized(let value):
             return value

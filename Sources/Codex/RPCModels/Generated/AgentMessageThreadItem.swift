@@ -4,6 +4,8 @@
 import Foundation
 
 public struct AgentMessageThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var delivery: AgentMessageDelivery?
     public var id: String
     public var memoryCitation: MemoryCitation?
@@ -14,6 +16,8 @@ public struct AgentMessageThreadItem: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         delivery: AgentMessageDelivery? = nil,
         id: String,
         memoryCitation: MemoryCitation? = nil,
@@ -23,6 +27,8 @@ public struct AgentMessageThreadItem: ObjectModel {
         type: AgentMessageThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.delivery = delivery
         self.id = id
         self.memoryCitation = memoryCitation
@@ -40,6 +46,8 @@ public struct AgentMessageThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "AgentMessageThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.delivery = payload.delivery
         self.id = payload.id
         self.memoryCitation = payload.memoryCitation
@@ -56,6 +64,8 @@ public struct AgentMessageThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             delivery: delivery,
             id: id,
             memoryCitation: memoryCitation,
@@ -66,9 +76,11 @@ public struct AgentMessageThreadItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["delivery", "id", "memoryCitation", "phase", "questions", "text", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "delivery", "id", "memoryCitation", "phase", "questions", "text", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var delivery: AgentMessageDelivery?
         var id: String
         var memoryCitation: MemoryCitation?
@@ -78,6 +90,8 @@ public struct AgentMessageThreadItem: ObjectModel {
         var type: AgentMessageThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case delivery
             case id
             case memoryCitation

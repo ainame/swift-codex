@@ -8,6 +8,28 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Changed
+
+- Isolate reopened clients from stale process callbacks, cancel outgoing waits by token, and forward Swift task cancellation to server-side sampling.
+- Dispatch server handlers concurrently so nested RPCs can complete; cancel outstanding handlers on close, process termination or server resolution, and suppress late replies.
+- Updated the vendored upstream basis to `rust-v0.166.0` (`6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`). Other experimental request fields remain outside the Swift convenience APIs.
+- Regenerated item lifecycle timestamps, native usage cost, process output-drain status, and new plan/error/hook enum cases. Fixed shared schema fields propagating through nested unions and preserved outer unknown fallbacks when a nested union does not recognize the payload.
+- Breaking handler API changes: recognized requests now arrive as typed `ServerRequest` cases instead of `.unknown`. New request/result cases require updating exhaustive switches.
+- Turn streams for different threads or turns now run concurrently on one client. Notifications are routed by thread and turn ID, events received before `stream()` are replayed, and the raw `nextNotification()` queue receives its own copy instead of competing with streams. A second stream for the same turn still throws `concurrentTurnConsumer`. `acquireTurnConsumer`/`releaseTurnConsumer` are deprecated and unused.
+- Notification buffers are bounded: an unread raw backlog over 10,000 drops the oldest entries and throws `notificationBacklogOverflow` once; turns whose history was evicted or exceeded the replay limit throw `turnStreamUnavailable` instead of yielding a partial stream. Notifications without a thread ID are no longer delivered to turn streams; read them with `nextNotification()`.
+- Invalid nested typed handler results now produce per-request errors instead of trapping during model encoding; cancelling a high-level run reports `CancellationError`.
+- Approval requests are validated against the upstream schema. Malformed command/file approval params now return `-32602` instead of reaching the approval handler with empty IDs, and reach a generic handler as `.unknown`.
+- Breaking API changes: `CodexError` gains `turnStreamUnavailable` and `notificationBacklogOverflow`, and `ServerRequestResult` gains `commandExecutionApproval` and `fileChangeApproval`; exhaustive switches need updating.
+- Breaking generated API changes: image generation items now use file-ID/inline-result enum branches; construct `ResultThreadItem` for inline results. Hook source paths now use `LegacyAppPathString` instead of `AbsolutePathBuf`.
+
+### Added
+
+- `CodexRPCClient.turnStream(threadID:turnID:)` for low-level per-turn streams.
+- Typed command and file change approval handlers (`commandExecutionRequestApprovalHandler`, `fileChangeRequestApprovalHandler`) that return every upstream decision, including session, cancel, execpolicy and network policy amendments. `CommandApprovalRequest`/`FileChangeApprovalRequest` now carry full typed `params` and the original `rawParams` for simplified and generic handlers.
+- Dedicated typed user-input, MCP elicitation, permission, auth-refresh, attestation and client-time handlers, with capability negotiation and JSON-RPC errors for missing, malformed or failed handlers. Generic handlers retain precedence.
+- Typed sampling/cancellation, memory, GCP setup, account-session list/switch, and feedback APIs, including high-level conveniences and caller-selected sampling request IDs.
+- Typed image generation file references, generation IDs and input images, with existing notification and history decoding and unknown-field preservation.
+
 ## [0.163.0] - 2026-10-17
 
 ### Added

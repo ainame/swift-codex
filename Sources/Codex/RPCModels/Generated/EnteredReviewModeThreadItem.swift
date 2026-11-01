@@ -4,17 +4,23 @@
 import Foundation
 
 public struct EnteredReviewModeThreadItem: ObjectModel {
+    public var completedAtMs: Int?
+    public var startedAtMs: Int?
     public var id: String
     public var review: String
     public var type: EnteredReviewModeThreadItemType
     public var additionalFields: JSONObject
 
     public init(
+        completedAtMs: Int? = nil,
+        startedAtMs: Int? = nil,
         id: String,
         review: String,
         type: EnteredReviewModeThreadItemType,
         additionalFields: JSONObject = [:]
     ) {
+        self.completedAtMs = completedAtMs
+        self.startedAtMs = startedAtMs
         self.id = id
         self.review = review
         self.type = type
@@ -28,6 +34,8 @@ public struct EnteredReviewModeThreadItem: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "EnteredReviewModeThreadItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.completedAtMs = payload.completedAtMs
+        self.startedAtMs = payload.startedAtMs
         self.id = payload.id
         self.review = payload.review
         self.type = payload.type
@@ -40,20 +48,26 @@ public struct EnteredReviewModeThreadItem: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            completedAtMs: completedAtMs,
+            startedAtMs: startedAtMs,
             id: id,
             review: review,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "review", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "id", "review", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var completedAtMs: Int?
+        var startedAtMs: Int?
         var id: String
         var review: String
         var type: EnteredReviewModeThreadItemType
 
         enum CodingKeys: String, CodingKey {
+            case completedAtMs
+            case startedAtMs
             case id
             case review
             case type

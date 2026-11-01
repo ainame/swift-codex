@@ -6,6 +6,12 @@ public enum ApprovalDecision: String, Sendable, Hashable, Codable {
     case deny
 }
 
+/// A command execution approval request (`item/commandExecution/requestApproval`).
+///
+/// The flat properties are a convenience subset. `params` carries the full
+/// upstream metadata, such as `kind`, `commandActions`,
+/// `networkApprovalContext` and proposed policy amendments, and `rawParams`
+/// carries the original JSON including unknown fields.
 public struct CommandApprovalRequest: Sendable, Hashable, Codable {
     public var threadID: String
     public var turnID: String
@@ -14,6 +20,11 @@ public struct CommandApprovalRequest: Sendable, Hashable, Codable {
     public var command: String?
     public var workingDirectory: String?
     public var reason: String?
+    /// Full upstream params. `nil` only for older servers that omit
+    /// `startedAtMs`; the SDK does not invent a timestamp for them.
+    public var params: CommandExecutionRequestApprovalParams?
+    /// The original request params, including unknown fields.
+    public var rawParams: JSONValue?
 
     public init(
         threadID: String,
@@ -22,7 +33,9 @@ public struct CommandApprovalRequest: Sendable, Hashable, Codable {
         approvalID: String? = nil,
         command: String? = nil,
         workingDirectory: String? = nil,
-        reason: String? = nil
+        reason: String? = nil,
+        params: CommandExecutionRequestApprovalParams? = nil,
+        rawParams: JSONValue? = nil
     ) {
         self.threadID = threadID
         self.turnID = turnID
@@ -31,28 +44,40 @@ public struct CommandApprovalRequest: Sendable, Hashable, Codable {
         self.command = command
         self.workingDirectory = workingDirectory
         self.reason = reason
+        self.params = params
+        self.rawParams = rawParams
     }
 }
 
+/// A file change approval request (`item/fileChange/requestApproval`).
+/// See `CommandApprovalRequest` for the meaning of `params` and `rawParams`.
 public struct FileChangeApprovalRequest: Sendable, Hashable, Codable {
     public var threadID: String
     public var turnID: String
     public var itemID: String
     public var reason: String?
     public var grantRoot: String?
+    /// Full upstream params. `nil` only for older servers that omit `startedAtMs`.
+    public var params: FileChangeRequestApprovalParams?
+    /// The original request params, including unknown fields.
+    public var rawParams: JSONValue?
 
     public init(
         threadID: String,
         turnID: String,
         itemID: String,
         reason: String? = nil,
-        grantRoot: String? = nil
+        grantRoot: String? = nil,
+        params: FileChangeRequestApprovalParams? = nil,
+        rawParams: JSONValue? = nil
     ) {
         self.threadID = threadID
         self.turnID = turnID
         self.itemID = itemID
         self.reason = reason
         self.grantRoot = grantRoot
+        self.params = params
+        self.rawParams = rawParams
     }
 }
 
@@ -60,20 +85,60 @@ public enum ServerRequest: Sendable, Hashable, Codable {
     case commandApproval(CommandApprovalRequest)
     case fileChangeApproval(FileChangeApprovalRequest)
     case dynamicToolCall(DynamicToolCallParams)
+    case userInput(ToolRequestUserInputParams)
+    case mcpElicitation(McpServerElicitationRequestParams)
+    case permissionsApproval(PermissionsRequestApprovalParams)
+    case authTokensRefresh(ChatgptAuthTokensRefreshParams)
+    case attestation(AttestationGenerateParams)
+    case currentTime(CurrentTimeReadParams)
     case unknown(method: String, params: JSONValue?)
 }
 
 public enum ServerRequestResult: Sendable, Hashable, Codable {
+    /// Simplified approval: `approve` is sent as `accept`, `deny` as `decline`.
     case approval(ApprovalDecision)
+    /// Any upstream command decision, including session, cancel and amendments.
+    case commandExecutionApproval(CommandExecutionRequestApprovalResponse)
+    /// Any upstream file change decision, including session and cancel.
+    case fileChangeApproval(FileChangeRequestApprovalResponse)
     case json(JSONValue)
     case dynamicToolCall(DynamicToolCallResponse)
+    case userInput(ToolRequestUserInputResponse)
+    case mcpElicitation(McpServerElicitationRequestResponse)
+    case permissionsApproval(PermissionsRequestApprovalResponse)
+    case authTokensRefresh(ChatgptAuthTokensRefreshResponse)
+    case attestation(AttestationGenerateResponse)
+    case currentTime(CurrentTimeReadResponse)
+    case error(code: Int, message: String, data: JSONValue? = nil)
 
-    var jsonValue: JSONValue {
+    var isError: Bool {
+        if case .error = self { return true }
+        return false
+    }
+
+    func wireJSON() throws -> JSONValue {
         switch self {
         case .approval(let decision):
             return .object(["decision": .string(decision == .approve ? "accept" : "decline")])
-        case .dynamicToolCall(let response):
-            return response.rawJSON
+        case .commandExecutionApproval(let response):
+            var object = response.additionalFields
+            object["decision"] = try encodeJSONValue(response.decision)
+            return .object(object)
+        case .fileChangeApproval(let response):
+            var object = response.additionalFields
+            object["decision"] = try encodeJSONValue(response.decision)
+            return .object(object)
+        case .dynamicToolCall(let response): return try encodeJSONValue(response)
+        case .userInput(let response): return try encodeJSONValue(response)
+        case .mcpElicitation(let response): return try encodeJSONValue(response)
+        case .permissionsApproval(let response): return try encodeJSONValue(response)
+        case .authTokensRefresh(let response): return try encodeJSONValue(response)
+        case .attestation(let response): return try encodeJSONValue(response)
+        case .currentTime(let response): return try encodeJSONValue(response)
+        case .error(let code, let message, let data):
+            var payload: JSONObject = ["code": .number(Double(code)), "message": .string(message)]
+            if let data { payload["data"] = data }
+            return .object(payload)
         case .json(let value):
             return value
         }
@@ -97,10 +162,18 @@ public struct RunResult: Sendable, Hashable, Codable {
 }
 
 public struct CodexConfig: Sendable {
+    public typealias UserInputHandler = @Sendable (ToolRequestUserInputParams) async throws -> ToolRequestUserInputResponse
+    public typealias McpElicitationHandler = @Sendable (McpServerElicitationRequestParams) async throws -> McpServerElicitationRequestResponse
+    public typealias PermissionsApprovalHandler = @Sendable (PermissionsRequestApprovalParams) async throws -> PermissionsRequestApprovalResponse
+    public typealias AuthTokensRefreshHandler = @Sendable (ChatgptAuthTokensRefreshParams) async throws -> ChatgptAuthTokensRefreshResponse
+    public typealias AttestationHandler = @Sendable (AttestationGenerateParams) async throws -> AttestationGenerateResponse
+    public typealias CurrentTimeHandler = @Sendable (CurrentTimeReadParams) async throws -> CurrentTimeReadResponse
     public typealias ServerRequestHandler = @Sendable (ServerRequest) async -> ServerRequestResult
     public typealias DynamicToolCallHandler = @Sendable (DynamicToolCallParams) async -> DynamicToolCallResponse
     public typealias CommandApprovalHandler = @Sendable (CommandApprovalRequest) async -> ApprovalDecision
     public typealias FileChangeApprovalHandler = @Sendable (FileChangeApprovalRequest) async -> ApprovalDecision
+    public typealias CommandExecutionRequestApprovalHandler = @Sendable (CommandExecutionRequestApprovalParams) async throws -> CommandExecutionRequestApprovalResponse
+    public typealias FileChangeRequestApprovalHandler = @Sendable (FileChangeRequestApprovalParams) async throws -> FileChangeRequestApprovalResponse
 
     public var codexPathOverride: String?
     public var launchArgsOverride: [String]?
@@ -113,11 +186,33 @@ public struct CodexConfig: Sendable {
     public var clientTitle: String
     public var clientVersion: String
     public var experimentalAPI: Bool
+    /// Opt into attestation for a generic handler. Dedicated handlers opt in automatically.
+    public var requestAttestation: Bool
+    /// Explicit MCP extension declarations, for example ["openai/form": .object([:])].
+    public var mcpExtensions: JSONObject?
     /// A custom server request handler takes precedence over specialized handlers.
     public var serverRequestHandler: ServerRequestHandler?
     public var dynamicToolCallHandler: DynamicToolCallHandler?
+    public var userInputHandler: UserInputHandler?
+    public var mcpElicitationHandler: McpElicitationHandler?
+    public var permissionsApprovalHandler: PermissionsApprovalHandler?
+    public var authTokensRefreshHandler: AuthTokensRefreshHandler?
+    public var attestationHandler: AttestationHandler?
+    public var currentTimeHandler: CurrentTimeHandler?
+    /// Typed command approval with every upstream decision. When set, it is
+    /// used instead of `commandApprovalHandler`. Requests from older servers
+    /// that omit `startedAtMs` are rejected with -32602 rather than approved
+    /// through the simplified handler.
+    public var commandExecutionRequestApprovalHandler: CommandExecutionRequestApprovalHandler?
+    /// Typed file change approval; see `commandExecutionRequestApprovalHandler`.
+    public var fileChangeRequestApprovalHandler: FileChangeRequestApprovalHandler?
+
+    /// Simplified approval handlers, used when no typed or generic handler is set.
     public var commandApprovalHandler: CommandApprovalHandler
     public var fileChangeApprovalHandler: FileChangeApprovalHandler
+
+    /// Buffer bounds for turn streams and the raw notification queue.
+    var notificationBufferLimits = NotificationBufferLimits()
 
     public init(
         codexPathOverride: String? = nil,
@@ -131,8 +226,19 @@ public struct CodexConfig: Sendable {
         clientTitle: String = "swift-codex",
         clientVersion: String = "dev",
         experimentalAPI: Bool = true,
+        requestAttestation: Bool = false,
+        mcpExtensions: JSONObject? = nil,
         serverRequestHandler: ServerRequestHandler? = nil,
         dynamicToolCallHandler: DynamicToolCallHandler? = nil,
+        userInputHandler: UserInputHandler? = nil,
+        mcpElicitationHandler: McpElicitationHandler? = nil,
+        permissionsApprovalHandler: PermissionsApprovalHandler? = nil,
+        authTokensRefreshHandler: AuthTokensRefreshHandler? = nil,
+        attestationHandler: AttestationHandler? = nil,
+        currentTimeHandler: CurrentTimeHandler? = nil,
+        commandExecutionRequestApprovalHandler: CommandExecutionRequestApprovalHandler? = nil,
+        fileChangeRequestApprovalHandler: FileChangeRequestApprovalHandler? = nil,
+
         commandApprovalHandler: @escaping CommandApprovalHandler = { _ in .approve },
         fileChangeApprovalHandler: @escaping FileChangeApprovalHandler = { _ in .approve }
     ) {
@@ -147,8 +253,19 @@ public struct CodexConfig: Sendable {
         self.clientTitle = clientTitle
         self.clientVersion = clientVersion
         self.experimentalAPI = experimentalAPI
+        self.requestAttestation = requestAttestation
+        self.mcpExtensions = mcpExtensions
         self.serverRequestHandler = serverRequestHandler
         self.dynamicToolCallHandler = dynamicToolCallHandler
+        self.userInputHandler = userInputHandler
+        self.mcpElicitationHandler = mcpElicitationHandler
+        self.permissionsApprovalHandler = permissionsApprovalHandler
+        self.authTokensRefreshHandler = authTokensRefreshHandler
+        self.attestationHandler = attestationHandler
+        self.currentTimeHandler = currentTimeHandler
+        self.commandExecutionRequestApprovalHandler = commandExecutionRequestApprovalHandler
+        self.fileChangeRequestApprovalHandler = fileChangeRequestApprovalHandler
+
         self.commandApprovalHandler = commandApprovalHandler
         self.fileChangeApprovalHandler = fileChangeApprovalHandler
     }
@@ -211,6 +328,11 @@ public actor CodexRPCClient {
 
         logger.info("Initializing Codex RPC client")
         try await start()
+        var capabilities: JSONObject = ["experimentalApi": .bool(config.experimentalAPI)]
+        if config.requestAttestation || config.attestationHandler != nil {
+            capabilities["requestAttestation"] = true
+        }
+        if let extensions = config.mcpExtensions { capabilities["extensions"] = .object(extensions) }
         let payload = try await request(
             "initialize",
             params: [
@@ -219,9 +341,7 @@ public actor CodexRPCClient {
                     "title": .string(config.clientTitle),
                     "version": .string(config.clientVersion),
                 ]),
-                "capabilities": .object([
-                    "experimentalApi": .bool(config.experimentalAPI),
-                ]),
+                "capabilities": .object(capabilities),
             ],
             responseType: InitializeResponse.self
         )
@@ -252,10 +372,11 @@ public actor CodexRPCClient {
     public func request<T: Decodable>(
         _ method: String,
         params: JSONObject = [:],
-        responseType: T.Type
+        responseType: T.Type,
+        requestID: String? = nil
     ) async throws -> T {
         try await start()
-        let value = try await transport.request(method: method, params: params)
+        let value = try await transport.request(method: method, params: params, requestID: requestID)
         return try decodeResponse(T.self, from: value)
     }
 
@@ -264,10 +385,37 @@ public actor CodexRPCClient {
         try await transport.notify(method: method, params: params)
     }
 
+    /// Returns the next notification from the raw queue.
+    ///
+    /// The raw queue receives a copy of every notification, independently of
+    /// turn streams. Unread notifications are bounded; if older ones were
+    /// dropped, this throws `CodexError.notificationBacklogOverflow` once.
     public func nextNotification() async throws -> CodexNotification {
         try await transport.nextNotification()
     }
 
+    /// Streams the notifications of one turn, identified by thread and turn ID.
+    ///
+    /// Notifications received since this client processed the turn's
+    /// `turn/start` response are replayed first, so a turn that already
+    /// completed still yields its full history. Turn streams for different
+    /// turns run independently on the same client, and do not consume the raw
+    /// `nextNotification()` queue. Thread-scoped notifications without a turn
+    /// ID are delivered to every open turn of that thread; notifications
+    /// without a thread ID are only available from `nextNotification()`.
+    ///
+    /// Only one stream per turn may be active at a time. A stream that ends
+    /// before `turn/completed` releases the turn, and a later stream replays
+    /// the turn from its start. The stream finishes after `turn/completed`
+    /// and throws if the transport closes first.
+    public func turnStream(threadID: String, turnID: String) async throws -> AsyncThrowingStream<CodexNotification, Error> {
+        try Task.checkCancellation()
+        let (stream, continuation) = AsyncThrowingStream.makeStream(of: CodexNotification.self)
+        try await transport.attachTurnStream(TurnKey(threadID: threadID, turnID: turnID), continuation: continuation)
+        return stream
+    }
+
+    @available(*, deprecated, message: "Turn streams are routed per thread and turn; CodexTurnHandle.stream() no longer uses this guard.")
     public func acquireTurnConsumer(turnID: String) throws {
         if let activeTurnConsumer {
             logger.warning(
@@ -285,6 +433,7 @@ public actor CodexRPCClient {
         activeTurnConsumer = turnID
     }
 
+    @available(*, deprecated, message: "Turn streams are routed per thread and turn; CodexTurnHandle.stream() no longer uses this guard.")
     public func releaseTurnConsumer(turnID: String) {
         guard activeTurnConsumer == turnID else {
             return
@@ -798,15 +947,15 @@ public struct CodexThread: Sendable {
         for try await notification in stream {
             switch notification.payload {
             case .itemCompleted(let payload):
-                if payload.turnId == handle.id {
+                if payload.threadId == id, payload.turnId == handle.id {
                     items.append(payload.item)
                 }
             case .threadTokenUsageUpdated(let payload):
-                if payload.turnId == handle.id {
+                if payload.threadId == id, payload.turnId == handle.id {
                     usage = payload.tokenUsage
                 }
             case .turnCompleted(let payload):
-                if payload.turn.id == handle.id {
+                if payload.threadId == id, payload.turn.id == handle.id {
                     completedTurn = payload.turn
                 }
             default:
@@ -814,6 +963,7 @@ public struct CodexThread: Sendable {
             }
         }
 
+        try Task.checkCancellation()
         guard let completedTurn else {
             logger.error("Turn run did not receive completion event", metadata: ["thread_id": .string(id)])
             throw CodexError.invalidResponse("turn completed event not received")
@@ -942,46 +1092,21 @@ public struct CodexTurnHandle: Sendable {
         return response
     }
 
+    /// Streams this turn's notifications. See `CodexRPCClient.turnStream(threadID:turnID:)`.
     public func stream() async throws -> AsyncThrowingStream<CodexNotification, Error> {
-        try await client.acquireTurnConsumer(turnID: id)
         logger.debug("Starting turn stream")
-        return AsyncThrowingStream { continuation in
-            let task = Task {
-                do {
-                    while true {
-                        let notification = try await client.nextNotification()
-                        continuation.yield(notification)
-                        if notification.method == "turn/completed",
-                           case .turnCompleted(let payload) = notification.payload,
-                           payload.turn.id == id {
-                            logger.info("Turn stream completed")
-                            continuation.finish()
-                            break
-                        }
-                    }
-                } catch {
-                    logger.error("Turn stream failed")
-                    continuation.finish(throwing: error)
-                }
-                await client.releaseTurnConsumer(turnID: id)
-            }
-            continuation.onTermination = { @Sendable _ in
-                task.cancel()
-                Task {
-                    await client.releaseTurnConsumer(turnID: id)
-                }
-            }
-        }
+        return try await client.turnStream(threadID: threadID, turnID: id)
     }
 
     public func run() async throws -> Turn {
         let stream = try await stream()
         var completedTurn: Turn?
         for try await notification in stream {
-            if case .turnCompleted(let payload) = notification.payload, payload.turn.id == id {
+            if case .turnCompleted(let payload) = notification.payload, payload.threadId == threadID, payload.turn.id == id {
                 completedTurn = payload.turn
             }
         }
+        try Task.checkCancellation()
         guard let completedTurn else {
             logger.error("Turn completion event not received")
             throw CodexError.invalidResponse("turn completed event not received")
@@ -1133,5 +1258,78 @@ private extension InputItem {
                 "path": .string(path),
             ])
         }
+    }
+}
+
+extension CodexRPCClient {
+    /// Experimental. Supply a unique requestID to cancel the sample from another task.
+    public func threadSample(_ params: ThreadSampleParams, requestID: String? = nil) async throws -> ThreadSampleResponse {
+        try await start()
+        let value = try await transport.request(method: "thread/sample", params: params.rawJSON.objectValue ?? [:],
+                                                requestID: requestID, cancelOnCancellation: "thread/sample/cancel")
+        return try decodeResponse(ThreadSampleResponse.self, from: value)
+    }
+
+    /// Cancels the sample RPC identified by its JSON-RPC request ID, not a turn ID.
+    public func threadSampleCancel(_ params: ThreadSampleCancelParams) async throws -> ThreadSampleCancelResponse {
+        try await request("thread/sample/cancel", params: params.rawJSON.objectValue ?? [:], responseType: ThreadSampleCancelResponse.self)
+    }
+
+    public func threadMemoryRead(_ params: ThreadMemoryReadParams) async throws -> ThreadMemoryReadResponse {
+        try await request("thread/memory/read", params: params.rawJSON.objectValue ?? [:], responseType: ThreadMemoryReadResponse.self)
+    }
+
+    public func gcpSetup(_ params: GcpSetupParams) async throws -> GcpSetupResponse {
+        try await request("account/gcp/setup", params: params.rawJSON.objectValue ?? [:], responseType: GcpSetupResponse.self)
+    }
+
+    public func accountSessionList(_ params: AccountSessionsListParams = .init()) async throws -> AccountSessionsResponse {
+        try await request("accountSession/list", params: params.rawJSON.objectValue ?? [:], responseType: AccountSessionsResponse.self)
+    }
+
+    public func accountSessionSwitch(_ params: AccountSessionsSwitchParams) async throws -> AccountSessionsSwitchResponse {
+        try await request("accountSession/switch", params: params.rawJSON.objectValue ?? [:], responseType: AccountSessionsSwitchResponse.self)
+    }
+
+    public func feedbackSave(_ params: FeedbackSaveParams) async throws -> FeedbackSaveResponse {
+        try await request("feedback/save", params: params.rawJSON.objectValue ?? [:], responseType: FeedbackSaveResponse.self)
+    }
+}
+
+extension Codex {
+    public func gcpSetup(_ params: GcpSetupParams) async throws -> GcpSetupResponse {
+        try await client.gcpSetup(params)
+    }
+
+    public func accountSessions(_ params: AccountSessionsListParams = .init()) async throws -> AccountSessionsResponse {
+        try await client.accountSessionList(params)
+    }
+
+    public func switchAccountSession(_ params: AccountSessionsSwitchParams) async throws -> AccountSessionsSwitchResponse {
+        try await client.accountSessionSwitch(params)
+    }
+
+    public func saveFeedback(_ params: FeedbackSaveParams) async throws -> FeedbackSaveResponse {
+        try await client.feedbackSave(params)
+    }
+
+    public func cancelSample(requestID: String) async throws -> ThreadSampleCancelResponse {
+        try await client.threadSampleCancel(.init(requestId: .string(requestID)))
+    }
+}
+
+extension CodexThread {
+    /// The source must be loaded and its expected turn must no longer be active.
+    public func sample(
+        expectedTurnID: String,
+        prompt: String,
+        effort: ReasoningEffort? = nil,
+        requestID: String? = nil
+    ) async throws -> ThreadSampleResponse {
+        try await client.threadSample(.init(effort: effort, expectedTurnId: expectedTurnID, prompt: prompt, threadId: id), requestID: requestID)
+    }
+
+    public func memory() async throws -> ThreadMemoryReadResponse {
+        try await client.threadMemoryRead(.init(threadId: id))
     }
 }
