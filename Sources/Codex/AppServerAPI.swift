@@ -252,10 +252,11 @@ public actor CodexRPCClient {
     public func request<T: Decodable>(
         _ method: String,
         params: JSONObject = [:],
-        responseType: T.Type
+        responseType: T.Type,
+        requestID: String? = nil
     ) async throws -> T {
         try await start()
-        let value = try await transport.request(method: method, params: params)
+        let value = try await transport.request(method: method, params: params, requestID: requestID)
         return try decodeResponse(T.self, from: value)
     }
 
@@ -1133,5 +1134,76 @@ private extension InputItem {
                 "path": .string(path),
             ])
         }
+    }
+}
+
+extension CodexRPCClient {
+    /// Experimental. Supply a unique requestID to cancel the sample from another task.
+    public func threadSample(_ params: ThreadSampleParams, requestID: String? = nil) async throws -> ThreadSampleResponse {
+        try await request("thread/sample", params: params.rawJSON.objectValue ?? [:],
+                          responseType: ThreadSampleResponse.self, requestID: requestID)
+    }
+
+    /// Cancels the sample RPC identified by its JSON-RPC request ID, not a turn ID.
+    public func threadSampleCancel(_ params: ThreadSampleCancelParams) async throws -> ThreadSampleCancelResponse {
+        try await request("thread/sample/cancel", params: params.rawJSON.objectValue ?? [:], responseType: ThreadSampleCancelResponse.self)
+    }
+
+    public func threadMemoryRead(_ params: ThreadMemoryReadParams) async throws -> ThreadMemoryReadResponse {
+        try await request("thread/memory/read", params: params.rawJSON.objectValue ?? [:], responseType: ThreadMemoryReadResponse.self)
+    }
+
+    public func gcpSetup(_ params: GcpSetupParams) async throws -> GcpSetupResponse {
+        try await request("account/gcp/setup", params: params.rawJSON.objectValue ?? [:], responseType: GcpSetupResponse.self)
+    }
+
+    public func accountSessionList(_ params: AccountSessionsListParams = .init()) async throws -> AccountSessionsResponse {
+        try await request("accountSession/list", params: params.rawJSON.objectValue ?? [:], responseType: AccountSessionsResponse.self)
+    }
+
+    public func accountSessionSwitch(_ params: AccountSessionsSwitchParams) async throws -> AccountSessionsSwitchResponse {
+        try await request("accountSession/switch", params: params.rawJSON.objectValue ?? [:], responseType: AccountSessionsSwitchResponse.self)
+    }
+
+    public func feedbackSave(_ params: FeedbackSaveParams) async throws -> FeedbackSaveResponse {
+        try await request("feedback/save", params: params.rawJSON.objectValue ?? [:], responseType: FeedbackSaveResponse.self)
+    }
+}
+
+extension Codex {
+    public func gcpSetup(_ params: GcpSetupParams) async throws -> GcpSetupResponse {
+        try await client.gcpSetup(params)
+    }
+
+    public func accountSessions(_ params: AccountSessionsListParams = .init()) async throws -> AccountSessionsResponse {
+        try await client.accountSessionList(params)
+    }
+
+    public func switchAccountSession(_ params: AccountSessionsSwitchParams) async throws -> AccountSessionsSwitchResponse {
+        try await client.accountSessionSwitch(params)
+    }
+
+    public func saveFeedback(_ params: FeedbackSaveParams) async throws -> FeedbackSaveResponse {
+        try await client.feedbackSave(params)
+    }
+
+    public func cancelSample(requestID: String) async throws -> ThreadSampleCancelResponse {
+        try await client.threadSampleCancel(.init(requestId: .string(requestID)))
+    }
+}
+
+extension CodexThread {
+    /// The source must be loaded and its expected turn must no longer be active.
+    public func sample(
+        expectedTurnID: String,
+        prompt: String,
+        effort: ReasoningEffort? = nil,
+        requestID: String? = nil
+    ) async throws -> ThreadSampleResponse {
+        try await client.threadSample(.init(effort: effort, expectedTurnId: expectedTurnID, prompt: prompt, threadId: id), requestID: requestID)
+    }
+
+    public func memory() async throws -> ThreadMemoryReadResponse {
+        try await client.threadMemoryRead(.init(threadId: id))
     }
 }

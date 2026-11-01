@@ -47,7 +47,7 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
-The `rust-v0.166.0` sync adds typed file-ID and inline image generation results, item lifecycle timestamps, native usage cost, and process output-drain status. Image result models now use enum branches (`.fileId(...)` / `.result(...)`), and hook source paths use `LegacyAppPathString`. New sampling, memory, account-session, and feedback requests remain raw-RPC-only; the coverage audit records the remaining gaps.
+The `rust-v0.166.0` sync adds typed file-ID and inline image generation results, item lifecycle timestamps, native usage cost, and process output-drain status. Image result models now use enum branches (`.fileId(...)` / `.result(...)`), and hook source paths use `LegacyAppPathString`. Sampling/cancellation, memory, GCP setup, account-session list/switch, and feedback now have typed RPC methods and high-level conveniences; the coverage audit records the remaining gaps.
 
 See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files, the raw app-server schema parity target used for this sync, and the remaining schema-only request surfaces not wrapped by the Swift convenience API yet.
 
@@ -389,3 +389,19 @@ The suite uses `swift-testing` and a stub `codex` binary that simulates the JSON
 - [`Scripts/generate_app_server_v2.py`](Scripts/generate_app_server_v2.py): typed model generator
 - [`Examples`](Examples): executable example package
 - [`AGENTS.md`](AGENTS.md): repository instructions for coding agents
+
+### Sampling and account requests
+
+`CodexRPCClient` exposes `threadSample`, `threadSampleCancel`, `threadMemoryRead`,
+`gcpSetup`, `accountSessionList`, `accountSessionSwitch`, and `feedbackSave` with
+upstream-shaped parameter and response models. Experimental methods require
+`experimentalAPI: true` (the default). Generation requires Python 3.14 or the `zstd` CLI.
+
+High-level equivalents are `CodexThread.sample`/`memory` and
+`Codex.cancelSample`/`gcpSetup`/`accountSessions`/`switchAccountSession`/`saveFeedback`.
+For cancellable sampling, pass a unique `requestID` to `sample`, run it in a task,
+and call `cancelSample(requestID:)` concurrently. The ID identifies the RPC, not its
+source turn. Cancelling the local Swift task alone stops waiting; it does not send
+`thread/sample/cancel`. Account switching returns either `.switched(...)` or
+`.browserLogin(...)`; the latter requires opening the supplied auth URL and awaiting
+`account/login/completed` through the notification APIs.

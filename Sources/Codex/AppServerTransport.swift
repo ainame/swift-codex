@@ -86,12 +86,15 @@ actor CodexRPCTransport {
         pendingNotificationContinuations.removeAll()
     }
 
-    func request(method: String, params: JSONObject) async throws -> JSONValue {
+    func request(method: String, params: JSONObject, requestID: String? = nil) async throws -> JSONValue {
         if let terminalError {
             throw terminalError
         }
 
-        let id = nextRequestID()
+        let id = requestID ?? nextRequestID()
+        guard pendingRequests[id] == nil else {
+            throw CodexError.invalidResponse("Duplicate active client request ID: \(id)")
+        }
         logger.debug(
             "Sending RPC request",
             metadata: [

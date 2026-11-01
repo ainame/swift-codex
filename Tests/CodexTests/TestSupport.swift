@@ -138,6 +138,8 @@ struct CodexStub {
                 return entries[index]
             return default
 
+        pending_sample_id = None
+
         for raw_line in sys.stdin:
             if not raw_line:
                 break
@@ -157,6 +159,17 @@ struct CodexStub {
                 continue
             if method == "test/exit":
                 sys.exit(0)
+            if scenario.get("holdSampleForCancellation", False):
+                if method == "thread/sample":
+                    pending_sample_id = request_id
+                    write_message({"method": "test/sampleStarted", "params": {"requestId": request_id}})
+                    continue
+                if method == "thread/sample/cancel":
+                    assert message["params"]["requestId"] == pending_sample_id
+                    write_message({"id": request_id, "result": {}})
+                    write_message({"id": pending_sample_id, "error": {"code": -32800, "message": "Sample cancelled"}})
+                    pending_sample_id = None
+                    continue
             if method in scenario.get("rpcResponses", {}):
                 write_message({"id": request_id, "result": scenario["rpcResponses"][method]})
                 continue
@@ -439,6 +452,7 @@ struct CodexStub {
 }
 
 struct AppServerScenario: Encodable {
+    var holdSampleForCancellation: Bool
     var concurrentServerRequests: Bool
     var rpcResponses: [String: JSONValue]
     var initializeResult: JSONObject
@@ -472,6 +486,7 @@ struct AppServerScenario: Encodable {
     var pluginListResponses: [JSONObject]
 
     init(
+        holdSampleForCancellation: Bool = false,
         concurrentServerRequests: Bool = false,
         rpcResponses: [String: JSONValue] = [:],
         initializeResult: JSONObject = appServerInitializeResult(),
@@ -504,6 +519,7 @@ struct AppServerScenario: Encodable {
         skillsExtraRootsSetResponses: [JSONObject] = [],
         pluginListResponses: [JSONObject] = []
     ) {
+        self.holdSampleForCancellation = holdSampleForCancellation
         self.concurrentServerRequests = concurrentServerRequests
         self.rpcResponses = rpcResponses
         self.initializeResult = initializeResult

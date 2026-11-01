@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import keyword
 import re
+import subprocess
 from copy import deepcopy
 from pathlib import Path
 
@@ -33,6 +34,8 @@ SWIFT_RESERVED = {
 }
 
 ROOT_TYPES = {
+    "FeedbackSaveParams",
+    "FeedbackSaveResponse",
     "DynamicToolSpec",
     "DynamicToolCallParams",
     "DynamicToolCallResponse",
@@ -100,6 +103,29 @@ ROOT_TYPES = {
     "TokenUsageBreakdown",
     "SkillsExtraRootsSetResponse",
 }
+
+# These exports are intentionally absent from the stable combined schema.
+# Read the exact vendored experimental artifact, rather than maintaining copies.
+EXPERIMENTAL_ROOT_TYPES = {
+    "ThreadSampleParams", "ThreadSampleResponse",
+    "ThreadSampleCancelParams", "ThreadSampleCancelResponse",
+    "ThreadMemoryReadParams", "ThreadMemoryReadResponse",
+    "GcpSetupParams", "GcpSetupResponse",
+    "AccountSessionsListParams", "AccountSessionsResponse",
+    "AccountSessionsSwitchParams", "AccountSessionsSwitchResponse",
+}
+
+
+def read_experimental_exports() -> dict[str, str]:
+    path = SCHEMA_PATH.parent.parent / "precomputed" / "app-server-exports-experimental.json.zst"
+    try:
+        from compression import zstd
+    except ImportError:
+        # Python <3.14 needs the zstd CLI; no third-party Python package required.
+        data = subprocess.run(["zstd", "-dc", str(path)], check=True, capture_output=True).stdout
+    else:
+        data = zstd.decompress(path.read_bytes())
+    return json.loads(data)["json_schema"]
 
 MANUAL_DEFINITIONS = {
     "ServerInfo": {
@@ -885,17 +911,34 @@ def main() -> None:
     global REGISTRY
     schema = json.loads(SCHEMA_PATH.read_text())
     definitions = schema.get("definitions", {})
+    exports = read_experimental_exports()
+    for name in sorted(EXPERIMENTAL_ROOT_TYPES):
+        standalone = json.loads(exports[f"v2/{name}.json"])
+        for dependency, definition in standalone.pop("definitions", {}).items():
+            definitions.setdefault(dependency, definition)
+        definitions[name] = standalone
     # Server-request types are exported separately, including experimental APIs
     # omitted from the stable combined v2 schema. Use upstream files, not copies.
     for name in ("DynamicToolCallParams", "DynamicToolCallResponse"):
         standalone = json.loads((SCHEMA_PATH.parent / f"{name}.json").read_text())
         definitions.update(standalone.pop("definitions", {}))
         definitions[name] = standalone
+    # Rust uses serde(rename_all_fields = "camelCase") on this untagged
+    # response. Its schemars export misses that attribute on BrowserLogin.
+    switch_variants = definitions["AccountSessionsSwitchResponse"]["anyOf"]
+    switch_variants[0]["title"] = "SwitchedAccountSessionsSwitchResponse"
+    browser_login = switch_variants[1]
+    browser_login["title"] = "BrowserLoginAccountSessionsSwitchResponse"
+    browser_login["properties"] = {
+        "authUrl": browser_login["properties"]["auth_url"],
+        "loginId": browser_login["properties"]["login_id"],
+    }
+    browser_login["required"] = ["authUrl", "loginId"]
     definitions.update(MANUAL_DEFINITIONS)
     REGISTRY = Registry(normalize_object_unions(definitions))
 
     mapping = read_notification_registry()
-    for root in sorted(ROOT_TYPES):
+    for root in sorted(ROOT_TYPES | EXPERIMENTAL_ROOT_TYPES):
         REGISTRY.include(root)
     for _, type_name in mapping:
         REGISTRY.include(type_name)
