@@ -10,6 +10,8 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Changed
 
+- Typed RPC requests, dynamic-tool registration and thread/turn options now throw encoding errors for nonfinite caller JSON instead of terminating the process. Invalid requests are not sent and the client remains reusable; the reviewed upstream basis remains `rust-v0.166.0`.
+
 - Isolate reopened clients from stale process callbacks, cancel outgoing waits by token, and forward Swift task cancellation to server-side sampling.
 - Dispatch server handlers concurrently so nested RPCs can complete; cancel outstanding handlers on close, process termination or server resolution, and suppress late replies.
 - Updated the vendored upstream basis to `rust-v0.166.0` (`6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`). Other experimental request fields remain outside the Swift convenience APIs.

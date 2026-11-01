@@ -442,9 +442,9 @@ public actor CodexRPCClient {
     }
 
     public func threadStart(options: ThreadOptions = .init()) async throws -> ThreadStartResponse {
-        var params = makeThreadStartParams(options)
+        var params = try makeThreadStartParams(options)
         if let tools = options.dynamicTools {
-            params["dynamicTools"] = .array(tools.map(\.rawJSON))
+            params["dynamicTools"] = .array(try tools.map(encodeJSONValue))
         }
         return try await request("thread/start", params: params, responseType: ThreadStartResponse.self)
     }
@@ -453,13 +453,13 @@ public actor CodexRPCClient {
         guard options.dynamicTools == nil else {
             throw CodexError.invalidConfig("dynamicTools can only be registered with thread/start; resumed and forked threads inherit their saved tools")
         }
-        var params = makeThreadStartParams(options)
+        var params = try makeThreadStartParams(options)
         params["threadId"] = .string(threadID)
         return try await request("thread/resume", params: params, responseType: ThreadResumeResponse.self)
     }
 
     public func threadList(options: ThreadListOptions = .init()) async throws -> ThreadListResponse {
-        try await request("thread/list", params: makeThreadListParams(options), responseType: ThreadListResponse.self)
+        try await request("thread/list", params: try makeThreadListParams(options), responseType: ThreadListResponse.self)
     }
 
     public func threadRead(threadID: String, includeTurns: Bool = false) async throws -> ThreadReadResponse {
@@ -477,7 +477,7 @@ public actor CodexRPCClient {
         guard options.dynamicTools == nil else {
             throw CodexError.invalidConfig("dynamicTools can only be registered with thread/start; resumed and forked threads inherit their saved tools")
         }
-        var params = makeThreadStartParams(options)
+        var params = try makeThreadStartParams(options)
         params["threadId"] = .string(threadID)
         return try await request("thread/fork", params: params, responseType: ThreadForkResponse.self)
     }
@@ -499,7 +499,7 @@ public actor CodexRPCClient {
     ) async throws -> ThreadAttachmentAddResponse {
         try await request(
             "thread/attachment/add",
-            params: params.rawJSON.objectValue ?? [:],
+            params: encodeJSONObjectValue(params, context: "ThreadAttachmentAddParams"),
             responseType: ThreadAttachmentAddResponse.self
         )
     }
@@ -509,7 +509,7 @@ public actor CodexRPCClient {
     ) async throws -> ThreadAttachmentListResponse {
         try await request(
             "thread/attachment/list",
-            params: params.rawJSON.objectValue ?? [:],
+            params: encodeJSONObjectValue(params, context: "ThreadAttachmentListParams"),
             responseType: ThreadAttachmentListResponse.self
         )
     }
@@ -519,7 +519,7 @@ public actor CodexRPCClient {
     ) async throws -> ThreadAttachmentRemoveResponse {
         try await request(
             "thread/attachment/remove",
-            params: params.rawJSON.objectValue ?? [:],
+            params: encodeJSONObjectValue(params, context: "ThreadAttachmentRemoveParams"),
             responseType: ThreadAttachmentRemoveResponse.self
         )
     }
@@ -555,13 +555,13 @@ public actor CodexRPCClient {
             params["objective"] = .string(objective)
         }
         if let status {
-            params["status"] = status.rawJSON
+            params["status"] = try encodeJSONValue(status)
         }
         if let tokenBudget {
             params["tokenBudget"] = .number(Double(tokenBudget))
         }
         if let origin {
-            params["origin"] = origin.rawJSON
+            params["origin"] = try encodeJSONValue(origin)
         }
         return try await request("thread/goal/set", params: params, responseType: ThreadGoalSetResponse.self)
     }
@@ -576,7 +576,7 @@ public actor CodexRPCClient {
     ) async throws -> ThreadGoalClearResponse {
         var params: JSONObject = ["threadId": .string(threadID)]
         if let origin {
-            params["origin"] = origin.rawJSON
+            params["origin"] = try encodeJSONValue(origin)
         }
         return try await request("thread/goal/clear", params: params, responseType: ThreadGoalClearResponse.self)
     }
@@ -588,7 +588,7 @@ public actor CodexRPCClient {
     ) async throws -> TurnStartResponse {
         try await request(
             "turn/start",
-            params: makeTurnStartParams(threadID: threadID, input: input, options: options),
+            params: try makeTurnStartParams(threadID: threadID, input: input, options: options),
             responseType: TurnStartResponse.self
         )
     }
@@ -633,7 +633,7 @@ public actor CodexRPCClient {
     ) async throws -> GetAccountRateLimitsResponse {
         try await request(
             "account/rateLimits/read",
-            params: params?.rawJSON.objectValue ?? [:],
+            params: params.map { try encodeJSONObjectValue($0, context: "GetAccountRateLimitsParams") } ?? [:],
             responseType: GetAccountRateLimitsResponse.self
         )
     }
@@ -665,13 +665,13 @@ public actor CodexRPCClient {
         try await request("plugin/list", responseType: PluginListResponse.self)
     }
 
-    private func makeThreadStartParams(_ options: ThreadOptions) -> JSONObject {
+    private func makeThreadStartParams(_ options: ThreadOptions) throws -> JSONObject {
         var params: JSONObject = [:]
         if let approvalPolicy = options.approvalPolicy {
-            params["approvalPolicy"] = approvalPolicy.rawJSON
+            params["approvalPolicy"] = try encodeJSONValue(approvalPolicy)
         }
         if let approvalsReviewer = options.approvalsReviewer {
-            params["approvalsReviewer"] = approvalsReviewer.rawJSON
+            params["approvalsReviewer"] = try encodeJSONValue(approvalsReviewer)
         }
         if let baseInstructions = options.baseInstructions {
             params["baseInstructions"] = .string(baseInstructions)
@@ -695,24 +695,24 @@ public actor CodexRPCClient {
             params["modelProvider"] = .string(modelProvider)
         }
         if let personality = options.personality {
-            params["personality"] = personality.rawJSON
+            params["personality"] = try encodeJSONValue(personality)
         }
         if let sandbox = options.sandboxPreset?.threadMode ?? options.sandbox {
-            params["sandbox"] = sandbox.rawJSON
+            params["sandbox"] = try encodeJSONValue(sandbox)
         }
         if let serviceName = options.serviceName {
             params["serviceName"] = .string(serviceName)
         }
         if let serviceTier = options.serviceTier {
-            params["serviceTier"] = serviceTier.rawJSON
+            params["serviceTier"] = try encodeJSONValue(serviceTier)
         }
         if let sessionStartSource = options.sessionStartSource {
-            params["sessionStartSource"] = sessionStartSource.rawJSON
+            params["sessionStartSource"] = try encodeJSONValue(sessionStartSource)
         }
         return params
     }
 
-    private func makeThreadListParams(_ options: ThreadListOptions) -> JSONObject {
+    private func makeThreadListParams(_ options: ThreadListOptions) throws -> JSONObject {
         var params: JSONObject = [:]
         if let archived = options.archived {
             params["archived"] = .bool(archived)
@@ -721,7 +721,7 @@ public actor CodexRPCClient {
             params["cursor"] = .string(cursor)
         }
         if let cwd = options.cwd {
-            params["cwd"] = cwd.rawJSON
+            params["cwd"] = try encodeJSONValue(cwd)
         }
         if let excludedThreadIDs = options.excludedThreadIDs {
             params["excludedThreadIds"] = .array(excludedThreadIDs.map(JSONValue.string))
@@ -736,13 +736,13 @@ public actor CodexRPCClient {
             params["searchTerm"] = .string(searchTerm)
         }
         if let sortDirection = options.sortDirection {
-            params["sortDirection"] = sortDirection.rawJSON
+            params["sortDirection"] = try encodeJSONValue(sortDirection)
         }
         if let sortKey = options.sortKey {
-            params["sortKey"] = sortKey.rawJSON
+            params["sortKey"] = try encodeJSONValue(sortKey)
         }
         if let sourceKinds = options.sourceKinds {
-            params["sourceKinds"] = .array(sourceKinds.map(\.rawJSON))
+            params["sourceKinds"] = .array(try sourceKinds.map(encodeJSONValue))
         }
         if let useStateDBOnly = options.useStateDBOnly {
             params["useStateDbOnly"] = .bool(useStateDBOnly)
@@ -750,25 +750,25 @@ public actor CodexRPCClient {
         return params
     }
 
-    private func makeTurnStartParams(threadID: String, input: [InputItem], options: TurnOptions) -> JSONObject {
+    private func makeTurnStartParams(threadID: String, input: [InputItem], options: TurnOptions) throws -> JSONObject {
         var params: JSONObject = [
             "threadId": .string(threadID),
             "input": .array(input.map(\.jsonValue)),
         ]
         if let approvalPolicy = options.approvalPolicy {
-            params["approvalPolicy"] = approvalPolicy.rawJSON
+            params["approvalPolicy"] = try encodeJSONValue(approvalPolicy)
         }
         if let approvalsReviewer = options.approvalsReviewer {
-            params["approvalsReviewer"] = approvalsReviewer.rawJSON
+            params["approvalsReviewer"] = try encodeJSONValue(approvalsReviewer)
         }
         if let cyberAccessProgram = options.cyberAccessProgram {
-            params["cyberAccessProgram"] = cyberAccessProgram.rawJSON
+            params["cyberAccessProgram"] = try encodeJSONValue(cyberAccessProgram)
         }
         if let cwd = options.cwd {
             params["cwd"] = .string(cwd)
         }
         if let effort = options.effort {
-            params["effort"] = effort.rawJSON
+            params["effort"] = try encodeJSONValue(effort)
         }
         if let model = options.model {
             params["model"] = .string(model)
@@ -783,16 +783,16 @@ public actor CodexRPCClient {
             params["rootTurnId"] = .string(rootTurnID)
         }
         if let personality = options.personality {
-            params["personality"] = personality.rawJSON
+            params["personality"] = try encodeJSONValue(personality)
         }
         if let sandboxPolicy = options.sandbox?.turnPolicy ?? options.sandboxPolicy {
-            params["sandboxPolicy"] = sandboxPolicy.rawJSON
+            params["sandboxPolicy"] = try encodeJSONValue(sandboxPolicy)
         }
         if let serviceTier = options.serviceTier {
-            params["serviceTier"] = serviceTier.rawJSON
+            params["serviceTier"] = try encodeJSONValue(serviceTier)
         }
         if let summary = options.summary {
-            params["summary"] = summary.rawJSON
+            params["summary"] = try encodeJSONValue(summary)
         }
         return params
     }
@@ -1264,35 +1264,36 @@ private extension InputItem {
 extension CodexRPCClient {
     /// Experimental. Supply a unique requestID to cancel the sample from another task.
     public func threadSample(_ params: ThreadSampleParams, requestID: String? = nil) async throws -> ThreadSampleResponse {
+        let object = try encodeJSONObjectValue(params, context: "ThreadSampleParams")
         try await start()
-        let value = try await transport.request(method: "thread/sample", params: params.rawJSON.objectValue ?? [:],
+        let value = try await transport.request(method: "thread/sample", params: object,
                                                 requestID: requestID, cancelOnCancellation: "thread/sample/cancel")
         return try decodeResponse(ThreadSampleResponse.self, from: value)
     }
 
     /// Cancels the sample RPC identified by its JSON-RPC request ID, not a turn ID.
     public func threadSampleCancel(_ params: ThreadSampleCancelParams) async throws -> ThreadSampleCancelResponse {
-        try await request("thread/sample/cancel", params: params.rawJSON.objectValue ?? [:], responseType: ThreadSampleCancelResponse.self)
+        try await request("thread/sample/cancel", params: encodeJSONObjectValue(params, context: "ThreadSampleCancelParams"), responseType: ThreadSampleCancelResponse.self)
     }
 
     public func threadMemoryRead(_ params: ThreadMemoryReadParams) async throws -> ThreadMemoryReadResponse {
-        try await request("thread/memory/read", params: params.rawJSON.objectValue ?? [:], responseType: ThreadMemoryReadResponse.self)
+        try await request("thread/memory/read", params: encodeJSONObjectValue(params, context: "ThreadMemoryReadParams"), responseType: ThreadMemoryReadResponse.self)
     }
 
     public func gcpSetup(_ params: GcpSetupParams) async throws -> GcpSetupResponse {
-        try await request("account/gcp/setup", params: params.rawJSON.objectValue ?? [:], responseType: GcpSetupResponse.self)
+        try await request("account/gcp/setup", params: encodeJSONObjectValue(params, context: "GcpSetupParams"), responseType: GcpSetupResponse.self)
     }
 
     public func accountSessionList(_ params: AccountSessionsListParams = .init()) async throws -> AccountSessionsResponse {
-        try await request("accountSession/list", params: params.rawJSON.objectValue ?? [:], responseType: AccountSessionsResponse.self)
+        try await request("accountSession/list", params: encodeJSONObjectValue(params, context: "AccountSessionsListParams"), responseType: AccountSessionsResponse.self)
     }
 
     public func accountSessionSwitch(_ params: AccountSessionsSwitchParams) async throws -> AccountSessionsSwitchResponse {
-        try await request("accountSession/switch", params: params.rawJSON.objectValue ?? [:], responseType: AccountSessionsSwitchResponse.self)
+        try await request("accountSession/switch", params: encodeJSONObjectValue(params, context: "AccountSessionsSwitchParams"), responseType: AccountSessionsSwitchResponse.self)
     }
 
     public func feedbackSave(_ params: FeedbackSaveParams) async throws -> FeedbackSaveResponse {
-        try await request("feedback/save", params: params.rawJSON.objectValue ?? [:], responseType: FeedbackSaveResponse.self)
+        try await request("feedback/save", params: encodeJSONObjectValue(params, context: "FeedbackSaveParams"), responseType: FeedbackSaveResponse.self)
     }
 }
 
