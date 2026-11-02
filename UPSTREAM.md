@@ -105,7 +105,7 @@ When porting new behavior from upstream or validating parity:
 
 ## Sync Notes
 
-### Unreleased
+### 0.166.0
 
 - Outgoing serialization safety (same basis `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`, reviewed 2026-11-01): reviewed Swift request builders, generated Codable support and transport send-failure cleanup against Python `client.py` and Rust `v2/{thread,turn}.rs`/`common.rs`. Invalid nonfinite request values now follow throwing encoding instead of trapping through `rawJSON`; valid unknown fields and optional omission semantics are retained. No vendor, generator, version or attribution changes are required.
 

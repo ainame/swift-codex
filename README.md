@@ -68,7 +68,7 @@ Add the package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.163.0")
+    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.166.0")
 ]
 ```
 
