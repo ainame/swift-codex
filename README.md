@@ -435,6 +435,8 @@ Forward-compatibility hooks:
 - `additionalFields` on object models
 - `.unknown(JSONValue)` on generated unions
 
+Typed RPC methods and thread/turn option builders use throwing JSON encoding. Nonfinite numbers (`NaN` or infinity), including those nested in `additionalFields` or tool schemas, throw `EncodingError` before sending the target request. Correct the input and retry on the same client. Direct generated `rawJSON` access requires JSON-encodable values and retains its existing nonthrowing contract.
+
 ## Examples
 
 A standalone example package lives in [`Examples`](Examples):

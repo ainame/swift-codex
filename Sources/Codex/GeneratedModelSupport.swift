@@ -46,6 +46,13 @@ func encodeJSONValue<T: Encodable>(_ value: T) throws -> JSONValue {
     return try JSONDecoder().decode(JSONValue.self, from: data)
 }
 
+func encodeJSONObjectValue<T: Encodable>(_ value: T, context: String) throws -> JSONObject {
+    guard case .object(let object) = try encodeJSONValue(value) else {
+        throw EncodingError.invalidValue(value, .init(codingPath: [], debugDescription: "Expected \(context) to encode as a JSON object"))
+    }
+    return object
+}
+
 func losslessEncodeJSONValue<T: Encodable>(_ value: T, context: String) -> JSONValue {
     do {
         return try encodeJSONValue(value)

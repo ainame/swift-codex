@@ -35,6 +35,7 @@ unresolved gaps forward, even when upstream has not changed them.
 | `thread/list.excludedThreadIds` | Implemented through `ThreadListOptions.excludedThreadIDs` on raw and high-level list APIs. Nil is omitted; empty and populated arrays are forwarded unchanged. Server validation enforces the 100-ID bound. |
 | `thread/readState/changed` | Implemented typed notification dispatch, thread routing, read/unread position decoding, revision and unknown-field preservation. This does not add a read-state mutation convenience API. |
 | New experimental surfaces | Deferred: `thread/readState/update`, `thread/items/read`, fork prediction mode, and environment WebSocket request IDs. Experimental read-state fields on list/read responses remain in `additionalFields`. |
+| Outgoing request serialization | Implemented: throwing encoding for typed request params, dynamic tool specs and model-valued thread/turn options. Nonfinite numbers in nested JSON or `additionalFields` throw `EncodingError` before the target RPC is sent; callers can correct the input and reuse the client. Direct `rawJSON` access retains its existing nonthrowing contract and requires JSON-encodable values. |
 | Tool output retention and raw history | Deferred: `TurnToolOutput.retain` is outside the existing turn input API; added encryption/status/annotation/logprob fields remain in raw JSON payloads. |
 | `thread/start.dynamicTools` | Implemented: function/namespace specs, deferred tool flag, public thread options, start-only serialization; resume/fork reject attempts to replace saved tools. |
 | `item/tool/call` | Implemented: generated params/results from standalone upstream exports, typed handler and generic handler dispatch, failure response without a handler, text/image/audio results, arbitrary JSON and unknown-field preservation. |
@@ -47,6 +48,33 @@ unresolved gaps forward, even when upstream has not changed them.
 | Other client request surfaces | Deferred: broader account/auth/configuration, environment, plugin sharing, permission profiles, process/fs, realtime, thread-history/settings, MCP read/call and other unwrapped methods remain raw-RPC-only. Run the inventory for the full method/field list; do not infer convenience support from generated models. |
 | Other experimental request fields | Deferred: fields such as thread runtime workspace roots, permission profiles, history mode, environments, selected capability roots, and daybreak options remain outside the existing Swift convenience APIs. |
 | Python SDK orchestration | Deferred: prior notification coalescing, cancellation recovery, thread start locking, logical goal operations and history cursor/anchor gaps remain. |
+
+### Follow-up gap selection (2026-11-01)
+
+Scores are user impact / implementation effort, each from 1 to 10:
+
+| Candidate | Score | Decision and evidence |
+| --- | --- | --- |
+| Recoverable outgoing serialization | 9 / 3 | Selected. Client builders called generated `rawJSON`, reaching `losslessEncodeJSONValue` and `fatalError` for caller-supplied NaN/infinity. Existing generated `encode(to:)` and raw transport encoding already throw; use that path consistently. |
+| History pagination and item anchors | 8 / 5 | Deferred. Rust `v2/thread.rs` defines turn/item pages, opaque continuation/backwards cursors and exclusive item anchors requiring a visible turn. Add typed endpoints and high-level paging in a dedicated slice. |
+| Cancellation recovery and thread-start coordination | 8 / 8 | Deferred. Python `async_client.py` cleans up unclaimed starts, while `client.py` serializes starts per thread. Swift actor reentrancy requires explicit coordination and lifecycle fixtures; outgoing waiter cancellation alone does not close this gap. |
+| Read-state mutation and bounded item reads | 6 / 4 | Deferred. Rust `common.rs` marks both methods experimental; negotiate capability and validate the actual mutation/read behavior in a dedicated slice. |
+| Tool-output retention | 5 / 5 | Deferred. Rust `v2/turn.rs` includes `TurnToolOutput.retain`; Swift needs a usable tool-output input API and lifecycle coverage first. |
+
+This closes a Swift request failure-path gap against the same raw app-server
+schema basis; it does not establish Python orchestration parity. Python's
+`client.py::_write_message` uses `json.dumps` (which permits nonstandard nonfinite
+tokens by default); Swift deliberately rejects those values as invalid JSON.
+The generated `rawJSON` convenience itself remains unchanged. Existing
+notification coalescing, logical goals and broader unwrapped RPC gaps remain
+deferred as listed above.
+
+Follow-up validation: 101 SDK tests, the independent Examples build, deterministic
+model regeneration and diff checks passed with Xcode 27.2 / Swift 6.4.2. Claude
+Code implemented the request-path changes and initial tests, reaching its turn
+cap before validation; the orchestrator reviewed the diff, corrected the test
+fixture and independently ran the gates. Live provider/model integration was
+not exercised.
 
 Reviewed source files include `app-server-protocol/src/protocol/{common.rs,v2/thread.rs,v2/item.rs}`,
 `schema/json/{ServerRequest,DynamicToolCallParams,DynamicToolCallResponse}.json`,
@@ -78,6 +106,8 @@ When porting new behavior from upstream or validating parity:
 ## Sync Notes
 
 ### Unreleased
+
+- Outgoing serialization safety (same basis `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`, reviewed 2026-11-01): reviewed Swift request builders, generated Codable support and transport send-failure cleanup against Python `client.py` and Rust `v2/{thread,turn}.rs`/`common.rs`. Invalid nonfinite request values now follow throwing encoding instead of trapping through `rawJSON`; valid unknown fields and optional omission semantics are retained. No vendor, generator, version or attribution changes are required.
 
 - Vendored checkout: `vendor/openai-codex` at `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856` (`rust-v0.166.0`, published 2026-10-29), verified live on 2026-10-31. The stable release branch diverges from the prior pin at `703d253ed676c26e4b9708a374b7344b5c1bcc53`; this is an intentional release-to-release update rather than a fast-forward.
 - Reviewed `sdk/typescript`, Python handwritten client, generated `v2_all.py` and notification registry, SDK tests/examples, combined and standalone JSON exports (including `ClientRequest`/`ServerRequest`), and Rust `common.rs` and `v2/{item,thread,turn,review,account,config,hook,process,thread_usage}.rs`. TypeScript, handwritten Python client, notification registry, and server request exports are unchanged.
