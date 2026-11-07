@@ -21,7 +21,6 @@ let package = Package(
             url: "https://github.com/swiftlang/swift-subprocess.git",
             from: "1.0.0"
         ),
-        .package(url: "https://github.com/swiftlang/swift-testing.git", from: "0.9.0"),
     ],
     targets: [
         .target(
@@ -37,7 +36,6 @@ let package = Package(
             dependencies: [
                 "Codex",
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "Testing", package: "swift-testing"),
             ]
         ),
     ]
