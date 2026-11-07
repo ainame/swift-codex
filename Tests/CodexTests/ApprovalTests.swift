@@ -397,3 +397,96 @@ struct ApprovalTests {
         }
     }
 }
+
+private func humanCommandParams(itemID: String) -> JSONObject {
+    var params = richCommandParams(itemID: itemID)
+    params["kind"] = "humanCommand"
+    params["availableDecisions"] = ["accept", "decline", "cancel"]
+    return params
+}
+
+struct HumanCommandApprovalTests {
+    @Test(arguments: [false, true])
+    func requiredHumanApprovalCapabilityIsOptIn(enabled: Bool) async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        try stub.configureAppServerInvocation(0, scenario: AppServerScenario())
+        var config = stub.makeConfig()
+        config.requiredHumanApproval = enabled
+        let codex = try await Codex(config: config)
+        await codex.close()
+        let messages = try stub.appServerMessages(forInvocation: 0)
+        #expect(messages.first?["method"] == "initialize")
+        let expected: JSONValue = enabled
+            ? ["experimentalApi": true, "requiredHumanApproval": true]
+            : ["experimentalApi": true]
+        #expect(messages.first?["params"]?.objectValue?["capabilities"] == expected)
+    }
+
+    @Test
+    func requiredHumanApprovalRequiresExperimentalAPI() async throws {
+        let stub = try CodexStub()
+        defer { stub.cleanup() }
+        var config = stub.makeConfig()
+        config.requiredHumanApproval = true
+        config.experimentalAPI = false
+        let client = CodexRPCClient(config: config)
+        await #expect {
+            _ = try await client.initialize()
+        } throws: { error in
+            guard case CodexError.invalidConfig(let message) = error else { return false }
+            return message.contains("experimentalAPI")
+        }
+    }
+
+    @Test
+    func typedHandlerMayOnlySendOneTimeDecisionsForHumanCommand() async throws {
+        let requests = commandDecisions.map { entry in
+            (id: JSONValue.string("human-\(entry.itemID)"), method: commandMethod,
+             params: JSONValue.object(humanCommandParams(itemID: entry.itemID)))
+        } + [(id: "plain-session", method: commandMethod, params: .object(richCommandParams(itemID: "session")))]
+        let replies = try await runApprovals(requests) { config in
+            config.requiredHumanApproval = true
+            config.commandExecutionRequestApprovalHandler = { params in
+                let decision = try #require(commandDecisions.first { $0.itemID == params.itemId }).decision
+                return .init(decision: decision)
+            }
+        }
+        let allowed: Set<String> = ["accept", "decline", "cancel"]
+        for entry in commandDecisions {
+            let reply = try #require(replies[.string("human-\(entry.itemID)")])
+            if allowed.contains(entry.itemID) {
+                #expect(reply["result"] == ["decision": entry.wire])
+                #expect(reply["error"] == nil)
+            } else {
+                #expect(reply["result"] == nil, "\(entry.itemID) must not be sent for humanCommand")
+                #expect(reply["error"]?.objectValue?["code"] == -32603)
+            }
+        }
+        // Other approval kinds keep every decision.
+        #expect(replies["plain-session"]?["result"] == ["decision": "acceptForSession"])
+    }
+
+    @Test
+    func simplifiedAndGenericHandlersKeepTheirSemanticsForHumanCommand() async throws {
+        let simple = try await runApprovals([
+            ("approve", commandMethod, .object(humanCommandParams(itemID: "approve"))),
+            ("deny", commandMethod, .object(humanCommandParams(itemID: "deny"))),
+        ]) { config in
+            config.commandApprovalHandler = { $0.itemID == "approve" ? .approve : .deny }
+        }
+        #expect(simple["approve"]?["result"] == ["decision": "accept"])
+        #expect(simple["deny"]?["result"] == ["decision": "decline"])
+
+        let generic = try await runApprovals([
+            ("generic", commandMethod, .object(humanCommandParams(itemID: "generic"))),
+        ]) { config in
+            config.serverRequestHandler = { request in
+                guard case .commandApproval(let approval) = request else { return .error(code: -32601, message: "unexpected") }
+                #expect(approval.params?.kind == .humanCommand)
+                return .commandExecutionApproval(.init(decision: .acceptForSession))
+            }
+        }
+        #expect(generic["generic"]?["result"] == ["decision": "acceptForSession"])
+    }
+}

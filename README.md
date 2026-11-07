@@ -42,12 +42,12 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856` (`rust-v0.166.0`)
+- Vendored upstream commit: `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a` (`rust-v0.167.0`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
-The `rust-v0.166.0` sync adds typed file-ID and inline image generation results, item lifecycle timestamps, native usage cost, and process output-drain status. Image result models now use enum branches (`.fileId(...)` / `.result(...)`), and hook source paths use `LegacyAppPathString`. Sampling/cancellation, memory, GCP setup, account-session list/switch, and feedback now have typed RPC methods and high-level conveniences; the coverage audit records the remaining gaps.
+The `rust-v0.167.0` sync adds typed audio URL/file-ID references and thread-section change notifications. Audio input models now use enum branches. The opt-in human approval capability and one-time checkpoint decisions are covered by the sync; broader RPC and Python orchestration gaps remain recorded in the coverage audit.
 
 See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files, the raw app-server schema parity target used for this sync, and the remaining schema-only request surfaces not wrapped by the Swift convenience API yet.
 
@@ -68,7 +68,7 @@ Add the package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.166.0")
+    .package(url: "https://github.com/ainame/swift-codex.git", from: "0.167.0")
 ]
 ```
 

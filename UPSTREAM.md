@@ -6,21 +6,21 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`
-- Reviewed JSON-RPC basis commit SHA: `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`
-- Last reviewed date: `2026-11-01`
+- Vendored upstream commit: `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`
+- Reviewed JSON-RPC basis commit SHA: `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`
+- Last reviewed date: `2026-11-07`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
-## Coverage Audit (2026-11-01)
+## Coverage Audit (2026-11-07)
 
-Basis: `rust-v0.166.0` at `6ff1e1ca3b30fc8b914720681fcf5fe62e95f856`,
-verified against GitHub's latest stable release on 2026-10-31.
+Basis: `rust-v0.167.0` at `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`,
+verified against GitHub's latest stable release on 2026-11-07.
 Parity target remains focused raw app-server schema parity.
 
 Generate the complete inventory with `python3 Scripts/audit_app_server_surface.py`.
-It currently enumerates 182 client methods and 11 server methods from stable JSON
+It currently enumerates 183 client methods and 11 server methods from stable JSON
 exports plus Rust wire declarations. Source matches indicate candidates for review,
 not implemented feature counts. Check the inventory on each sync and carry these
 unresolved gaps forward, even when upstream has not changed them.
@@ -48,6 +48,34 @@ unresolved gaps forward, even when upstream has not changed them.
 | Other client request surfaces | Deferred: broader account/auth/configuration, environment, plugin sharing, permission profiles, process/fs, realtime, thread-history/settings, MCP read/call and other unwrapped methods remain raw-RPC-only. Run the inventory for the full method/field list; do not infer convenience support from generated models. |
 | Other experimental request fields | Deferred: fields such as thread runtime workspace roots, permission profiles, history mode, environments, selected capability roots, and daybreak options remain outside the existing Swift convenience APIs. |
 | Python SDK orchestration | Deferred: prior notification coalescing, cancellation recovery, thread start locking, logical goal operations and history cursor/anchor gaps remain. |
+
+### Release sync and gap selection (2026-11-07)
+
+Reviewed the Python generated models/notification registry and unchanged handwritten
+client, combined stable schema, standalone experimental exports, Rust common wire
+declarations and thread/turn/item declarations. The refreshed inventory adds
+`thread/guardianReview` (experimental); this remains raw-RPC-only because its
+persistent thread subscription needs a dedicated lifecycle/API slice.
+
+| Candidate | Impact / effort | Outcome |
+| --- | --- | --- |
+| Human approval checkpoints | 9 / 3 | Selected: explicit `CodexConfig.requiredHumanApproval` opt-in, rejected without experimental API, and typed handler decisions restricted to accept/decline/cancel. Simplified callbacks already return one-time decisions. The generic handler remains application-owned and unfiltered. No automatic claim that a human reviews requests. |
+| History pagination and item anchors | 8 / 5 | Deferred: opaque cursors, exclusive anchors and high-level paging need a dedicated lifecycle slice. |
+| Cancellation recovery and thread-start coordination | 8 / 8 | Deferred: cross-request coordination and orphaned-start cleanup require lifecycle fixtures; unchanged Python handwritten code does not close this gap. |
+
+Regenerated audio URL/file-ID inputs and section-change notifications; section
+removal explicitly retains its required `sectionId: null` when encoded. Sampling
+params now expose `interruptOnCancel`; its policy remains caller-selected. Audio
+input changes from a struct to a union, and approval/notification enums gain cases.
+Broader Python orchestration, tool-output retention and experimental fields remain
+as recorded above. This sync preserves focused raw schema parity.
+
+Validation for the 0.167.0 sync: 107 SDK tests and independent Examples build
+passed using Xcode 27.2 / Swift 6.4.2; 833 generated files were deterministic and
+diff checks passed. Claude Code implemented the bounded approval slice; its own
+gates were blocked by sandbox network/toolchain restrictions. The orchestrator
+reviewed the entire diff, migrated the audio fixture and ran the gates independently.
+No live provider/model integration ran.
 
 ### Follow-up gap selection (2026-11-01)
 
@@ -240,3 +268,7 @@ When porting new behavior from upstream or validating parity:
   - the public Swift `ServiceTier` wrapper remains as a compatibility enum even though the current upstream schema models those request fields as unconstrained strings
   - the SDK keeps explicit `Codex`, `CodexThread`, and `CodexTurnHandle` handle types separate from protocol record types like `Thread` and `Turn`
   - the Swift package still exists as a porting project derived from the broader `openai/codex` SDK work, but runtime semantics now come from the JSON-RPC app-server basis above
+
+Compatibility note for 0.167.0: generated `CommandExecutionApprovalKind` now uses
+`.unknown(JSONValue)` in place of `.unrecognized(String)` and `rawJSON` in place
+of `rawValue`, reflecting the upstream union schema.

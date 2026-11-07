@@ -476,6 +476,16 @@ def render_object(name: str, schema: dict, registry: Registry) -> str:
 {decode_lines}
         }""".replace("{payload_init_params}", payload_init_params).replace("{payload_init_assignments}", payload_init_assignments).replace("{decode_lines}", "\n".join(decode_lines))
             payload_decoder_block = f"\n{payload_decoder}" if payload_decoder else ""
+        # Section removal is represented by a required explicit null on the wire.
+        if name == "ThreadSectionChangedNotification":
+            payload_decoder_block += """
+
+        func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(sectionId, forKey: .sectionId)
+            try container.encode(threadId, forKey: .threadId)
+        }
+"""
         payload_struct = f"""    private struct Payload: Codable, Hashable, Sendable {{
 {payload_properties}
 

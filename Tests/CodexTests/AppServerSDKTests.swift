@@ -526,8 +526,12 @@ struct AppServerSDKTests {
                 "url": .string("https://example.test/audio.wav"),
             ])
         )
-        #expect(audio.type == .audio)
-        #expect(audio.url == "https://example.test/audio.wav")
+        guard case .urlUserInput5(let inlineAudio) = audio else {
+            Issue.record("Expected inline audio URL")
+            return
+        }
+        #expect(inlineAudio.type == .audio)
+        #expect(inlineAudio.url == "https://example.test/audio.wav")
 
         let task = try decodeJSONValue(
             ScheduledTaskSummary.self,
