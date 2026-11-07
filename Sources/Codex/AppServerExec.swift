@@ -10,7 +10,6 @@ import SystemPackage
 struct CodexRPCExec: Sendable {
     private static let internalOriginatorEnvironmentKey = "CODEX_INTERNAL_ORIGINATOR_OVERRIDE"
     private static let swiftSDKOriginator = "codex_sdk_swift"
-    private static let appServerPreferredBufferSize = 1
 
     var executablePathOverride: String?
     var launchArgsOverride: [String]?
@@ -34,7 +33,7 @@ struct CodexRPCExec: Sendable {
             ].compactMapValues { $0 }
         )
         let environment = buildEnvironment()
-        let command = try resolveCommand(in: environment)
+        let command = try await resolveCommand(in: environment)
         logger.debug(
             "Resolved Codex app-server command",
             metadata: [
@@ -49,11 +48,15 @@ struct CodexRPCExec: Sendable {
             workingDirectory: workingDirectory.map { FilePath($0) }
         )
 
-
         let result = try await Subprocess.run(
             configuration,
-            preferredBufferSize: Self.appServerPreferredBufferSize
-        ) { _, standardInput, standardOutput, standardError in
+            input: .inputWriter,
+            output: .sequence,
+            error: .sequence
+        ) { execution in
+            let standardInput = execution.standardInputWriter
+            let standardOutput = execution.standardOutput
+            let standardError = execution.standardError
             enum ProcessState: Sendable {
                 case writerFinished
                 case stdoutFinished
@@ -105,7 +108,7 @@ struct CodexRPCExec: Sendable {
                 "Codex app-server terminated unsuccessfully",
                 metadata: ["termination_status": .string(String(describing: result.terminationStatus))]
             )
-            throw CodexError.fromTerminationStatus(result.terminationStatus, stderr: result.value)
+            throw CodexError.fromTerminationStatus(result.terminationStatus, stderr: result.closureResult)
         }
     }
 
@@ -138,19 +141,19 @@ struct CodexRPCExec: Sendable {
         return commandArgs
     }
 
-    private func resolveCommand(in environment: [String: String]) throws -> (executable: Executable, arguments: [String]) {
+    private func resolveCommand(in environment: [String: String]) async throws -> (executable: Executable, arguments: [String]) {
         if let launchArgsOverride {
             guard let executableName = launchArgsOverride.first, !executableName.isEmpty else {
                 throw CodexError.invalidConfig("launchArgsOverride must include an executable path or name")
             }
             return (
-                executable: try resolveExecutable(named: executableName, in: environment),
+                executable: try await resolveExecutable(named: executableName, in: environment),
                 arguments: Array(launchArgsOverride.dropFirst())
             )
         }
 
         return (
-            executable: try resolveExecutable(in: environment),
+            executable: try await resolveExecutable(in: environment),
             arguments: try commandArguments()
         )
     }
@@ -166,21 +169,22 @@ struct CodexRPCExec: Sendable {
         return environment
     }
 
-    private func resolveExecutable(in environment: [String: String]) throws -> Executable {
+    private func resolveExecutable(in environment: [String: String]) async throws -> Executable {
         if let executablePathOverride {
             return .path(FilePath(executablePathOverride))
         }
 
         let executable = Executable.name("codex")
         do {
-            _ = try executable.resolveExecutablePath(in: .custom(subprocessEnvironment(from: environment)))
+            _ = try await executable.resolveExecutablePath(in: .custom(subprocessEnvironment(from: environment)))
             return executable
         } catch {
+            try Task.checkCancellation()
             throw CodexError.executableNotFound("codex")
         }
     }
 
-    private func resolveExecutable(named rawValue: String, in environment: [String: String]) throws -> Executable {
+    private func resolveExecutable(named rawValue: String, in environment: [String: String]) async throws -> Executable {
         let executable: Executable
         if rawValue.contains("/") {
             executable = .path(FilePath(rawValue))
@@ -188,9 +192,10 @@ struct CodexRPCExec: Sendable {
             executable = .name(rawValue)
         }
         do {
-            _ = try executable.resolveExecutablePath(in: .custom(subprocessEnvironment(from: environment)))
+            _ = try await executable.resolveExecutablePath(in: .custom(subprocessEnvironment(from: environment)))
             return executable
         } catch {
+            try Task.checkCancellation()
             throw CodexError.executableNotFound(rawValue)
         }
     }
@@ -204,14 +209,14 @@ struct CodexRPCExec: Sendable {
     }
 
     private func streamLines(
-        from sequence: AsyncBufferSequence,
+        from sequence: SubprocessOutputSequence,
         onLine: @escaping @Sendable (String) async -> Void
     ) async throws {
         _ = try await collectAndForwardLines(from: sequence, onLine: onLine)
     }
 
     private func collectAndForwardLines(
-        from sequence: AsyncBufferSequence,
+        from sequence: SubprocessOutputSequence,
         onLine: @escaping @Sendable (String) async -> Void
     ) async throws -> [String] {
         var pending = Data()
