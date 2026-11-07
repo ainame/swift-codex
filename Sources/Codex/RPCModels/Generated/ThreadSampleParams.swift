@@ -7,6 +7,7 @@ public struct ThreadSampleParams: ObjectModel {
     public var disableMcp: Bool?
     public var effort: ReasoningEffort?
     public var expectedTurnId: String
+    public var interruptOnCancel: Bool?
     public var prompt: String
     public var responsesapiClientMetadata: [String: String]?
     public var threadId: String
@@ -18,6 +19,7 @@ public struct ThreadSampleParams: ObjectModel {
         disableMcp: Bool? = nil,
         effort: ReasoningEffort? = nil,
         expectedTurnId: String,
+        interruptOnCancel: Bool? = nil,
         prompt: String,
         responsesapiClientMetadata: [String: String]? = nil,
         threadId: String,
@@ -28,6 +30,7 @@ public struct ThreadSampleParams: ObjectModel {
         self.disableMcp = disableMcp
         self.effort = effort
         self.expectedTurnId = expectedTurnId
+        self.interruptOnCancel = interruptOnCancel
         self.prompt = prompt
         self.responsesapiClientMetadata = responsesapiClientMetadata
         self.threadId = threadId
@@ -46,6 +49,7 @@ public struct ThreadSampleParams: ObjectModel {
         self.disableMcp = payload.disableMcp
         self.effort = payload.effort
         self.expectedTurnId = payload.expectedTurnId
+        self.interruptOnCancel = payload.interruptOnCancel
         self.prompt = payload.prompt
         self.responsesapiClientMetadata = payload.responsesapiClientMetadata
         self.threadId = payload.threadId
@@ -63,6 +67,7 @@ public struct ThreadSampleParams: ObjectModel {
             disableMcp: disableMcp,
             effort: effort,
             expectedTurnId: expectedTurnId,
+            interruptOnCancel: interruptOnCancel,
             prompt: prompt,
             responsesapiClientMetadata: responsesapiClientMetadata,
             threadId: threadId,
@@ -71,12 +76,13 @@ public struct ThreadSampleParams: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["disableMcp", "effort", "expectedTurnId", "prompt", "responsesapiClientMetadata", "threadId", "threadSource", "turnTrigger"]
+    private static let knownKeys: Set<String> = ["disableMcp", "effort", "expectedTurnId", "interruptOnCancel", "prompt", "responsesapiClientMetadata", "threadId", "threadSource", "turnTrigger"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var disableMcp: Bool?
         var effort: ReasoningEffort?
         var expectedTurnId: String
+        var interruptOnCancel: Bool?
         var prompt: String
         var responsesapiClientMetadata: [String: String]?
         var threadId: String
@@ -87,6 +93,7 @@ public struct ThreadSampleParams: ObjectModel {
             case disableMcp
             case effort
             case expectedTurnId
+            case interruptOnCancel
             case prompt
             case responsesapiClientMetadata
             case threadId

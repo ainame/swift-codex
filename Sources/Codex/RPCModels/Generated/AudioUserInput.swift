@@ -3,53 +3,58 @@
 
 import Foundation
 
-public struct AudioUserInput: ObjectModel {
-    public var type: AudioUserInputType
-    public var url: String
-    public var additionalFields: JSONObject
+public enum AudioUserInput: RawJSONRepresentable {
 
-    public init(
-        type: AudioUserInputType,
-        url: String,
-        additionalFields: JSONObject = [:]
-    ) {
-        self.type = type
-        self.url = url
-        self.additionalFields = additionalFields
-    }
-
-    public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "AudioUserInput"))
-    }
+    case urlUserInput5(UrlUserInput5)
+    case fileIdUserInput5(FileIdUserInput5)
+    case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "AudioUserInput")
-        let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.type = payload.type
-        self.url = payload.url
-        self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
+        let raw = try JSONValue(from: decoder)
+        if case .string(let value) = raw {
+            switch value {
+
+            default:
+                break
+            }
+        }
+        if case .object(let object) = raw, let discriminator = object["type"]?.stringValue {
+            switch discriminator {
+            case "audio":
+                if let value = try? decodeJSONValue(UrlUserInput5.self, from: raw) {
+                    self = .urlUserInput5(value)
+                    return
+                }
+                if let value = try? decodeJSONValue(FileIdUserInput5.self, from: raw) {
+                    self = .fileIdUserInput5(value)
+                    return
+                }
+            default:
+                break
+            }
+        }
+        if let value = try? decodeJSONValue(UrlUserInput5.self, from: raw) { self = .urlUserInput5(value); return }
+        if let value = try? decodeJSONValue(FileIdUserInput5.self, from: raw) { self = .fileIdUserInput5(value); return }
+        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "AudioUserInput", to: encoder)
+        switch self {
+
+        case .urlUserInput5(let value): try value.encode(to: encoder)
+        case .fileIdUserInput5(let value): try value.encode(to: encoder)
+        case .unknown(let value):
+            try value.encode(to: encoder)
+        }
     }
 
-    private var payload: Payload {
-        Payload(
-            type: type,
-            url: url
-        )
-    }
+    public var rawJSON: JSONValue {
+        switch self {
 
-    private static let knownKeys: Set<String> = ["type", "url"]
-
-    private struct Payload: Codable, Hashable, Sendable {
-        var type: AudioUserInputType
-        var url: String
-
-        enum CodingKeys: String, CodingKey {
-            case type
-            case url
+        case .urlUserInput5(let value): return losslessEncodeJSONValue(value, context: "AudioUserInput.urlUserInput5")
+        case .fileIdUserInput5(let value): return losslessEncodeJSONValue(value, context: "AudioUserInput.fileIdUserInput5")
+        case .unknown(let value):
+            return value
         }
     }
 }

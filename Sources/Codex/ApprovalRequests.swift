@@ -86,6 +86,10 @@ enum ApprovalRequests {
                 return .error(code: -32603, message: "Server request handler failed")
             }
             metadata["decision"] = .string(label(response.decision))
+            if typed.kind == .humanCommand && !isOneTimeDecision(response.decision) {
+                logger.warning("Rejected command approval decision not allowed for humanCommand", metadata: metadata)
+                return .error(code: -32603, message: "Decision not allowed for humanCommand approval")
+            }
             logger.info("Resolved command approval request", metadata: metadata)
             return .commandExecutionApproval(response)
         }
@@ -139,6 +143,14 @@ enum ApprovalRequests {
             return nil
         }
         return (value, true)
+    }
+
+    /// `humanCommand` checkpoints accept only a fresh one-time decision.
+    private static func isOneTimeDecision(_ decision: CommandExecutionApprovalDecision) -> Bool {
+        switch decision {
+        case .accept, .decline, .cancel: return true
+        default: return false
+        }
     }
 
     private static func label(_ decision: CommandExecutionApprovalDecision) -> String {

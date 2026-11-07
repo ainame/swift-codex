@@ -6,32 +6,43 @@ import Foundation
 public enum CommandExecutionApprovalKind: RawJSONRepresentable {
     case command
     case writeStdin
-    case unrecognized(String)
+    case humanCommand
+
+    case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
-        let value = try String(from: decoder)
-        switch value {
-        case "command": self = .command
-        case "writeStdin": self = .writeStdin
-        default:
-            self = .unrecognized(value)
+        let raw = try JSONValue(from: decoder)
+        if case .string(let value) = raw {
+            switch value {
+            case "command": self = .command; return
+            case "writeStdin": self = .writeStdin; return
+            case "humanCommand": self = .humanCommand; return
+            default:
+                break
+            }
         }
+        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try rawValue.encode(to: encoder)
-    }
-
-    public var rawValue: String {
         switch self {
-        case .command: return "command"
-        case .writeStdin: return "writeStdin"
-        case .unrecognized(let value):
-            return value
+        case .command: try "command".encode(to: encoder)
+        case .writeStdin: try "writeStdin".encode(to: encoder)
+        case .humanCommand: try "humanCommand".encode(to: encoder)
+
+        case .unknown(let value):
+            try value.encode(to: encoder)
         }
     }
 
     public var rawJSON: JSONValue {
-        .string(rawValue)
+        switch self {
+        case .command: return .string("command")
+        case .writeStdin: return .string("writeStdin")
+        case .humanCommand: return .string("humanCommand")
+
+        case .unknown(let value):
+            return value
+        }
     }
 }

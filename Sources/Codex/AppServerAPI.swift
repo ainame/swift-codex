@@ -188,6 +188,11 @@ public struct CodexConfig: Sendable {
     public var experimentalAPI: Bool
     /// Opt into attestation for a generic handler. Dedicated handlers opt in automatically.
     public var requestAttestation: Bool
+    /// Declare the `requiredHumanApproval` initialize capability: this client
+    /// presents `humanCommand` approvals to a person and answers them only with
+    /// `accept`, `decline` or `cancel`. Requires `experimentalAPI`. Off by
+    /// default; only enable it when a human actually reviews each request.
+    public var requiredHumanApproval: Bool
     /// Explicit MCP extension declarations, for example ["openai/form": .object([:])].
     public var mcpExtensions: JSONObject?
     /// A custom server request handler takes precedence over specialized handlers.
@@ -202,7 +207,10 @@ public struct CodexConfig: Sendable {
     /// Typed command approval with every upstream decision. When set, it is
     /// used instead of `commandApprovalHandler`. Requests from older servers
     /// that omit `startedAtMs` are rejected with -32602 rather than approved
-    /// through the simplified handler.
+    /// through the simplified handler. For `kind == .humanCommand`, decisions
+    /// other than `accept`, `decline` and `cancel` are not sent; the request
+    /// gets a -32603 error instead. The generic `serverRequestHandler` is not
+    /// filtered.
     public var commandExecutionRequestApprovalHandler: CommandExecutionRequestApprovalHandler?
     /// Typed file change approval; see `commandExecutionRequestApprovalHandler`.
     public var fileChangeRequestApprovalHandler: FileChangeRequestApprovalHandler?
@@ -227,6 +235,7 @@ public struct CodexConfig: Sendable {
         clientVersion: String = "dev",
         experimentalAPI: Bool = true,
         requestAttestation: Bool = false,
+        requiredHumanApproval: Bool = false,
         mcpExtensions: JSONObject? = nil,
         serverRequestHandler: ServerRequestHandler? = nil,
         dynamicToolCallHandler: DynamicToolCallHandler? = nil,
@@ -254,6 +263,7 @@ public struct CodexConfig: Sendable {
         self.clientVersion = clientVersion
         self.experimentalAPI = experimentalAPI
         self.requestAttestation = requestAttestation
+        self.requiredHumanApproval = requiredHumanApproval
         self.mcpExtensions = mcpExtensions
         self.serverRequestHandler = serverRequestHandler
         self.dynamicToolCallHandler = dynamicToolCallHandler
@@ -326,12 +336,16 @@ public actor CodexRPCClient {
             return initializePayload
         }
 
+        if config.requiredHumanApproval && !config.experimentalAPI {
+            throw CodexError.invalidConfig("requiredHumanApproval requires experimentalAPI")
+        }
         logger.info("Initializing Codex RPC client")
         try await start()
         var capabilities: JSONObject = ["experimentalApi": .bool(config.experimentalAPI)]
         if config.requestAttestation || config.attestationHandler != nil {
             capabilities["requestAttestation"] = true
         }
+        if config.requiredHumanApproval { capabilities["requiredHumanApproval"] = true }
         if let extensions = config.mcpExtensions { capabilities["extensions"] = .object(extensions) }
         let payload = try await request(
             "initialize",
