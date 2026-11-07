@@ -8,19 +8,18 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
-### Changed
-
-- Use Swift Testing bundled with the Swift 6 toolchain instead of an external dependency, removing the transitive SwiftSyntax dependency.
-
-- Require `swift-subprocess` 1.0.0 or later within 1.x and migrate process I/O to its stable streaming API.
-
-- Sync the vendored raw app-server schema basis to `rust-v0.167.0` at `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`; regenerate typed audio URL/file-ID inputs, thread-section notifications and sampling options.
-- Audio input models now use enum branches instead of a URL-only struct; approval kind and notification exhaustive switches gain new cases.
-- Generated `CommandExecutionApprovalKind` replaces `.unrecognized(String)` / `rawValue` with `.unknown(JSONValue)` / `rawJSON` to reflect the upstream union.
+## [0.167.0] - 2026-11-07
 
 ### Added
 
-- Opt-in required human approval capability and one-time `humanCommand` decision handling.
+- Opt-in required human approval capability and one-time `humanCommand` checkpoint decisions. Generic handlers retain raw control. [#34](https://github.com/ainame/swift-codex/pull/34)
+- Typed audio URL/file-ID inputs, thread-section change notifications with explicit null on section removal, and sampling `interruptOnCancel`, based on upstream `rust-v0.167.0` at `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`. [#34](https://github.com/ainame/swift-codex/pull/34)
+
+### Changed
+
+- **Migration:** audio input models now use enum branches instead of URL-only structs. Approval kind and notification enums gain cases; `CommandExecutionApprovalKind` replaces `.unrecognized(String)` / `rawValue` with `.unknown(JSONValue)` / `rawJSON`. [#34](https://github.com/ainame/swift-codex/pull/34)
+- Require `swift-subprocess` with `from: "1.0.0"` and migrate process I/O to its stable streaming API, including async executable lookup. The lockfile resolves 1.0.2. [#35](https://github.com/ainame/swift-codex/pull/35)
+- Use toolchain-provided Swift Testing, removing the external `swift-testing` dependency and transitive `swift-syntax` dependency. [#36](https://github.com/ainame/swift-codex/pull/36)
 
 ## [0.166.0] - 2026-11-02
 
