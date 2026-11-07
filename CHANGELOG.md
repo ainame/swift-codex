@@ -10,6 +10,8 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ### Changed
 
+- Require `swift-subprocess` 1.0.0 or later within 1.x and migrate process I/O to its stable streaming API.
+
 - Sync the vendored raw app-server schema basis to `rust-v0.167.0` at `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`; regenerate typed audio URL/file-ID inputs, thread-section notifications and sampling options.
 - Audio input models now use enum branches instead of a URL-only struct; approval kind and notification exhaustive switches gain new cases.
 - Generated `CommandExecutionApprovalKind` replaces `.unrecognized(String)` / `rawValue` with `.unknown(JSONValue)` / `rawJSON` to reflect the upstream union.
