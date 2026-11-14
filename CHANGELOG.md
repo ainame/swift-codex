@@ -8,14 +8,16 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.169.0] - 2026-11-14
+
 ### Added
 
-- Typed turn and item history paging through the RPC client and `CodexThread`, with opaque cursors and exclusive item anchors.
+- Typed turn and item history paging through the RPC client and `CodexThread`, with opaque cursors and exclusive item anchors. [#37](https://github.com/ainame/swift-codex/pull/37)
 
 ### Changed
 
-- Sync to upstream `rust-v0.169.0` at `d32063f96c2dff1dc96af839b3952abb6acfeda4`. Refreshed generated models expose assistant moderation, completion token counts, gateway OAuth login IDs, inference-hook errors, and sampling during an in-progress turn.
-- **Migration**. Generated function-output audio models now use URL and file-ID enum branches. `CodexErrorInfo` gains `inferenceHookDenied`.
+- Sync to upstream `rust-v0.169.0` at `d32063f96c2dff1dc96af839b3952abb6acfeda4`. Refreshed generated models expose assistant moderation, completion token counts, gateway OAuth login IDs, inference-hook errors, and sampling during an in-progress turn. [#37](https://github.com/ainame/swift-codex/pull/37)
+- **Migration**. Generated function-output audio models now use URL and file-ID enum branches. `CodexErrorInfo` gains `inferenceHookDenied`. [#37](https://github.com/ainame/swift-codex/pull/37)
 
 ## [0.167.0] - 2026-11-07
 
