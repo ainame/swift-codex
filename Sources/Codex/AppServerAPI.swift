@@ -487,6 +487,23 @@ public actor CodexRPCClient {
         )
     }
 
+    public func threadTurnsList(_ params: ThreadTurnsListParams) async throws -> ThreadTurnsListResponse {
+        try await request(
+            "thread/turns/list",
+            params: encodeJSONObjectValue(params, context: "ThreadTurnsListParams"),
+            responseType: ThreadTurnsListResponse.self
+        )
+    }
+
+    /// Setting output deferral flags requires the server's experimental API capability.
+    public func threadItemsList(_ params: ThreadItemsListParams) async throws -> ThreadItemsListResponse {
+        try await request(
+            "thread/items/list",
+            params: encodeJSONObjectValue(params, context: "ThreadItemsListParams"),
+            responseType: ThreadItemsListResponse.self
+        )
+    }
+
     public func threadFork(threadID: String, options: ThreadOptions = .init()) async throws -> ThreadForkResponse {
         guard options.dynamicTools == nil else {
             throw CodexError.invalidConfig("dynamicTools can only be registered with thread/start; resumed and forked threads inherit their saved tools")
@@ -1037,6 +1054,30 @@ public struct CodexThread: Sendable {
 
     public func read(includeTurns: Bool = false) async throws -> ThreadReadResponse {
         try await client.threadRead(threadID: id, includeTurns: includeTurns)
+    }
+
+    /// Reads one page of stored turns. Use the returned cursor to continue.
+    public func listTurns(
+        cursor: String? = nil,
+        itemsView: TurnItemsView? = nil,
+        limit: Int? = nil,
+        sortDirection: SortDirection? = nil
+    ) async throws -> ThreadTurnsListResponse {
+        try await client.threadTurnsList(.init(
+            cursor: cursor, itemsView: itemsView, limit: limit, sortDirection: sortDirection, threadId: id
+        ))
+    }
+
+    /// Reads one page of stored items. An item anchor requires the ID of its visible turn.
+    public func listItems(
+        turnID: String? = nil,
+        cursor: ThreadItemsListCursor? = nil,
+        limit: Int? = nil,
+        sortDirection: SortDirection? = nil
+    ) async throws -> ThreadItemsListResponse {
+        try await client.threadItemsList(.init(
+            cursor: cursor, limit: limit, sortDirection: sortDirection, threadId: id, turnId: turnID
+        ))
     }
 
     public func setName(_ name: String) async throws -> ThreadSetNameResponse {

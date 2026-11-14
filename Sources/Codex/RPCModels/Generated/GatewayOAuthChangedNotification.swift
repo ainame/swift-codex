@@ -6,6 +6,7 @@ import Foundation
 public struct GatewayOAuthChangedNotification: ObjectModel {
     public var authUrl: String?
     public var error: String?
+    public var loginId: String?
     public var providerId: String
     public var status: GatewayOAuthStatus
     public var additionalFields: JSONObject
@@ -13,12 +14,14 @@ public struct GatewayOAuthChangedNotification: ObjectModel {
     public init(
         authUrl: String? = nil,
         error: String? = nil,
+        loginId: String? = nil,
         providerId: String,
         status: GatewayOAuthStatus,
         additionalFields: JSONObject = [:]
     ) {
         self.authUrl = authUrl
         self.error = error
+        self.loginId = loginId
         self.providerId = providerId
         self.status = status
         self.additionalFields = additionalFields
@@ -33,6 +36,7 @@ public struct GatewayOAuthChangedNotification: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.authUrl = payload.authUrl
         self.error = payload.error
+        self.loginId = payload.loginId
         self.providerId = payload.providerId
         self.status = payload.status
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -46,22 +50,25 @@ public struct GatewayOAuthChangedNotification: ObjectModel {
         Payload(
             authUrl: authUrl,
             error: error,
+            loginId: loginId,
             providerId: providerId,
             status: status
         )
     }
 
-    private static let knownKeys: Set<String> = ["authUrl", "error", "providerId", "status"]
+    private static let knownKeys: Set<String> = ["authUrl", "error", "loginId", "providerId", "status"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var authUrl: String?
         var error: String?
+        var loginId: String?
         var providerId: String
         var status: GatewayOAuthStatus
 
         enum CodingKeys: String, CodingKey {
             case authUrl
             case error
+            case loginId
             case providerId
             case status
         }

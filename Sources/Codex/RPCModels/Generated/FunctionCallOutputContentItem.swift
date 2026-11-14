@@ -50,7 +50,9 @@ public enum FunctionCallOutputContentItem: RawJSONRepresentable {
         if let value = try? decodeJSONValue(InputImageFunctionCallOutputContentItem.self, from: raw) {
             if case .unknown = value { } else { self = .inputImage(value); return }
         }
-        if let value = try? decodeJSONValue(InputAudioFunctionCallOutputContentItem.self, from: raw) { self = .inputAudio(value); return }
+        if let value = try? decodeJSONValue(InputAudioFunctionCallOutputContentItem.self, from: raw) {
+            if case .unknown = value { } else { self = .inputAudio(value); return }
+        }
         if let value = try? decodeJSONValue(EncryptedContentFunctionCallOutputContentItem.self, from: raw) { self = .encryptedContent(value); return }
         self = .unknown(raw)
     }

@@ -70,6 +70,8 @@ struct CodexStub {
         thread_resume_responses = scenario.get("threadResumeResponses", [])
         thread_list_responses = scenario.get("threadListResponses", [])
         thread_read_responses = scenario.get("threadReadResponses", [])
+        thread_turn_pages = scenario.get("threadTurnPages", [])
+        thread_item_pages = scenario.get("threadItemPages", [])
         thread_fork_responses = scenario.get("threadForkResponses", [])
         thread_archive_responses = scenario.get("threadArchiveResponses", [])
         thread_unarchive_responses = scenario.get("threadUnarchiveResponses", [])
@@ -98,6 +100,8 @@ struct CodexStub {
         thread_resume_index = 0
         thread_list_index = 0
         thread_read_index = 0
+        thread_turn_page_index = 0
+        thread_item_page_index = 0
         thread_fork_index = 0
         thread_archive_index = 0
         thread_unarchive_index = 0
@@ -231,6 +235,18 @@ struct CodexStub {
             if method == "thread/read":
                 response = response_at(thread_read_responses, thread_read_index, {})
                 thread_read_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/turns/list":
+                response = response_at(thread_turn_pages, thread_turn_page_index, {"data": []})
+                thread_turn_page_index += 1
+                write_message({"id": request_id, "result": response})
+                continue
+
+            if method == "thread/items/list":
+                response = response_at(thread_item_pages, thread_item_page_index, {"data": []})
+                thread_item_page_index += 1
                 write_message({"id": request_id, "result": response})
                 continue
 
@@ -495,6 +511,8 @@ struct AppServerScenario: Encodable {
     var threadResumeResponses: [JSONObject]
     var threadListResponses: [JSONObject]
     var threadReadResponses: [JSONObject]
+    var threadTurnPages: [JSONObject]
+    var threadItemPages: [JSONObject]
     var threadForkResponses: [JSONObject]
     var threadArchiveResponses: [JSONObject]
     var threadUnarchiveResponses: [JSONObject]
@@ -529,6 +547,8 @@ struct AppServerScenario: Encodable {
         threadResumeResponses: [JSONObject] = [],
         threadListResponses: [JSONObject] = [],
         threadReadResponses: [JSONObject] = [],
+        threadTurnPages: [JSONObject] = [],
+        threadItemPages: [JSONObject] = [],
         threadForkResponses: [JSONObject] = [],
         threadArchiveResponses: [JSONObject] = [],
         threadUnarchiveResponses: [JSONObject] = [],
@@ -562,6 +582,8 @@ struct AppServerScenario: Encodable {
         self.threadResumeResponses = threadResumeResponses
         self.threadListResponses = threadListResponses
         self.threadReadResponses = threadReadResponses
+        self.threadTurnPages = threadTurnPages
+        self.threadItemPages = threadItemPages
         self.threadForkResponses = threadForkResponses
         self.threadArchiveResponses = threadArchiveResponses
         self.threadUnarchiveResponses = threadUnarchiveResponses

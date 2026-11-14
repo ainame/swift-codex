@@ -21,6 +21,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
     case threadRollbackFailed
     case sandboxError
     case other
+    case inferenceHookDenied
     case httpConnectionFailed(HttpConnectionFailedCodexErrorInfo)
     case responseStreamConnectionFailed(ResponseStreamConnectionFailedCodexErrorInfo)
     case responseStreamDisconnected(ResponseStreamDisconnectedCodexErrorInfo)
@@ -49,6 +50,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
             case "threadRollbackFailed": self = .threadRollbackFailed; return
             case "sandboxError": self = .sandboxError; return
             case "other": self = .other; return
+            case "inferenceHookDenied": self = .inferenceHookDenied; return
             default:
                 break
             }
@@ -80,6 +82,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .threadRollbackFailed: try "threadRollbackFailed".encode(to: encoder)
         case .sandboxError: try "sandboxError".encode(to: encoder)
         case .other: try "other".encode(to: encoder)
+        case .inferenceHookDenied: try "inferenceHookDenied".encode(to: encoder)
         case .httpConnectionFailed(let value): try value.encode(to: encoder)
         case .responseStreamConnectionFailed(let value): try value.encode(to: encoder)
         case .responseStreamDisconnected(let value): try value.encode(to: encoder)
@@ -109,6 +112,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .threadRollbackFailed: return .string("threadRollbackFailed")
         case .sandboxError: return .string("sandboxError")
         case .other: return .string("other")
+        case .inferenceHookDenied: return .string("inferenceHookDenied")
         case .httpConnectionFailed(let value): return losslessEncodeJSONValue(value, context: "CodexErrorInfo.httpConnectionFailed")
         case .responseStreamConnectionFailed(let value): return losslessEncodeJSONValue(value, context: "CodexErrorInfo.responseStreamConnectionFailed")
         case .responseStreamDisconnected(let value): return losslessEncodeJSONValue(value, context: "CodexErrorInfo.responseStreamDisconnected")
