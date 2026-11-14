@@ -9,6 +9,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
     public var delivery: AgentMessageDelivery?
     public var id: String
     public var memoryCitation: MemoryCitation?
+    public var moderation: AgentMessageModeration?
     public var phase: MessagePhase?
     public var questions: [AsyncUserInputQuestion]?
     public var text: String
@@ -21,6 +22,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         delivery: AgentMessageDelivery? = nil,
         id: String,
         memoryCitation: MemoryCitation? = nil,
+        moderation: AgentMessageModeration? = nil,
         phase: MessagePhase? = nil,
         questions: [AsyncUserInputQuestion]? = nil,
         text: String,
@@ -32,6 +34,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         self.delivery = delivery
         self.id = id
         self.memoryCitation = memoryCitation
+        self.moderation = moderation
         self.phase = phase
         self.questions = questions
         self.text = text
@@ -51,6 +54,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         self.delivery = payload.delivery
         self.id = payload.id
         self.memoryCitation = payload.memoryCitation
+        self.moderation = payload.moderation
         self.phase = payload.phase
         self.questions = payload.questions
         self.text = payload.text
@@ -69,6 +73,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
             delivery: delivery,
             id: id,
             memoryCitation: memoryCitation,
+            moderation: moderation,
             phase: phase,
             questions: questions,
             text: text,
@@ -76,7 +81,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "delivery", "id", "memoryCitation", "phase", "questions", "text", "type"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "startedAtMs", "delivery", "id", "memoryCitation", "moderation", "phase", "questions", "text", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var completedAtMs: Int?
@@ -84,6 +89,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
         var delivery: AgentMessageDelivery?
         var id: String
         var memoryCitation: MemoryCitation?
+        var moderation: AgentMessageModeration?
         var phase: MessagePhase?
         var questions: [AsyncUserInputQuestion]?
         var text: String
@@ -95,6 +101,7 @@ public struct AgentMessageThreadItem2: ObjectModel {
             case delivery
             case id
             case memoryCitation
+            case moderation
             case phase
             case questions
             case text

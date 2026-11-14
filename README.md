@@ -42,12 +42,14 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a` (`rust-v0.167.0`)
+- Vendored upstream commit: `d32063f96c2dff1dc96af839b3952abb6acfeda4` (`rust-v0.169.0`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
-The `rust-v0.167.0` sync adds typed audio URL/file-ID references and thread-section change notifications. Audio input models now use enum branches. The opt-in human approval capability and one-time checkpoint decisions are covered by the sync; broader RPC and Python orchestration gaps remain recorded in the coverage audit.
+The `rust-v0.169.0` sync adds typed history pages through `CodexThread.listTurns` and `listItems` and their low-level RPC counterparts. Each call fetches one page. Pass the returned cursor unchanged to continue. Use `backwardsCursor` with the opposite sort direction, and supply the visible turn ID when starting from an exclusive item anchor.
+
+Generated function-output audio now supports URL and file-ID enum branches. Existing assistant message and item completion models also expose moderation metadata and content-token counts.
 
 See [`UPSTREAM.md`](UPSTREAM.md) for the exact reviewed files, the raw app-server schema parity target used for this sync, and the remaining schema-only request surfaces not wrapped by the Swift convenience API yet.
 

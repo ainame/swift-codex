@@ -3,53 +3,58 @@
 
 import Foundation
 
-public struct InputAudioFunctionCallOutputContentItem2: ObjectModel {
-    public var audioUrl: String
-    public var type: InputAudioFunctionCallOutputContentItemType2
-    public var additionalFields: JSONObject
+public enum InputAudioFunctionCallOutputContentItem2: RawJSONRepresentable {
 
-    public init(
-        audioUrl: String,
-        type: InputAudioFunctionCallOutputContentItemType2,
-        additionalFields: JSONObject = [:]
-    ) {
-        self.audioUrl = audioUrl
-        self.type = type
-        self.additionalFields = additionalFields
-    }
-
-    public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "InputAudioFunctionCallOutputContentItem2"))
-    }
+    case audioUrlFunctionCallOutputContentItem3(AudioUrlFunctionCallOutputContentItem3)
+    case fileIdFunctionCallOutputContentItem7(FileIdFunctionCallOutputContentItem7)
+    case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "InputAudioFunctionCallOutputContentItem2")
-        let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.audioUrl = payload.audioUrl
-        self.type = payload.type
-        self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
+        let raw = try JSONValue(from: decoder)
+        if case .string(let value) = raw {
+            switch value {
+
+            default:
+                break
+            }
+        }
+        if case .object(let object) = raw, let discriminator = object["type"]?.stringValue {
+            switch discriminator {
+            case "input_audio":
+                if let value = try? decodeJSONValue(AudioUrlFunctionCallOutputContentItem3.self, from: raw) {
+                    self = .audioUrlFunctionCallOutputContentItem3(value)
+                    return
+                }
+                if let value = try? decodeJSONValue(FileIdFunctionCallOutputContentItem7.self, from: raw) {
+                    self = .fileIdFunctionCallOutputContentItem7(value)
+                    return
+                }
+            default:
+                break
+            }
+        }
+        if let value = try? decodeJSONValue(AudioUrlFunctionCallOutputContentItem3.self, from: raw) { self = .audioUrlFunctionCallOutputContentItem3(value); return }
+        if let value = try? decodeJSONValue(FileIdFunctionCallOutputContentItem7.self, from: raw) { self = .fileIdFunctionCallOutputContentItem7(value); return }
+        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "InputAudioFunctionCallOutputContentItem2", to: encoder)
+        switch self {
+
+        case .audioUrlFunctionCallOutputContentItem3(let value): try value.encode(to: encoder)
+        case .fileIdFunctionCallOutputContentItem7(let value): try value.encode(to: encoder)
+        case .unknown(let value):
+            try value.encode(to: encoder)
+        }
     }
 
-    private var payload: Payload {
-        Payload(
-            audioUrl: audioUrl,
-            type: type
-        )
-    }
+    public var rawJSON: JSONValue {
+        switch self {
 
-    private static let knownKeys: Set<String> = ["audio_url", "type"]
-
-    private struct Payload: Codable, Hashable, Sendable {
-        var audioUrl: String
-        var type: InputAudioFunctionCallOutputContentItemType2
-
-        enum CodingKeys: String, CodingKey {
-            case audioUrl = "audio_url"
-            case type
+        case .audioUrlFunctionCallOutputContentItem3(let value): return losslessEncodeJSONValue(value, context: "InputAudioFunctionCallOutputContentItem2.audioUrlFunctionCallOutputContentItem3")
+        case .fileIdFunctionCallOutputContentItem7(let value): return losslessEncodeJSONValue(value, context: "InputAudioFunctionCallOutputContentItem2.fileIdFunctionCallOutputContentItem7")
+        case .unknown(let value):
+            return value
         }
     }
 }

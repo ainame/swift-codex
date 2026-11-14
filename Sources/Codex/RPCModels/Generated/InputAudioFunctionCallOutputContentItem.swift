@@ -3,53 +3,58 @@
 
 import Foundation
 
-public struct InputAudioFunctionCallOutputContentItem: ObjectModel {
-    public var audioUrl: String
-    public var type: InputAudioFunctionCallOutputContentItemType
-    public var additionalFields: JSONObject
+public enum InputAudioFunctionCallOutputContentItem: RawJSONRepresentable {
 
-    public init(
-        audioUrl: String,
-        type: InputAudioFunctionCallOutputContentItemType,
-        additionalFields: JSONObject = [:]
-    ) {
-        self.audioUrl = audioUrl
-        self.type = type
-        self.additionalFields = additionalFields
-    }
-
-    public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "InputAudioFunctionCallOutputContentItem"))
-    }
+    case audioUrlFunctionCallOutputContentItem(AudioUrlFunctionCallOutputContentItem)
+    case fileIdFunctionCallOutputContentItem5(FileIdFunctionCallOutputContentItem5)
+    case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "InputAudioFunctionCallOutputContentItem")
-        let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.audioUrl = payload.audioUrl
-        self.type = payload.type
-        self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
+        let raw = try JSONValue(from: decoder)
+        if case .string(let value) = raw {
+            switch value {
+
+            default:
+                break
+            }
+        }
+        if case .object(let object) = raw, let discriminator = object["type"]?.stringValue {
+            switch discriminator {
+            case "input_audio":
+                if let value = try? decodeJSONValue(AudioUrlFunctionCallOutputContentItem.self, from: raw) {
+                    self = .audioUrlFunctionCallOutputContentItem(value)
+                    return
+                }
+                if let value = try? decodeJSONValue(FileIdFunctionCallOutputContentItem5.self, from: raw) {
+                    self = .fileIdFunctionCallOutputContentItem5(value)
+                    return
+                }
+            default:
+                break
+            }
+        }
+        if let value = try? decodeJSONValue(AudioUrlFunctionCallOutputContentItem.self, from: raw) { self = .audioUrlFunctionCallOutputContentItem(value); return }
+        if let value = try? decodeJSONValue(FileIdFunctionCallOutputContentItem5.self, from: raw) { self = .fileIdFunctionCallOutputContentItem5(value); return }
+        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "InputAudioFunctionCallOutputContentItem", to: encoder)
+        switch self {
+
+        case .audioUrlFunctionCallOutputContentItem(let value): try value.encode(to: encoder)
+        case .fileIdFunctionCallOutputContentItem5(let value): try value.encode(to: encoder)
+        case .unknown(let value):
+            try value.encode(to: encoder)
+        }
     }
 
-    private var payload: Payload {
-        Payload(
-            audioUrl: audioUrl,
-            type: type
-        )
-    }
+    public var rawJSON: JSONValue {
+        switch self {
 
-    private static let knownKeys: Set<String> = ["audio_url", "type"]
-
-    private struct Payload: Codable, Hashable, Sendable {
-        var audioUrl: String
-        var type: InputAudioFunctionCallOutputContentItemType
-
-        enum CodingKeys: String, CodingKey {
-            case audioUrl = "audio_url"
-            case type
+        case .audioUrlFunctionCallOutputContentItem(let value): return losslessEncodeJSONValue(value, context: "InputAudioFunctionCallOutputContentItem.audioUrlFunctionCallOutputContentItem")
+        case .fileIdFunctionCallOutputContentItem5(let value): return losslessEncodeJSONValue(value, context: "InputAudioFunctionCallOutputContentItem.fileIdFunctionCallOutputContentItem5")
+        case .unknown(let value):
+            return value
         }
     }
 }

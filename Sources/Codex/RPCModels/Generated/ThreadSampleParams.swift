@@ -4,6 +4,7 @@
 import Foundation
 
 public struct ThreadSampleParams: ObjectModel {
+    public var allowInProgressTurn: Bool?
     public var disableMcp: Bool?
     public var effort: ReasoningEffort?
     public var expectedTurnId: String
@@ -16,6 +17,7 @@ public struct ThreadSampleParams: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        allowInProgressTurn: Bool? = nil,
         disableMcp: Bool? = nil,
         effort: ReasoningEffort? = nil,
         expectedTurnId: String,
@@ -27,6 +29,7 @@ public struct ThreadSampleParams: ObjectModel {
         turnTrigger: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
+        self.allowInProgressTurn = allowInProgressTurn
         self.disableMcp = disableMcp
         self.effort = effort
         self.expectedTurnId = expectedTurnId
@@ -46,6 +49,7 @@ public struct ThreadSampleParams: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "ThreadSampleParams")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.allowInProgressTurn = payload.allowInProgressTurn
         self.disableMcp = payload.disableMcp
         self.effort = payload.effort
         self.expectedTurnId = payload.expectedTurnId
@@ -64,6 +68,7 @@ public struct ThreadSampleParams: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            allowInProgressTurn: allowInProgressTurn,
             disableMcp: disableMcp,
             effort: effort,
             expectedTurnId: expectedTurnId,
@@ -76,9 +81,10 @@ public struct ThreadSampleParams: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["disableMcp", "effort", "expectedTurnId", "interruptOnCancel", "prompt", "responsesapiClientMetadata", "threadId", "threadSource", "turnTrigger"]
+    private static let knownKeys: Set<String> = ["allowInProgressTurn", "disableMcp", "effort", "expectedTurnId", "interruptOnCancel", "prompt", "responsesapiClientMetadata", "threadId", "threadSource", "turnTrigger"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var allowInProgressTurn: Bool?
         var disableMcp: Bool?
         var effort: ReasoningEffort?
         var expectedTurnId: String
@@ -90,6 +96,7 @@ public struct ThreadSampleParams: ObjectModel {
         var turnTrigger: String?
 
         enum CodingKeys: String, CodingKey {
+            case allowInProgressTurn
             case disableMcp
             case effort
             case expectedTurnId

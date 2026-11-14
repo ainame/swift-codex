@@ -6,21 +6,22 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Vendored upstream commit: `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`
-- Reviewed JSON-RPC basis commit SHA: `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`
-- Last reviewed date: `2026-11-07`
+- Reviewed upstream release: [`rust-v0.169.0`](https://github.com/openai/codex/releases/tag/rust-v0.169.0)
+- Vendored upstream commit: `d32063f96c2dff1dc96af839b3952abb6acfeda4`
+- Reviewed JSON-RPC basis commit SHA: `d32063f96c2dff1dc96af839b3952abb6acfeda4`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/d32063f96c2dff1dc96af839b3952abb6acfeda4`
+- Last reviewed date: `2026-11-14`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
-## Coverage Audit (2026-11-07)
+## Coverage Audit (2026-11-14)
 
-Basis: `rust-v0.167.0` at `086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a`,
-verified against GitHub's latest stable release on 2026-11-07.
+Basis: `rust-v0.169.0` at `d32063f96c2dff1dc96af839b3952abb6acfeda4`,
+verified against GitHub's latest stable release on 2026-11-14.
 Parity target remains focused raw app-server schema parity.
 
 Generate the complete inventory with `python3 Scripts/audit_app_server_surface.py`.
-It currently enumerates 183 client methods and 11 server methods from stable JSON
+It currently enumerates 187 client methods and 11 server methods from stable JSON
 exports plus Rust wire declarations. Source matches indicate candidates for review,
 not implemented feature counts. Check the inventory on each sync and carry these
 unresolved gaps forward, even when upstream has not changed them.
@@ -47,7 +48,40 @@ unresolved gaps forward, even when upstream has not changed them.
 | Legacy server approvals | Intentionally unsupported by specialized handlers: `applyPatchApproval` and `execCommandApproval` belong to legacy turn APIs; use the generic handler if required. |
 | Other client request surfaces | Deferred: broader account/auth/configuration, environment, plugin sharing, permission profiles, process/fs, realtime, thread-history/settings, MCP read/call and other unwrapped methods remain raw-RPC-only. Run the inventory for the full method/field list; do not infer convenience support from generated models. |
 | Other experimental request fields | Deferred: fields such as thread runtime workspace roots, permission profiles, history mode, environments, selected capability roots, and daybreak options remain outside the existing Swift convenience APIs. |
-| Python SDK orchestration | Deferred: prior notification coalescing, cancellation recovery, thread start locking, logical goal operations and history cursor/anchor gaps remain. |
+| Stable thread history paging | Implemented typed `thread/turns/list` and `thread/items/list` on the RPC client and `CodexThread`. Pass continuation and reverse-direction cursors as returned by the server. Item anchors are exclusive and require a visible turn ID. Callers control paging. Experimental item-output deferral and full-item reads remain outside the high-level API. |
+| Python SDK orchestration | Deferred: prior notification coalescing, cancellation recovery, thread start locking, logical goal operations and automatic history traversal remain deferred. |
+
+### Release sync and gap selection (2026-11-14)
+
+Reviewed the Python SDK, including generated `v2_all.py`, notification registry,
+and provider RPC fixtures, plus the combined stable v2 schema, standalone
+client/server exports and the Rust common, thread, item, turn and provider wire
+declarations. The handwritten Python client and notification registry were
+unchanged. The prior and current release tags diverge from
+`cb1bc0ae4ed996c67a6e118bf79a7435f0d3f0d2`. The prior tag's unique commits
+change CLI release, execution-policy and Windows sandbox files. The Python SDK
+and app-server protocol files have no prior-tag-only changes.
+
+| Candidate | Impact / effort | Outcome |
+| --- | --- | --- |
+| History pagination and item anchors | 8 / 5 | Implemented stable turn and item pages with server-owned cursor and anchor semantics. Experimental deferred-output recovery and automatic iteration remain deferred. |
+| Cancellation recovery and thread-start coordination | 8 / 8 | Deferred pending coordinated cancellation and orphaned-start lifecycle fixtures. |
+| Provider configuration and account security | 6 / 6 | Deferred: provider updates need explicit-null patch and authentication contract tests. The new `modelProvider/list`, `modelProvider/config/write`, `account/securitySetup/read`, and experimental `thread/prepareApprovedPlan` methods are accessible via raw RPC. |
+
+Refreshed the existing generated roots for assistant-message moderation metadata,
+completion content-token counts, function-output audio references, gateway OAuth
+login IDs, inference-hook errors and sampling during an in-progress turn.
+The generated function-output audio type now uses enum branches. Sample
+`allowInProgressTurn` is available in the existing low-level experimental API.
+Provider selection in `model/list`, current-account search filters, and new
+experimental settings and output-deferral fields remain outside the Swift
+convenience APIs. For experimental item paging fields use the raw wire escape
+hatches and negotiate the server capability.
+
+109 SDK tests and the independent Examples build passed with Xcode 27.2.
+Claude Code reviewed the Swift history API and fixture patterns. Upstream wire
+semantics were checked against the release commit independently.
+Live app-server integration remains unverified.
 
 ### Release sync and gap selection (2026-11-07)
 

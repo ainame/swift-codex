@@ -5,6 +5,7 @@ import Foundation
 
 public struct ItemCompletedNotification: ObjectModel {
     public var completedAtMs: Int
+    public var contentTokenCount: Int?
     public var item: ThreadItem
     public var threadId: String
     public var turnId: String
@@ -12,12 +13,14 @@ public struct ItemCompletedNotification: ObjectModel {
 
     public init(
         completedAtMs: Int,
+        contentTokenCount: Int? = nil,
         item: ThreadItem,
         threadId: String,
         turnId: String,
         additionalFields: JSONObject = [:]
     ) {
         self.completedAtMs = completedAtMs
+        self.contentTokenCount = contentTokenCount
         self.item = item
         self.threadId = threadId
         self.turnId = turnId
@@ -32,6 +35,7 @@ public struct ItemCompletedNotification: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "ItemCompletedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.completedAtMs = payload.completedAtMs
+        self.contentTokenCount = payload.contentTokenCount
         self.item = payload.item
         self.threadId = payload.threadId
         self.turnId = payload.turnId
@@ -45,22 +49,25 @@ public struct ItemCompletedNotification: ObjectModel {
     private var payload: Payload {
         Payload(
             completedAtMs: completedAtMs,
+            contentTokenCount: contentTokenCount,
             item: item,
             threadId: threadId,
             turnId: turnId
         )
     }
 
-    private static let knownKeys: Set<String> = ["completedAtMs", "item", "threadId", "turnId"]
+    private static let knownKeys: Set<String> = ["completedAtMs", "contentTokenCount", "item", "threadId", "turnId"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var completedAtMs: Int
+        var contentTokenCount: Int?
         var item: ThreadItem
         var threadId: String
         var turnId: String
 
         enum CodingKeys: String, CodingKey {
             case completedAtMs
+            case contentTokenCount
             case item
             case threadId
             case turnId
