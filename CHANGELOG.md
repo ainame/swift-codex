@@ -8,17 +8,18 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+## [0.171.0] - 2026-11-21
+
 ### Added
 
-- `ThreadListOptions.includedThreadIDs` on raw and high-level listing, preserving nil, empty and populated filters.
-- Typed partial search notifications and refreshed account, MCP, user-verification and realtime models.
+- `ThreadListOptions.includedThreadIDs` on raw and high-level listing, preserving nil, empty and populated filters. [#38](https://github.com/ainame/swift-codex/pull/38)
+- Typed partial search notifications and refreshed account, MCP, user-verification and realtime models. [#38](https://github.com/ainame/swift-codex/pull/38)
 
 ### Changed
 
-- Sync focused raw app-server schema coverage to `rust-v0.171.0` at `ccf9be8cc458bd6b8336fe84d68d8893f2691a5e`.
-- **Migration:** `AgentMessageDisplay` is now a mode-based enum instead of an action struct; notification, realtime and error enums gain cases. Legacy display payloads remain accessible through raw JSON.
-- Retain `currentTime/read` handlers for older servers using pinned legacy schemas; fix generated enum identifiers for numeric string values.
-
+- Sync focused raw app-server schema coverage to `rust-v0.171.0` at `ccf9be8cc458bd6b8336fe84d68d8893f2691a5e`. [#38](https://github.com/ainame/swift-codex/pull/38)
+- **Migration:** `AgentMessageDisplay` is now a mode-based enum instead of an action struct; notification, realtime and error enums gain cases. Legacy display payloads remain accessible through raw JSON. [#38](https://github.com/ainame/swift-codex/pull/38)
+- Retain `currentTime/read` handlers for older servers using pinned legacy schemas; fix generated enum identifiers for numeric string values. [#38](https://github.com/ainame/swift-codex/pull/38)
 
 ## [0.169.0] - 2026-11-14
 
