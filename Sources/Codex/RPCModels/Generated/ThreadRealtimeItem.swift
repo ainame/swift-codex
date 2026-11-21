@@ -6,9 +6,12 @@ import Foundation
 public enum ThreadRealtimeItem: RawJSONRepresentable {
 
     case realtimeSessionStarted(RealtimeSessionStartedThreadRealtimeItem)
+    case frame(FrameThreadRealtimeItem)
     case transcriptSegment(TranscriptSegmentThreadRealtimeItem)
     case bemItemPromoted(BemItemPromotedThreadRealtimeItem)
     case realtimeSessionClosed(RealtimeSessionClosedThreadRealtimeItem)
+    case turnInputAccepted(TurnInputAcceptedThreadRealtimeItem)
+    case sessionEndInputSaved(SessionEndInputSavedThreadRealtimeItem)
     case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
@@ -27,6 +30,11 @@ public enum ThreadRealtimeItem: RawJSONRepresentable {
                     self = .realtimeSessionStarted(value)
                     return
                 }
+            case "frame":
+                if let value = try? decodeJSONValue(FrameThreadRealtimeItem.self, from: raw) {
+                    self = .frame(value)
+                    return
+                }
             case "transcriptSegment":
                 if let value = try? decodeJSONValue(TranscriptSegmentThreadRealtimeItem.self, from: raw) {
                     self = .transcriptSegment(value)
@@ -42,14 +50,27 @@ public enum ThreadRealtimeItem: RawJSONRepresentable {
                     self = .realtimeSessionClosed(value)
                     return
                 }
+            case "turnInputAccepted":
+                if let value = try? decodeJSONValue(TurnInputAcceptedThreadRealtimeItem.self, from: raw) {
+                    self = .turnInputAccepted(value)
+                    return
+                }
+            case "sessionEndInputSaved":
+                if let value = try? decodeJSONValue(SessionEndInputSavedThreadRealtimeItem.self, from: raw) {
+                    self = .sessionEndInputSaved(value)
+                    return
+                }
             default:
                 break
             }
         }
         if let value = try? decodeJSONValue(RealtimeSessionStartedThreadRealtimeItem.self, from: raw) { self = .realtimeSessionStarted(value); return }
+        if let value = try? decodeJSONValue(FrameThreadRealtimeItem.self, from: raw) { self = .frame(value); return }
         if let value = try? decodeJSONValue(TranscriptSegmentThreadRealtimeItem.self, from: raw) { self = .transcriptSegment(value); return }
         if let value = try? decodeJSONValue(BemItemPromotedThreadRealtimeItem.self, from: raw) { self = .bemItemPromoted(value); return }
         if let value = try? decodeJSONValue(RealtimeSessionClosedThreadRealtimeItem.self, from: raw) { self = .realtimeSessionClosed(value); return }
+        if let value = try? decodeJSONValue(TurnInputAcceptedThreadRealtimeItem.self, from: raw) { self = .turnInputAccepted(value); return }
+        if let value = try? decodeJSONValue(SessionEndInputSavedThreadRealtimeItem.self, from: raw) { self = .sessionEndInputSaved(value); return }
         self = .unknown(raw)
     }
 
@@ -57,9 +78,12 @@ public enum ThreadRealtimeItem: RawJSONRepresentable {
         switch self {
 
         case .realtimeSessionStarted(let value): try value.encode(to: encoder)
+        case .frame(let value): try value.encode(to: encoder)
         case .transcriptSegment(let value): try value.encode(to: encoder)
         case .bemItemPromoted(let value): try value.encode(to: encoder)
         case .realtimeSessionClosed(let value): try value.encode(to: encoder)
+        case .turnInputAccepted(let value): try value.encode(to: encoder)
+        case .sessionEndInputSaved(let value): try value.encode(to: encoder)
         case .unknown(let value):
             try value.encode(to: encoder)
         }
@@ -69,9 +93,12 @@ public enum ThreadRealtimeItem: RawJSONRepresentable {
         switch self {
 
         case .realtimeSessionStarted(let value): return losslessEncodeJSONValue(value, context: "ThreadRealtimeItem.realtimeSessionStarted")
+        case .frame(let value): return losslessEncodeJSONValue(value, context: "ThreadRealtimeItem.frame")
         case .transcriptSegment(let value): return losslessEncodeJSONValue(value, context: "ThreadRealtimeItem.transcriptSegment")
         case .bemItemPromoted(let value): return losslessEncodeJSONValue(value, context: "ThreadRealtimeItem.bemItemPromoted")
         case .realtimeSessionClosed(let value): return losslessEncodeJSONValue(value, context: "ThreadRealtimeItem.realtimeSessionClosed")
+        case .turnInputAccepted(let value): return losslessEncodeJSONValue(value, context: "ThreadRealtimeItem.turnInputAccepted")
+        case .sessionEndInputSaved(let value): return losslessEncodeJSONValue(value, context: "ThreadRealtimeItem.sessionEndInputSaved")
         case .unknown(let value):
             return value
         }

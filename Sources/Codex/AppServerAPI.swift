@@ -754,6 +754,9 @@ public actor CodexRPCClient {
         if let cwd = options.cwd {
             params["cwd"] = try encodeJSONValue(cwd)
         }
+        if let includedThreadIDs = options.includedThreadIDs {
+            params["includedThreadIds"] = .array(includedThreadIDs.map(JSONValue.string))
+        }
         if let excludedThreadIDs = options.excludedThreadIDs {
             params["excludedThreadIds"] = .array(excludedThreadIDs.map(JSONValue.string))
         }

@@ -4,6 +4,7 @@
 import Foundation
 
 public struct OpenaiFormMcpServerElicitationRequestParams: ObjectModel {
+    public var environmentId: String?
     public var serverName: String
     public var threadId: String
     public var turnId: String?
@@ -14,6 +15,7 @@ public struct OpenaiFormMcpServerElicitationRequestParams: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        environmentId: String? = nil,
         serverName: String,
         threadId: String,
         turnId: String? = nil,
@@ -23,6 +25,7 @@ public struct OpenaiFormMcpServerElicitationRequestParams: ObjectModel {
         requestedSchema: JSONValue,
         additionalFields: JSONObject = [:]
     ) {
+        self.environmentId = environmentId
         self.serverName = serverName
         self.threadId = threadId
         self.turnId = turnId
@@ -40,6 +43,7 @@ public struct OpenaiFormMcpServerElicitationRequestParams: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "OpenaiFormMcpServerElicitationRequestParams")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.environmentId = payload.environmentId
         self.serverName = payload.serverName
         self.threadId = payload.threadId
         self.turnId = payload.turnId
@@ -56,6 +60,7 @@ public struct OpenaiFormMcpServerElicitationRequestParams: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            environmentId: environmentId,
             serverName: serverName,
             threadId: threadId,
             turnId: turnId,
@@ -66,9 +71,10 @@ public struct OpenaiFormMcpServerElicitationRequestParams: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["serverName", "threadId", "turnId", "_meta", "message", "mode", "requestedSchema"]
+    private static let knownKeys: Set<String> = ["environmentId", "serverName", "threadId", "turnId", "_meta", "message", "mode", "requestedSchema"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var environmentId: String?
         var serverName: String
         var threadId: String
         var turnId: String?
@@ -78,6 +84,7 @@ public struct OpenaiFormMcpServerElicitationRequestParams: ObjectModel {
         var requestedSchema: JSONValue
 
         enum CodingKeys: String, CodingKey {
+            case environmentId
             case serverName
             case threadId
             case turnId

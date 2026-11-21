@@ -4,6 +4,7 @@
 import Foundation
 
 public struct McpServerStatusUpdatedNotification: ObjectModel {
+    public var environmentId: String?
     public var error: String?
     public var failureReason: McpServerStartupFailureReason?
     public var name: String
@@ -12,6 +13,7 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        environmentId: String? = nil,
         error: String? = nil,
         failureReason: McpServerStartupFailureReason? = nil,
         name: String,
@@ -19,6 +21,7 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
         threadId: String? = nil,
         additionalFields: JSONObject = [:]
     ) {
+        self.environmentId = environmentId
         self.error = error
         self.failureReason = failureReason
         self.name = name
@@ -34,6 +37,7 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "McpServerStatusUpdatedNotification")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.environmentId = payload.environmentId
         self.error = payload.error
         self.failureReason = payload.failureReason
         self.name = payload.name
@@ -48,6 +52,7 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            environmentId: environmentId,
             error: error,
             failureReason: failureReason,
             name: name,
@@ -56,9 +61,10 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["error", "failureReason", "name", "status", "threadId"]
+    private static let knownKeys: Set<String> = ["environmentId", "error", "failureReason", "name", "status", "threadId"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var environmentId: String?
         var error: String?
         var failureReason: McpServerStartupFailureReason?
         var name: String
@@ -66,6 +72,7 @@ public struct McpServerStatusUpdatedNotification: ObjectModel {
         var threadId: String?
 
         enum CodingKeys: String, CodingKey {
+            case environmentId
             case error
             case failureReason
             case name

@@ -5,17 +5,20 @@ import Foundation
 
 public struct RealtimeSessionStartedThreadRealtimeItem: ObjectModel {
     public var id: String
+    public var observedAtMs: Int?
     public var realtimeSessionId: String
     public var type: RealtimeSessionStartedThreadRealtimeItemType
     public var additionalFields: JSONObject
 
     public init(
         id: String,
+        observedAtMs: Int? = nil,
         realtimeSessionId: String,
         type: RealtimeSessionStartedThreadRealtimeItemType,
         additionalFields: JSONObject = [:]
     ) {
         self.id = id
+        self.observedAtMs = observedAtMs
         self.realtimeSessionId = realtimeSessionId
         self.type = type
         self.additionalFields = additionalFields
@@ -29,6 +32,7 @@ public struct RealtimeSessionStartedThreadRealtimeItem: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "RealtimeSessionStartedThreadRealtimeItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.id = payload.id
+        self.observedAtMs = payload.observedAtMs
         self.realtimeSessionId = payload.realtimeSessionId
         self.type = payload.type
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
@@ -41,20 +45,23 @@ public struct RealtimeSessionStartedThreadRealtimeItem: ObjectModel {
     private var payload: Payload {
         Payload(
             id: id,
+            observedAtMs: observedAtMs,
             realtimeSessionId: realtimeSessionId,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "realtimeSessionId", "type"]
+    private static let knownKeys: Set<String> = ["id", "observedAtMs", "realtimeSessionId", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var id: String
+        var observedAtMs: Int?
         var realtimeSessionId: String
         var type: RealtimeSessionStartedThreadRealtimeItemType
 
         enum CodingKeys: String, CodingKey {
             case id
+            case observedAtMs
             case realtimeSessionId
             case type
         }

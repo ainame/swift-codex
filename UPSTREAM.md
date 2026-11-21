@@ -6,28 +6,37 @@ This repository ports the OpenAI Codex SDK work in [`openai/codex`](https://gith
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: `vendor/openai-codex`
-- Reviewed upstream release: [`rust-v0.169.0`](https://github.com/openai/codex/releases/tag/rust-v0.169.0)
-- Vendored upstream commit: `d32063f96c2dff1dc96af839b3952abb6acfeda4`
-- Reviewed JSON-RPC basis commit SHA: `d32063f96c2dff1dc96af839b3952abb6acfeda4`
-- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/d32063f96c2dff1dc96af839b3952abb6acfeda4`
-- Last reviewed date: `2026-11-14`
+- Reviewed upstream release: [`rust-v0.171.0`](https://github.com/openai/codex/releases/tag/rust-v0.171.0)
+- Vendored upstream commit: `ccf9be8cc458bd6b8336fe84d68d8893f2691a5e`
+- Reviewed JSON-RPC basis commit SHA: `ccf9be8cc458bd6b8336fe84d68d8893f2691a5e`
+- Reviewed JSON-RPC basis commit URL: `https://github.com/openai/codex/commit/ccf9be8cc458bd6b8336fe84d68d8893f2691a5e`
+- Last reviewed date: `2026-11-21`
 
 The vendored submodule commit above identifies which upstream checkout is bundled in this repository. The current Swift runtime transport now follows the vendored Python `openai_codex` client and v2 app-server protocol, not the older `exec` transport.
 
-## Coverage Audit (2026-11-14)
+## Coverage Audit (2026-11-21)
 
-Basis: `rust-v0.169.0` at `d32063f96c2dff1dc96af839b3952abb6acfeda4`,
-verified against GitHub's latest stable release on 2026-11-14.
+Basis: `rust-v0.171.0` at `ccf9be8cc458bd6b8336fe84d68d8893f2691a5e`,
+verified against GitHub's latest stable release on 2026-11-21.
 Parity target remains focused raw app-server schema parity.
+Handwritten Python SDK files are unchanged between the release bases. Reviewed
+Rust common wire declarations, v2 thread/item/account/MCP/realtime declarations,
+stable schemas, standalone experimental exports and notification registry.
+The release branches are not a simple ancestor chain; the exact target release
+was used rather than assuming all prior tag commits are ancestors.
 
 Generate the complete inventory with `python3 Scripts/audit_app_server_surface.py`.
-It currently enumerates 187 client methods and 11 server methods from stable JSON
+It currently enumerates 192 client methods and 10 server methods from stable JSON
 exports plus Rust wire declarations. Source matches indicate candidates for review,
 not implemented feature counts. Check the inventory on each sync and carry these
 unresolved gaps forward, even when upstream has not changed them.
 
 | Reviewed feature | Status and evidence |
 | --- | --- |
+| 0.171.0 sync | Implemented `includedThreadIDs` through raw/high-level thread listing; nil is omitted and empty arrays match nothing. Regenerated account update reasons, MCP display metadata, user-verification fields, realtime history/transcripts and typed search partial notifications. Search orchestration/cancellation wrappers remain deferred. |
+| Legacy current time handler | Upstream removed `currentTime/read`; Swift retains the public handler and models for older servers. Generator fallback schemas are exact copies from the 0.169.0 experimental export, under `Scripts/LegacySchemas`. |
+| Focused gap choice | Inclusion filtering: impact 7/10, effort 2/10; selected and tested on both listing paths. Search streaming cancellation: impact 6/10, effort 7/10; deferred pending request-ID/lifecycle design. Existing runtime lifecycle gaps and broader provider/config wrappers remain deferred as below. |
+| Additional list/start gaps | Deferred: `currentAccountOnly`, `originators`, tri-state `sectionId`, `threadSource` and experimental start controls; require separate public API/serialization fixtures. |
 | Image generation results | Implemented typed `fileId` and inline `result` variants through existing item notifications and turn history, preserving input images, generation IDs and unknown fields. File references take precedence when both formats are present. |
 | Item lifecycle timestamps | Implemented optional `startedAtMs`/`completedAtMs`, including nested image-result branches; generator propagates shared constraints recursively. |
 | Usage, process and hook models | Implemented native usage cost, process output-drain status, new plan/error/hook enum cases, and legacy hook source paths. These models do not add process or hook management convenience APIs. |
@@ -51,7 +60,7 @@ unresolved gaps forward, even when upstream has not changed them.
 | Stable thread history paging | Implemented typed `thread/turns/list` and `thread/items/list` on the RPC client and `CodexThread`. Pass continuation and reverse-direction cursors as returned by the server. Item anchors are exclusive and require a visible turn ID. Callers control paging. Experimental item-output deferral and full-item reads remain outside the high-level API. |
 | Python SDK orchestration | Deferred: prior notification coalescing, cancellation recovery, thread start locking, logical goal operations and automatic history traversal remain deferred. |
 
-### Release sync and gap selection (2026-11-14)
+### Release sync and gap selection (2026-11-21)
 
 Reviewed the Python SDK, including generated `v2_all.py`, notification registry,
 and provider RPC fixtures, plus the combined stable v2 schema, standalone

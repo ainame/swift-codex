@@ -8,6 +8,18 @@ The format is based on Keep a Changelog and this project uses tags without a `v`
 
 ## [Unreleased]
 
+### Added
+
+- `ThreadListOptions.includedThreadIDs` on raw and high-level listing, preserving nil, empty and populated filters.
+- Typed partial search notifications and refreshed account, MCP, user-verification and realtime models.
+
+### Changed
+
+- Sync focused raw app-server schema coverage to `rust-v0.171.0` at `ccf9be8cc458bd6b8336fe84d68d8893f2691a5e`.
+- **Migration:** `AgentMessageDisplay` is now a mode-based enum instead of an action struct; notification, realtime and error enums gain cases. Legacy display payloads remain accessible through raw JSON.
+- Retain `currentTime/read` handlers for older servers using pinned legacy schemas; fix generated enum identifiers for numeric string values.
+
+
 ## [0.169.0] - 2026-11-14
 
 ### Added

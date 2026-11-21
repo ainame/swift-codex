@@ -43,7 +43,7 @@ struct ThreadHistoryTests {
             Issue.record("Expected an agent message")
             return
         }
-        #expect(message.moderation?.display?.action == "futureAction")
+        #expect(message.moderation?.display?.rawJSON == .object(["action": .string("futureAction")]))
         let cursor = try #require(items.nextCursor)
         let end = try await thread.listItems(turnID: "turn-1", cursor: .string(cursor))
         #expect(end.data.isEmpty)

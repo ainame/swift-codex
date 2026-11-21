@@ -213,6 +213,8 @@ def sanitize_case_name(value: str) -> str:
     name = lower_camel(value)
     if not name:
         name = "value"
+    if name[:1].isdigit():
+        name = f"value{name}"
     if name in SWIFT_RESERVED:
         name += "Value"
     return name
@@ -948,7 +950,12 @@ def main() -> None:
             definitions.setdefault(dependency, definition)
         definitions[name] = standalone
     for name in sorted(SERVER_HANDLER_ROOT_TYPES):
-        standalone = json.loads(exports[f"{name}.json"])
+        # Legacy handlers remain available for pre-0.171 servers.
+        if name in {"CurrentTimeReadParams", "CurrentTimeReadResponse"}:
+            source = exports.get(f"{name}.json") or (REPO_ROOT / "Scripts" / "LegacySchemas" / f"{name}.json").read_text()
+        else:
+            source = exports[f"{name}.json"]
+        standalone = json.loads(source)
         for dependency, definition in standalone.pop("definitions", {}).items():
             definitions.setdefault(dependency, definition)
         definitions[name] = standalone
