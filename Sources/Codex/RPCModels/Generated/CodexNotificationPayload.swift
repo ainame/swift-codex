@@ -76,6 +76,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
     case threadRealtimeTranscriptDelta(ThreadRealtimeTranscriptDeltaNotification)
     case threadRealtimeTranscriptDone(ThreadRealtimeTranscriptDoneNotification)
     case threadReverted(ThreadRevertedNotification)
+    case threadSearchPartial(ThreadSearchPartialNotification)
     case threadSectionChanged(ThreadSectionChangedNotification)
     case threadSettingsUpdated(ThreadSettingsUpdatedNotification)
     case threadStarted(ThreadStartedNotification)
@@ -166,6 +167,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case "thread/realtime/transcript/delta": self = .threadRealtimeTranscriptDelta(try decodeJSONValue(ThreadRealtimeTranscriptDeltaNotification.self, from: params))
         case "thread/realtime/transcript/done": self = .threadRealtimeTranscriptDone(try decodeJSONValue(ThreadRealtimeTranscriptDoneNotification.self, from: params))
         case "thread/reverted": self = .threadReverted(try decodeJSONValue(ThreadRevertedNotification.self, from: params))
+        case "thread/search/partial": self = .threadSearchPartial(try decodeJSONValue(ThreadSearchPartialNotification.self, from: params))
         case "thread/section/changed": self = .threadSectionChanged(try decodeJSONValue(ThreadSectionChangedNotification.self, from: params))
         case "thread/settings/updated": self = .threadSettingsUpdated(try decodeJSONValue(ThreadSettingsUpdatedNotification.self, from: params))
         case "thread/started": self = .threadStarted(try decodeJSONValue(ThreadStartedNotification.self, from: params))
@@ -259,6 +261,7 @@ public enum CodexNotificationPayload: RawJSONRepresentable {
         case .threadRealtimeTranscriptDelta(let value): return value.rawJSON
         case .threadRealtimeTranscriptDone(let value): return value.rawJSON
         case .threadReverted(let value): return value.rawJSON
+        case .threadSearchPartial(let value): return value.rawJSON
         case .threadSectionChanged(let value): return value.rawJSON
         case .threadSettingsUpdated(let value): return value.rawJSON
         case .threadStarted(let value): return value.rawJSON

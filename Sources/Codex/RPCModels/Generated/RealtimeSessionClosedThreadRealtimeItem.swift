@@ -5,6 +5,7 @@ import Foundation
 
 public struct RealtimeSessionClosedThreadRealtimeItem: ObjectModel {
     public var id: String
+    public var observedAtMs: Int?
     public var realtimeSessionId: String
     public var outcome: ThreadRealtimeSessionOutcome
     public var type: RealtimeSessionClosedThreadRealtimeItemType
@@ -12,12 +13,14 @@ public struct RealtimeSessionClosedThreadRealtimeItem: ObjectModel {
 
     public init(
         id: String,
+        observedAtMs: Int? = nil,
         realtimeSessionId: String,
         outcome: ThreadRealtimeSessionOutcome,
         type: RealtimeSessionClosedThreadRealtimeItemType,
         additionalFields: JSONObject = [:]
     ) {
         self.id = id
+        self.observedAtMs = observedAtMs
         self.realtimeSessionId = realtimeSessionId
         self.outcome = outcome
         self.type = type
@@ -32,6 +35,7 @@ public struct RealtimeSessionClosedThreadRealtimeItem: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "RealtimeSessionClosedThreadRealtimeItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.id = payload.id
+        self.observedAtMs = payload.observedAtMs
         self.realtimeSessionId = payload.realtimeSessionId
         self.outcome = payload.outcome
         self.type = payload.type
@@ -45,22 +49,25 @@ public struct RealtimeSessionClosedThreadRealtimeItem: ObjectModel {
     private var payload: Payload {
         Payload(
             id: id,
+            observedAtMs: observedAtMs,
             realtimeSessionId: realtimeSessionId,
             outcome: outcome,
             type: type
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "realtimeSessionId", "outcome", "type"]
+    private static let knownKeys: Set<String> = ["id", "observedAtMs", "realtimeSessionId", "outcome", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var id: String
+        var observedAtMs: Int?
         var realtimeSessionId: String
         var outcome: ThreadRealtimeSessionOutcome
         var type: RealtimeSessionClosedThreadRealtimeItemType
 
         enum CodingKeys: String, CodingKey {
             case id
+            case observedAtMs
             case realtimeSessionId
             case outcome
             case type

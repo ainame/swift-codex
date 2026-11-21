@@ -5,6 +5,7 @@ import Foundation
 
 public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
     public var id: String
+    public var observedAtMs: Int?
     public var realtimeSessionId: String
     public var role: ThreadRealtimeTranscriptRole
     public var text: String
@@ -13,6 +14,7 @@ public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
 
     public init(
         id: String,
+        observedAtMs: Int? = nil,
         realtimeSessionId: String,
         role: ThreadRealtimeTranscriptRole,
         text: String,
@@ -20,6 +22,7 @@ public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
         additionalFields: JSONObject = [:]
     ) {
         self.id = id
+        self.observedAtMs = observedAtMs
         self.realtimeSessionId = realtimeSessionId
         self.role = role
         self.text = text
@@ -35,6 +38,7 @@ public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
         let object = try decodeJSONObject(from: decoder, context: "TranscriptSegmentThreadRealtimeItem")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.id = payload.id
+        self.observedAtMs = payload.observedAtMs
         self.realtimeSessionId = payload.realtimeSessionId
         self.role = payload.role
         self.text = payload.text
@@ -49,6 +53,7 @@ public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
     private var payload: Payload {
         Payload(
             id: id,
+            observedAtMs: observedAtMs,
             realtimeSessionId: realtimeSessionId,
             role: role,
             text: text,
@@ -56,10 +61,11 @@ public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["id", "realtimeSessionId", "role", "text", "type"]
+    private static let knownKeys: Set<String> = ["id", "observedAtMs", "realtimeSessionId", "role", "text", "type"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var id: String
+        var observedAtMs: Int?
         var realtimeSessionId: String
         var role: ThreadRealtimeTranscriptRole
         var text: String
@@ -67,6 +73,7 @@ public struct TranscriptSegmentThreadRealtimeItem: ObjectModel {
 
         enum CodingKeys: String, CodingKey {
             case id
+            case observedAtMs
             case realtimeSessionId
             case role
             case text

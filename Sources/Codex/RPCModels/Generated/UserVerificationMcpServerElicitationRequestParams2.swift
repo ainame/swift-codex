@@ -4,6 +4,7 @@
 import Foundation
 
 public struct UserVerificationMcpServerElicitationRequestParams2: ObjectModel {
+    public var environmentId: String?
     public var serverName: String
     public var threadId: String
     public var turnId: String?
@@ -15,6 +16,7 @@ public struct UserVerificationMcpServerElicitationRequestParams2: ObjectModel {
     public var additionalFields: JSONObject
 
     public init(
+        environmentId: String? = nil,
         serverName: String,
         threadId: String,
         turnId: String? = nil,
@@ -25,6 +27,7 @@ public struct UserVerificationMcpServerElicitationRequestParams2: ObjectModel {
         title: String,
         additionalFields: JSONObject = [:]
     ) {
+        self.environmentId = environmentId
         self.serverName = serverName
         self.threadId = threadId
         self.turnId = turnId
@@ -43,6 +46,7 @@ public struct UserVerificationMcpServerElicitationRequestParams2: ObjectModel {
     public init(from decoder: any Decoder) throws {
         let object = try decodeJSONObject(from: decoder, context: "UserVerificationMcpServerElicitationRequestParams2")
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
+        self.environmentId = payload.environmentId
         self.serverName = payload.serverName
         self.threadId = payload.threadId
         self.turnId = payload.turnId
@@ -60,6 +64,7 @@ public struct UserVerificationMcpServerElicitationRequestParams2: ObjectModel {
 
     private var payload: Payload {
         Payload(
+            environmentId: environmentId,
             serverName: serverName,
             threadId: threadId,
             turnId: turnId,
@@ -71,9 +76,10 @@ public struct UserVerificationMcpServerElicitationRequestParams2: ObjectModel {
         )
     }
 
-    private static let knownKeys: Set<String> = ["serverName", "threadId", "turnId", "_meta", "challenge", "description", "mode", "title"]
+    private static let knownKeys: Set<String> = ["environmentId", "serverName", "threadId", "turnId", "_meta", "challenge", "description", "mode", "title"]
 
     private struct Payload: Codable, Hashable, Sendable {
+        var environmentId: String?
         var serverName: String
         var threadId: String
         var turnId: String?
@@ -84,6 +90,7 @@ public struct UserVerificationMcpServerElicitationRequestParams2: ObjectModel {
         var title: String
 
         enum CodingKeys: String, CodingKey {
+            case environmentId
             case serverName
             case threadId
             case turnId

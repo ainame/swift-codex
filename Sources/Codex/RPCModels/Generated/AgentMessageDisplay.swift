@@ -3,67 +3,68 @@
 
 import Foundation
 
-public struct AgentMessageDisplay: ObjectModel {
-    public var action: String
-    public var blockType: String?
-    public var checkTrustedContacts: Bool?
-    public var cyberTrustedAccess: Bool?
-    public var additionalFields: JSONObject
+public enum AgentMessageDisplay: RawJSONRepresentable {
 
-    public init(
-        action: String,
-        blockType: String? = nil,
-        checkTrustedContacts: Bool? = nil,
-        cyberTrustedAccess: Bool? = nil,
-        additionalFields: JSONObject = [:]
-    ) {
-        self.action = action
-        self.blockType = blockType
-        self.checkTrustedContacts = checkTrustedContacts
-        self.cyberTrustedAccess = cyberTrustedAccess
-        self.additionalFields = additionalFields
-    }
-
-    public var rawJSON: JSONValue {
-        .object(mergedJSONObject(payload, additionalFields: additionalFields, context: "AgentMessageDisplay"))
-    }
+    case agentMessageDisplayVariant1(AgentMessageDisplayVariant1)
+    case agentMessageDisplayVariant2(AgentMessageDisplayVariant2)
+    case agentMessageDisplayVariant3(AgentMessageDisplayVariant3)
+    case unknown(JSONValue)
 
     public init(from decoder: any Decoder) throws {
-        let object = try decodeJSONObject(from: decoder, context: "AgentMessageDisplay")
-        let payload = try decodeJSONValue(Payload.self, from: .object(object))
-        self.action = payload.action
-        self.blockType = payload.blockType
-        self.checkTrustedContacts = payload.checkTrustedContacts
-        self.cyberTrustedAccess = payload.cyberTrustedAccess
-        self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
+        let raw = try JSONValue(from: decoder)
+        if case .string(let value) = raw {
+            switch value {
+
+            default:
+                break
+            }
+        }
+        if case .object(let object) = raw, let discriminator = object["mode"]?.stringValue {
+            switch discriminator {
+            case "show":
+                if let value = try? decodeJSONValue(AgentMessageDisplayVariant1.self, from: raw) {
+                    self = .agentMessageDisplayVariant1(value)
+                    return
+                }
+            case "hide":
+                if let value = try? decodeJSONValue(AgentMessageDisplayVariant2.self, from: raw) {
+                    self = .agentMessageDisplayVariant2(value)
+                    return
+                }
+            case "block":
+                if let value = try? decodeJSONValue(AgentMessageDisplayVariant3.self, from: raw) {
+                    self = .agentMessageDisplayVariant3(value)
+                    return
+                }
+            default:
+                break
+            }
+        }
+        if let value = try? decodeJSONValue(AgentMessageDisplayVariant1.self, from: raw) { self = .agentMessageDisplayVariant1(value); return }
+        if let value = try? decodeJSONValue(AgentMessageDisplayVariant2.self, from: raw) { self = .agentMessageDisplayVariant2(value); return }
+        if let value = try? decodeJSONValue(AgentMessageDisplayVariant3.self, from: raw) { self = .agentMessageDisplayVariant3(value); return }
+        self = .unknown(raw)
     }
 
     public func encode(to encoder: any Encoder) throws {
-        try encodeJSONObject(payload, additionalFields: additionalFields, context: "AgentMessageDisplay", to: encoder)
+        switch self {
+
+        case .agentMessageDisplayVariant1(let value): try value.encode(to: encoder)
+        case .agentMessageDisplayVariant2(let value): try value.encode(to: encoder)
+        case .agentMessageDisplayVariant3(let value): try value.encode(to: encoder)
+        case .unknown(let value):
+            try value.encode(to: encoder)
+        }
     }
 
-    private var payload: Payload {
-        Payload(
-            action: action,
-            blockType: blockType,
-            checkTrustedContacts: checkTrustedContacts,
-            cyberTrustedAccess: cyberTrustedAccess
-        )
-    }
+    public var rawJSON: JSONValue {
+        switch self {
 
-    private static let knownKeys: Set<String> = ["action", "blockType", "checkTrustedContacts", "cyberTrustedAccess"]
-
-    private struct Payload: Codable, Hashable, Sendable {
-        var action: String
-        var blockType: String?
-        var checkTrustedContacts: Bool?
-        var cyberTrustedAccess: Bool?
-
-        enum CodingKeys: String, CodingKey {
-            case action
-            case blockType
-            case checkTrustedContacts
-            case cyberTrustedAccess
+        case .agentMessageDisplayVariant1(let value): return losslessEncodeJSONValue(value, context: "AgentMessageDisplay.agentMessageDisplayVariant1")
+        case .agentMessageDisplayVariant2(let value): return losslessEncodeJSONValue(value, context: "AgentMessageDisplay.agentMessageDisplayVariant2")
+        case .agentMessageDisplayVariant3(let value): return losslessEncodeJSONValue(value, context: "AgentMessageDisplay.agentMessageDisplayVariant3")
+        case .unknown(let value):
+            return value
         }
     }
 }

@@ -13,6 +13,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
     case modelNotFound
     case policyCapacityUnavailable
     case cyberPolicy
+    case bioPolicy
     case misalignmentPolicyViolation
     case tooManyDenials
     case internalServerError
@@ -42,6 +43,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
             case "modelNotFound": self = .modelNotFound; return
             case "policyCapacityUnavailable": self = .policyCapacityUnavailable; return
             case "cyberPolicy": self = .cyberPolicy; return
+            case "bioPolicy": self = .bioPolicy; return
             case "misalignmentPolicyViolation": self = .misalignmentPolicyViolation; return
             case "tooManyDenials": self = .tooManyDenials; return
             case "internalServerError": self = .internalServerError; return
@@ -74,6 +76,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .modelNotFound: try "modelNotFound".encode(to: encoder)
         case .policyCapacityUnavailable: try "policyCapacityUnavailable".encode(to: encoder)
         case .cyberPolicy: try "cyberPolicy".encode(to: encoder)
+        case .bioPolicy: try "bioPolicy".encode(to: encoder)
         case .misalignmentPolicyViolation: try "misalignmentPolicyViolation".encode(to: encoder)
         case .tooManyDenials: try "tooManyDenials".encode(to: encoder)
         case .internalServerError: try "internalServerError".encode(to: encoder)
@@ -104,6 +107,7 @@ public enum CodexErrorInfo: RawJSONRepresentable {
         case .modelNotFound: return .string("modelNotFound")
         case .policyCapacityUnavailable: return .string("policyCapacityUnavailable")
         case .cyberPolicy: return .string("cyberPolicy")
+        case .bioPolicy: return .string("bioPolicy")
         case .misalignmentPolicyViolation: return .string("misalignmentPolicyViolation")
         case .tooManyDenials: return .string("tooManyDenials")
         case .internalServerError: return .string("internalServerError")

@@ -42,12 +42,12 @@ This is still a WIP SDK. Breaking changes are expected while the JSON-RPC surfac
 
 - Upstream repository: `openai/codex`
 - Vendored upstream checkout: [`vendor/openai-codex`](vendor/openai-codex)
-- Vendored upstream commit: `d32063f96c2dff1dc96af839b3952abb6acfeda4` (`rust-v0.169.0`)
+- Vendored upstream commit: `ccf9be8cc458bd6b8336fe84d68d8893f2691a5e` (`rust-v0.171.0`)
 - Primary reviewed upstream basis for the current transport and schema:
   - `sdk/python/src/openai_codex`
   - `codex-rs/app-server-protocol/schema/json/codex_app_server_protocol.v2.schemas.json`
 
-The `rust-v0.169.0` sync adds typed history pages through `CodexThread.listTurns` and `listItems` and their low-level RPC counterparts. Each call fetches one page. Pass the returned cursor unchanged to continue. Use `backwardsCursor` with the opposite sort direction, and supply the visible turn ID when starting from an exclusive item anchor.
+The `rust-v0.171.0` sync adds `ThreadListOptions.includedThreadIDs` (empty matches nothing), refreshed protocol models and typed search partial notifications. `currentTimeHandler` remains available for older servers. Agent message display is now a mode-based enum. Typed history pages remain available through `CodexThread.listTurns` and `listItems` and their low-level RPC counterparts. Each call fetches one page. Pass the returned cursor unchanged to continue. Use `backwardsCursor` with the opposite sort direction, and supply the visible turn ID when starting from an exclusive item anchor.
 
 Generated function-output audio now supports URL and file-ID enum branches. Existing assistant message and item completion models also expose moderation metadata and content-token counts.
 
@@ -376,7 +376,7 @@ Use the explicit cancellation API when you need confirmation from the server. Ac
 
 `CodexConfig` accepts optional `userInputHandler`, `mcpElicitationHandler`,
 `permissionsApprovalHandler`, `authTokensRefreshHandler`, `attestationHandler` and
-`currentTimeHandler` closures. Each receives upstream-shaped typed parameters and
+`currentTimeHandler` (for older servers) closures. Each receives upstream-shaped typed parameters and
 returns its typed response asynchronously; these closures may throw. For example:
 
 ```swift

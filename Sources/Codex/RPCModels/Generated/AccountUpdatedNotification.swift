@@ -6,15 +6,18 @@ import Foundation
 public struct AccountUpdatedNotification: ObjectModel {
     public var authMode: AuthMode?
     public var planType: PlanType?
+    public var reason: AccountUpdateReason?
     public var additionalFields: JSONObject
 
     public init(
         authMode: AuthMode? = nil,
         planType: PlanType? = nil,
+        reason: AccountUpdateReason? = nil,
         additionalFields: JSONObject = [:]
     ) {
         self.authMode = authMode
         self.planType = planType
+        self.reason = reason
         self.additionalFields = additionalFields
     }
 
@@ -27,6 +30,7 @@ public struct AccountUpdatedNotification: ObjectModel {
         let payload = try decodeJSONValue(Payload.self, from: .object(object))
         self.authMode = payload.authMode
         self.planType = payload.planType
+        self.reason = payload.reason
         self.additionalFields = object.filter { !Self.knownKeys.contains($0.key) }
     }
 
@@ -37,19 +41,22 @@ public struct AccountUpdatedNotification: ObjectModel {
     private var payload: Payload {
         Payload(
             authMode: authMode,
-            planType: planType
+            planType: planType,
+            reason: reason
         )
     }
 
-    private static let knownKeys: Set<String> = ["authMode", "planType"]
+    private static let knownKeys: Set<String> = ["authMode", "planType", "reason"]
 
     private struct Payload: Codable, Hashable, Sendable {
         var authMode: AuthMode?
         var planType: PlanType?
+        var reason: AccountUpdateReason?
 
         enum CodingKeys: String, CodingKey {
             case authMode
             case planType
+            case reason
         }
     }
 }

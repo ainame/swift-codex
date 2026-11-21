@@ -58,6 +58,8 @@ public struct ThreadListOptions: Sendable, Hashable, Codable {
     public var archived: Bool?
     public var cursor: String?
     public var cwd: ThreadListCwdFilter?
+    /// Restrict to up to 100 IDs before pagination; empty matches nothing. Repeat on each page.
+    public var includedThreadIDs: [String]?
     /// Exclude up to 100 thread IDs before applying the limit; repeat on each page.
     public var excludedThreadIDs: [String]?
     public var limit: Int?
@@ -73,6 +75,7 @@ public struct ThreadListOptions: Sendable, Hashable, Codable {
         cursor: String? = nil,
         cwd: ThreadListCwdFilter? = nil,
         excludedThreadIDs: [String]? = nil,
+        includedThreadIDs: [String]? = nil,
         limit: Int? = nil,
         modelProviders: [String]? = nil,
         searchTerm: String? = nil,
@@ -85,6 +88,7 @@ public struct ThreadListOptions: Sendable, Hashable, Codable {
         self.cursor = cursor
         self.cwd = cwd
         self.excludedThreadIDs = excludedThreadIDs
+        self.includedThreadIDs = includedThreadIDs
         self.limit = limit
         self.modelProviders = modelProviders
         self.searchTerm = searchTerm
